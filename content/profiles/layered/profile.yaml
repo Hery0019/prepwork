@@ -1,0 +1,296 @@
+# yaml-language-server: $schema=../../../schema/profile.schema.json
+# Profil `layered` : monolithe en couches web / service / repository / domain.
+meta:
+  id: layered
+  version: 1.0.0
+  rule_prefix: LAY
+  summary:
+    en: Layered monolith, one package per technical layer, dependencies flowing strictly downwards.
+    fr: Monolithe en couches, un package par couche technique, dépendances strictement descendantes.
+  when_to_use:
+    - en: A small team, one deployable, a domain that is still being discovered.
+      fr: Une petite équipe, un seul livrable, un domaine encore en cours de découverte.
+    - en: CRUD-heavy applications where the business rules fit in services.
+      fr: Des applications surtout CRUD dont les règles métier tiennent dans des services.
+    - en: The team knows Spring MVC and Spring Data and wants no extra framework.
+      fr: L'équipe connaît Spring MVC et Spring Data et ne veut aucun framework supplémentaire.
+  when_not_to_use:
+    - en: Several business domains with distinct vocabularies that will drift apart.
+      fr: Plusieurs domaines métier aux vocabulaires distincts qui vont diverger.
+    - en: Teams that plan to split the code base by domain later.
+      fr: Des équipes qui prévoient de découper la base de code par domaine plus tard.
+
+architecture:
+  base_package: '{{basePackage}}'
+  layers:
+    - id: web
+      package: '{{basePackage}}.web'
+      may_depend_on: [service, domain]
+    - id: service
+      package: '{{basePackage}}.service'
+      may_depend_on: [repository, domain]
+    - id: repository
+      package: '{{basePackage}}.repository'
+      may_depend_on: [domain]
+    - id: domain
+      package: '{{basePackage}}.domain'
+      may_depend_on: []
+
+rules:
+  - id: LAY-001
+    statement:
+      en: Every class under the base package lives in `web`, `service`, `repository`, `domain` or `common`, except the application class at the root.
+      fr: Toute classe sous le package de base vit dans `web`, `service`, `repository`, `domain` ou `common`, sauf la classe d'application à la racine.
+    rationale:
+      en: A class outside the layers escapes every architecture rule.
+      fr: Une classe hors des couches échappe à toutes les règles d'architecture.
+    enforced_by: archunit
+  - id: LAY-002
+    statement:
+      en: No class in `web` imports from `repository`.
+      fr: Aucune classe de `web` n'importe depuis `repository`.
+    rationale:
+      en: Controllers must not bypass the service layer.
+      fr: Les contrôleurs ne doivent pas court-circuiter la couche service.
+    enforced_by: archunit
+  - id: LAY-003
+    statement:
+      en: Classes in `domain` depend on no other layer and on no Spring class.
+      fr: Les classes de `domain` ne dépendent d'aucune autre couche ni d'aucune classe Spring.
+    rationale:
+      en: The domain must be readable and testable without the framework.
+      fr: Le domaine doit être lisible et testable sans le framework.
+    enforced_by: archunit
+  - id: LAY-004
+    statement:
+      en: Classes in `repository` are interfaces or classes annotated `@Repository`; they contain no business logic.
+      fr: Les classes de `repository` sont des interfaces ou des classes annotées `@Repository` ; elles ne contiennent aucune logique métier.
+    rationale:
+      en: Persistence is a detail; business rules in queries are invisible to tests.
+      fr: La persistance est un détail ; une règle métier dans une requête est invisible pour les tests.
+    enforced_by: archunit
+  - id: LAY-005
+    statement:
+      en: '`@Transactional` appears only on classes or methods of `service`.'
+      fr: "`@Transactional` n'apparaît que sur des classes ou méthodes de `service`."
+    rationale:
+      en: The service is the unit of work; transactions elsewhere overlap or never open.
+      fr: Le service est l'unité de travail ; une transaction ailleurs se chevauche ou ne s'ouvre jamais.
+    enforced_by: archunit
+  - id: LAY-006
+    statement:
+      en: A controller method validates its input, calls one service method and maps the result to a response DTO; nothing else.
+      fr: Une méthode de contrôleur valide son entrée, appelle une méthode de service et convertit le résultat en DTO de réponse ; rien d'autre.
+    rationale:
+      en: Business logic in controllers cannot be unit tested and cannot be reused.
+      fr: Une logique métier dans un contrôleur ne peut être ni testée unitairement ni réutilisée.
+    enforced_by: none
+  - id: LAY-007
+    statement:
+      en: Request and response DTOs are Java records declared in `web`, named `*Request` and `*Response`.
+      fr: Les DTO de requête et de réponse sont des records Java déclarés dans `web`, nommés `*Request` et `*Response`.
+    rationale:
+      en: Immutable, explicit, and impossible to confuse with an entity.
+      fr: Immuables, explicites, et impossibles à confondre avec une entité.
+    enforced_by: archunit
+  - id: LAY-008
+    statement:
+      en: Persistent entities are declared in `domain` and carry no web or JSON annotation.
+      fr: Les entités persistantes sont déclarées dans `domain` et ne portent aucune annotation web ou JSON.
+    rationale:
+      en: An entity annotated for the API is an entity that has become the API.
+      fr: Une entité annotée pour l'API est une entité devenue l'API.
+    enforced_by: archunit
+  - id: LAY-009
+    statement:
+      en: The dependency direction `web -> service -> repository -> domain` is enforced by the layered ArchUnit rule built from this profile's layers.
+      fr: Le sens des dépendances `web -> service -> repository -> domain` est imposé par la règle ArchUnit en couches construite depuis les couches de ce profil.
+    rationale:
+      en: The rule is the executable definition of the architecture.
+      fr: La règle est la définition exécutable de l'architecture.
+    enforced_by: archunit
+  - id: LAY-010
+    statement:
+      en: Mapping between DTOs and domain objects is done in `web`, never in `service`.
+      fr: La conversion entre DTO et objets du domaine se fait dans `web`, jamais dans `service`.
+    rationale:
+      en: Services stay independent of the API shape and can serve several interfaces.
+      fr: Les services restent indépendants de la forme de l'API et peuvent servir plusieurs interfaces.
+    enforced_by: none
+  - id: LAY-011
+    statement:
+      en: Cross-cutting code (error handling, pagination, configuration) lives in `common` and depends on no layer.
+      fr: Le code transverse (gestion des erreurs, pagination, configuration) vit dans `common` et ne dépend d'aucune couche.
+    rationale:
+      en: Shared code that depends on a layer drags that layer everywhere.
+      fr: Un code partagé qui dépend d'une couche entraîne cette couche partout.
+    enforced_by: archunit
+
+anti_patterns:
+  - id: LAY-AP-001
+    statement:
+      en: A controller injecting a repository to "save one call".
+      fr: Un contrôleur qui injecte un repository pour « économiser un appel ».
+    rationale:
+      en: Transactions, validation and business rules are bypassed.
+      fr: Transactions, validation et règles métier sont contournées.
+    enforced_by: archunit
+    instead:
+      en: A service method, even if it only delegates for now.
+      fr: Une méthode de service, même si elle ne fait que déléguer pour l'instant.
+  - id: LAY-AP-002
+    statement:
+      en: One giant service per entity that absorbs every use case.
+      fr: Un service géant par entité qui absorbe tous les cas d'usage.
+    rationale:
+      en: Every change touches the same file and merge conflicts become the norm.
+      fr: Chaque changement touche le même fichier et les conflits de fusion deviennent la norme.
+    enforced_by: none
+    instead:
+      en: Services named after a responsibility (`NoteArchivingService`), each with a handful of methods.
+      fr: Des services nommés d'après une responsabilité (`NoteArchivingService`), chacun avec quelques méthodes.
+  - id: LAY-AP-003
+    statement:
+      en: Business decisions written as `if` on request fields inside a controller.
+      fr: Des décisions métier écrites en `if` sur les champs de la requête dans un contrôleur.
+    rationale:
+      en: The rule is untestable without HTTP and invisible to the service.
+      fr: La règle est intestable sans HTTP et invisible pour le service.
+    enforced_by: none
+    instead:
+      en: The decision in the service or the domain object, covered by a unit test.
+      fr: La décision dans le service ou l'objet du domaine, couverte par un test unitaire.
+  - id: LAY-AP-004
+    statement:
+      en: '`@Transactional` on a controller or a repository.'
+      fr: '`@Transactional` sur un contrôleur ou un repository.'
+    rationale:
+      en: The transaction either wraps HTTP handling or is too narrow to be useful.
+      fr: La transaction englobe le traitement HTTP ou est trop étroite pour être utile.
+    enforced_by: archunit
+    instead:
+      en: The annotation on the service method that forms the unit of work.
+      fr: L'annotation sur la méthode de service qui forme l'unité de travail.
+  - id: LAY-AP-005
+    statement:
+      en: Static helper classes (`NoteUtils`) used as a hiding place for logic.
+      fr: Des classes utilitaires statiques (`NoteUtils`) qui servent de cachette à la logique.
+    rationale:
+      en: Static logic cannot be replaced in tests and has no clear owner layer.
+      fr: Une logique statique ne peut être remplacée dans les tests et n'a pas de couche propriétaire claire.
+    enforced_by: none
+    instead:
+      en: A method on the domain object, or a service with an explicit responsibility.
+      fr: Une méthode sur l'objet du domaine, ou un service à la responsabilité explicite.
+
+dependencies:
+  allowed:
+    - artifact: org.springframework.boot:spring-boot-starter-webmvc
+      purpose:
+        en: REST controllers (`web`).
+        fr: Contrôleurs REST (`web`).
+    - artifact: org.springframework.boot:spring-boot-starter-data-jpa
+      purpose:
+        en: Spring Data repositories (`repository`) and JPA entities (`domain`).
+        fr: Repositories Spring Data (`repository`) et entités JPA (`domain`).
+    - artifact: org.springframework.boot:spring-boot-starter-validation
+      purpose:
+        en: Bean Validation on request DTOs.
+        fr: Bean Validation sur les DTO de requête.
+    - artifact: org.springframework.boot:spring-boot-starter-actuator
+      purpose:
+        en: Health and info endpoints.
+        fr: Endpoints health et info.
+    - artifact: org.mapstruct:mapstruct
+      purpose:
+        en: Generated DTO mappers in `web` once hand-written mapping becomes repetitive.
+        fr: Mappers DTO générés dans `web` quand la conversion manuelle devient répétitive.
+  forbidden:
+    - artifact: com.h2database:h2
+      rationale:
+        en: Tests run on the real database engine through Testcontainers.
+        fr: Les tests tournent sur le vrai moteur de base de données via Testcontainers.
+    - artifact: org.projectlombok:lombok
+      rationale:
+        en: Records and explicit constructors cover the need; generated code hides what the agent must read.
+        fr: Les records et constructeurs explicites couvrent le besoin ; le code généré cache ce que l'agent doit lire.
+    - artifact: org.springframework.boot:spring-boot-starter-data-rest
+      rationale:
+        en: Exposes entities directly as the API, which contradicts the DTO rule.
+        fr: Expose les entités directement comme API, ce qui contredit la règle des DTO.
+    - artifact: org.springframework.boot:spring-boot-starter-web
+      rationale:
+        en: Legacy alias; the project uses `spring-boot-starter-webmvc`.
+        fr: Alias hérité ; le projet utilise `spring-boot-starter-webmvc`.
+  add_procedure:
+    - en: Check the `allowed` and `forbidden` lists above; a forbidden artifact is never added.
+      fr: Vérifier les listes `allowed` et `forbidden` ci-dessus ; un artefact interdit n'est jamais ajouté.
+    - en: If the artifact is not listed, propose it with its purpose and the alternative considered, then wait for confirmation.
+      fr: Si l'artefact n'est pas listé, le proposer avec son rôle et l'alternative envisagée, puis attendre confirmation.
+    - en: Add it in its own commit (`build(deps)`), without a version when the Spring Boot BOM manages one.
+      fr: L'ajouter dans un commit dédié (`build(deps)`), sans version lorsque le BOM Spring Boot en gère une.
+    - en: Record it in `docs/adr/` if it changes how a layer is written.
+      fr: L'enregistrer dans `docs/adr/` s'il change la façon d'écrire une couche.
+
+reference_example:
+  feature:
+    en: '`Note`: create, read one, list with pagination.'
+    fr: '`Note` : créer, lire une, lister avec pagination.'
+  files:
+    - src/main/java/{{basePackage}}/domain/Note.java
+    - src/main/java/{{basePackage}}/domain/NoteNotFoundException.java
+    - src/main/java/{{basePackage}}/repository/NoteRepository.java
+    - src/main/java/{{basePackage}}/service/NoteService.java
+    - src/main/java/{{basePackage}}/web/NoteController.java
+    - src/main/java/{{basePackage}}/web/NoteRequest.java
+    - src/main/java/{{basePackage}}/web/NoteResponse.java
+    - src/test/java/{{basePackage}}/service/NoteServiceTest.java
+    - src/test/java/{{basePackage}}/web/NoteControllerTest.java
+    - src/test/java/{{basePackage}}/repository/NoteRepositoryTest.java
+    - src/test/java/{{basePackage}}/NoteIntegrationTest.java
+    - src/test/java/{{basePackage}}/architecture/LayeredArchitectureTest.java
+  demonstrates:
+    - LAY-001
+    - LAY-002
+    - LAY-005
+    - LAY-007
+    - LAY-008
+    - LAY-010
+    - CORE-011
+    - CORE-012
+    - CORE-013
+    - CORE-014
+    - CORE-015
+    - CORE-020
+    - CORE-022
+  tables:
+    - name: note
+      columns:
+        - { name: id, type: identity }
+        - { name: title, type: string, length: 200 }
+        - { name: content, type: text, nullable: true }
+        - { name: created_at, type: timestamp }
+
+skills:
+  architecture:
+    - LAY-001
+    - LAY-002
+    - LAY-003
+    - LAY-009
+    - LAY-011
+    - LAY-AP-001
+    - LAY-AP-002
+    - LAY-AP-003
+    - LAY-AP-005
+  db:
+    - LAY-004
+    - LAY-005
+    - LAY-008
+    - LAY-AP-004
+  api:
+    - LAY-006
+    - LAY-007
+    - LAY-010
+  testing: []
+  workflow: []
+  security: []

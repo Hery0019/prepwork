@@ -1,0 +1,90 @@
+# yaml-language-server: $schema=../../schema/core.schema.json
+# Tests (CLAUDE.md §4).
+id: testing
+skill: testing
+title:
+  en: Testing
+  fr: Tests
+rules:
+  - id: CORE-020
+    statement:
+      en: There are exactly three test levels, unit (no Spring context), slice (`@WebMvcTest`, `@DataJpaTest`) and integration (`@SpringBootTest` with Testcontainers).
+      fr: Il existe exactement trois niveaux de test, unitaire (sans contexte Spring), slice (`@WebMvcTest`, `@DataJpaTest`) et intégration (`@SpringBootTest` avec Testcontainers).
+    rationale:
+      en: Each level has a cost and a purpose; a fourth category is where confusion starts.
+      fr: Chaque niveau a un coût et un rôle ; une quatrième catégorie est le début de la confusion.
+    enforced_by: none
+  - id: CORE-021
+    statement:
+      en: Slice and integration tests run against the real database engine through Testcontainers; H2 is never used.
+      fr: Les tests slice et d'intégration tournent sur le vrai moteur de base de données via Testcontainers ; H2 n'est jamais utilisé.
+    rationale:
+      en: SQL dialects differ; a test that passes on H2 proves nothing about production.
+      fr: Les dialectes SQL diffèrent ; un test qui passe sur H2 ne prouve rien pour la production.
+    enforced_by: archunit
+  - id: CORE-022
+    statement:
+      en: Test methods are named `method_condition_expectedResult`.
+      fr: Les méthodes de test sont nommées `method_condition_expectedResult`.
+    rationale:
+      en: A failing test name must say what broke without opening the file.
+      fr: Le nom d'un test en échec doit dire ce qui casse sans ouvrir le fichier.
+    enforced_by: none
+  - id: CORE-023
+    statement:
+      en: No numeric coverage threshold is imposed; a test is judged on what it verifies.
+      fr: Aucun seuil numérique de couverture n'est imposé ; un test est jugé sur ce qu'il vérifie.
+    rationale:
+      en: A percentage target produces assertion-free tests written to satisfy the metric.
+      fr: Un objectif en pourcentage produit des tests sans assertion écrits pour la métrique.
+    enforced_by: none
+  - id: CORE-024
+    statement:
+      en: A unit test never starts a Spring context; dependencies are handed in as plain objects or mocks.
+      fr: Un test unitaire ne démarre jamais de contexte Spring ; les dépendances sont passées en objets simples ou en mocks.
+    rationale:
+      en: Unit tests must run in milliseconds to be run constantly.
+      fr: Un test unitaire doit tourner en millisecondes pour être lancé en permanence.
+    enforced_by: none
+  - id: CORE-025
+    statement:
+      en: Every feature ships with at least one unit test, plus the slice test of each controller or repository it adds.
+      fr: Toute fonctionnalité est livrée avec au moins un test unitaire, plus le test slice de chaque contrôleur ou repository qu'elle ajoute.
+    rationale:
+      en: The reference example shows one test per level; new code follows the same shape.
+      fr: L'exemple de référence montre un test par niveau ; le nouveau code suit la même forme.
+    enforced_by: none
+anti_patterns:
+  - id: CORE-AP-020
+    statement:
+      en: Using `@SpringBootTest` for every test because it "always works".
+      fr: Utiliser `@SpringBootTest` pour tous les tests parce que « ça marche toujours ».
+    rationale:
+      en: The suite becomes minutes long and nobody runs it before pushing.
+      fr: La suite dure des minutes et plus personne ne la lance avant de pousser.
+    enforced_by: none
+    instead:
+      en: Pick the cheapest level that exercises the behaviour under test.
+      fr: Choisir le niveau le moins coûteux qui exerce le comportement testé.
+  - id: CORE-AP-021
+    statement:
+      en: Replacing the database with H2 or an in-memory fake in a persistence test.
+      fr: Remplacer la base par H2 ou un faux en mémoire dans un test de persistance.
+    rationale:
+      en: The test validates the fake, not the SQL that will run in production.
+      fr: Le test valide le faux, pas le SQL qui tournera en production.
+    enforced_by: none
+    instead:
+      en: A `@DataJpaTest` on the Testcontainers database.
+      fr: Un `@DataJpaTest` sur la base Testcontainers.
+  - id: CORE-AP-022
+    statement:
+      en: Test names such as `test1`, `shouldWork` or `testCreate`.
+      fr: Des noms de test tels que `test1`, `shouldWork` ou `testCreate`.
+    rationale:
+      en: The name carries no information when it appears in a failure report.
+      fr: Le nom n'apporte aucune information quand il apparaît dans un rapport d'échec.
+    enforced_by: none
+    instead:
+      en: '`create_titleBlank_returns400`: method, condition, expected result.'
+      fr: '`create_titleBlank_returns400` : méthode, condition, résultat attendu.'

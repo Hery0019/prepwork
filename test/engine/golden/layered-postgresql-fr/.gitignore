@@ -1,0 +1,27 @@
+# Généré par prepwork (GIT-005). Sorties de build, IDE, secrets.
+
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.properties
+
+# Secrets et environnement local (CORE-030)
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+.factorypath
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

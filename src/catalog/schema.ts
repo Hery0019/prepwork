@@ -44,6 +44,8 @@ export const EnforcedBySchema = z.enum([
   'commitlint',
   'gitleaks',
   'modulith',
+  'flyway',
+  'liquibase',
   'dependency-check',
   'none',
 ]);
@@ -96,6 +98,10 @@ export const MavenDependencySchema = z
     /** Absent quand la version est gérée par le BOM Spring Boot. */
     version: z.string().min(1).optional(),
     scope: z.enum(['compile', 'runtime', 'test', 'provided']).optional(),
+    /** Dépendance optionnelle Maven (outillage de dev qui ne doit pas se propager). */
+    optional: z.boolean().optional(),
+    /** Condition d'inclusion (même mini-langage que files.yaml), pour les dépendances liées à la stack. */
+    when: z.string().min(1).optional(),
     purpose: LocalizedTextSchema,
   })
   .strict();

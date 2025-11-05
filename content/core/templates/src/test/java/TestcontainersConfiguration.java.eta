@@ -1,0 +1,35 @@
+package <%= it.project.basePackage %>;
+
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.context.annotation.Bean;
+<% if (it.stack.database === 'postgresql') { -%>
+import org.testcontainers.postgresql.PostgreSQLContainer;
+<% } else if (it.stack.database === 'mysql') { -%>
+import org.testcontainers.mysql.MySQLContainer;
+<% } else { -%>
+import org.testcontainers.oracle.OracleContainer;
+<% } -%>
+
+/**
+ * <%= it.t("Base de données réelle pour les tests slice et d'intégration (CORE-021) : à importer avec @Import(TestcontainersConfiguration.class).", "Real database for slice and integration tests (CORE-021): import it with @Import(TestcontainersConfiguration.class).") %>
+ */
+@TestConfiguration(proxyBeanMethods = false)
+public class TestcontainersConfiguration {
+
+    @Bean
+    @ServiceConnection
+<% if (it.stack.database === 'postgresql') { -%>
+    PostgreSQLContainer database() {
+        return new PostgreSQLContainer("postgres:17-alpine");
+    }
+<% } else if (it.stack.database === 'mysql') { -%>
+    MySQLContainer database() {
+        return new MySQLContainer("mysql:8.4");
+    }
+<% } else { -%>
+    OracleContainer database() {
+        return new OracleContainer("gvenzl/oracle-free:23-slim-faststart");
+    }
+<% } -%>
+}

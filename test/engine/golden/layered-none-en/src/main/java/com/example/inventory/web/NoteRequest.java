@@ -1,0 +1,11 @@
+package com.example.inventory.web;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
+/**
+ * Input DTO: record in `web` (LAY-007), Bean Validation constraints here and not in the service (CORE-013).
+ */
+public record NoteRequest(
+        @NotBlank @Size(max = 200) String title,
+        @Size(max = 2000) String content) {}

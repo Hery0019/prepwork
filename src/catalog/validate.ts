@@ -198,7 +198,8 @@ export function validateCatalog(catalog: Catalog): Diagnostic[] {
   // --- Listes de fichiers : templates existants, conditions valides, cibles uniques ------
   for (const source of sources) {
     const label = sourceLabel(source);
-    const targets = new Set<string>();
+    // Deux entrées peuvent viser la même cible si chacune porte une condition (variantes exclusives).
+    const targets = new Map<string, boolean>();
     for (const entry of source.files) {
       if (!source.templates.has(entry.source)) {
         error(label, `files.yaml : template \`${entry.source}\` introuvable dans templates/`);
@@ -206,10 +207,12 @@ export function validateCatalog(catalog: Catalog): Diagnostic[] {
       if (entry.target.startsWith('/') || entry.target.split('/').includes('..')) {
         error(label, `files.yaml : cible \`${entry.target}\` doit être relative, sans \`..\``);
       }
-      if (targets.has(entry.target)) {
-        error(label, `files.yaml : cible \`${entry.target}\` déclarée deux fois`);
+      const conditional = entry.when !== undefined;
+      const previous = targets.get(entry.target);
+      if (previous !== undefined && !(previous && conditional)) {
+        error(label, `files.yaml : cible \`${entry.target}\` déclarée deux fois sans condition`);
       }
-      targets.add(entry.target);
+      targets.set(entry.target, (previous ?? true) && conditional);
       if (entry.when !== undefined) {
         try {
           const paths = conditionPaths(parseCondition(entry.when));
@@ -217,6 +220,26 @@ export function validateCatalog(catalog: Catalog): Diagnostic[] {
         } catch (e) {
           error(label, e instanceof PrepworkError ? e.message : String(e));
         }
+      }
+    }
+  }
+
+  // --- Conditions des dépendances Maven ------------------------------------------------------
+  for (const source of sources) {
+    const label = sourceLabel(source);
+    const maven =
+      source.kind === 'profile'
+        ? source.profile.maven
+        : source.kind === 'option'
+          ? source.option.maven
+          : undefined;
+    for (const dep of maven?.dependencies ?? []) {
+      if (dep.when === undefined) continue;
+      try {
+        const paths = conditionPaths(parseCondition(dep.when));
+        checkAxisPaths(source, paths, `maven.dependencies (${dep.artifact_id})`, error);
+      } catch (e) {
+        error(label, e instanceof PrepworkError ? e.message : String(e));
       }
     }
   }

@@ -27,7 +27,8 @@
     "test:watch": "vitest",
     "check": "pnpm typecheck && pnpm lint && pnpm check:content && pnpm test",
     "check:content": "tsx scripts/check-content.ts",
-    "schemas": "tsx scripts/generate-schemas.ts"
+    "schemas": "tsx scripts/generate-schemas.ts",
+    "render": "tsx scripts/render.ts"
   },
   "dependencies": {
     "@clack/prompts": "^1.7.0",

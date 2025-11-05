@@ -1,0 +1,21 @@
+# ADR 0003 — <%= it.d('Base de données et migrations', 'Database and migrations') %>
+
+<%= it.d('Date', 'Date') %> : <%= it.today %> · <%= it.d('Statut', 'Status') %> : <%= it.d('acceptée', 'accepted') %>
+
+## <%= it.d('Contexte', 'Context') %>
+
+<%= it.d("Choix fait au questionnaire prepwork. Le schéma n'évolue que par migration versionnée ; les tests tournent sur le vrai moteur via Testcontainers, jamais sur H2 (CORE-021).", 'Choice made in the prepwork questionnaire. The schema only changes through versioned migrations; tests run on the real engine through Testcontainers, never on H2 (CORE-021).') %>
+
+## <%= it.d('Décision', 'Decision') %>
+
+<% if (it.stack.database === 'none') { -%>
+<%= it.d("**Aucune base de données** pour l'instant. L'exemple de référence utilise un repository en mémoire ; ajouter une base plus tard passe par `scaffold.yaml` puis `prepwork sync`.", '**No database** for now. The reference example uses an in-memory repository; adding a database later goes through `scaffold.yaml` then `prepwork sync`.') %>
+<% } else { -%>
+- <%= it.d('Moteur', 'Engine') %> : **<%= it.stack.database %>**
+- <%= it.d('Migrations', 'Migrations') %> : **<%= it.stack.migrations %>**
+- <%= it.d('Hibernate valide le schéma au démarrage (`ddl-auto: validate`) ; il ne le crée jamais.', 'Hibernate validates the schema at startup (`ddl-auto: validate`); it never creates it.') %>
+<% } -%>
+
+## <%= it.d('Conséquences', 'Consequences') %>
+
+<%= it.d("Toute modification de schéma est une migration commitée avec le code qui l'utilise ; supprimer une migration est interdit à l'agent (CORE-007).", 'Every schema change is a migration committed with the code that uses it; deleting a migration is forbidden to the agent (CORE-007).') %>

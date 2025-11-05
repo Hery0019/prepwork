@@ -133,7 +133,7 @@ const fr: Strings = {
     readingRulesLegend:
       "Chaque règle est une phrase vérifiable, suivie de sa raison. Le marqueur après l'identifiant dit qui la fait respecter :",
     enforcedLegend:
-      '`archunit`, `spotless`, `commitlint`, `gitleaks`, `modulith`, `dependency-check` : contrainte outillée, le build ou le commit échoue si elle est violée.',
+      '`archunit`, `spotless`, `commitlint`, `gitleaks`, `modulith`, `flyway`, `liquibase`, `dependency-check` : contrainte outillée, le build ou le commit échoue si elle est violée.',
     guidanceLegend:
       "`guidance` : règle de conduite pour l'agent, vérifiée en revue, sans outil derrière.",
     commands: 'Commandes',
@@ -268,7 +268,7 @@ const en: Strings = {
     readingRulesLegend:
       'Each rule is one verifiable sentence followed by its rationale. The marker after the identifier says who enforces it:',
     enforcedLegend:
-      '`archunit`, `spotless`, `commitlint`, `gitleaks`, `modulith`, `dependency-check`: tooled constraint, the build or the commit fails when it is violated.',
+      '`archunit`, `spotless`, `commitlint`, `gitleaks`, `modulith`, `flyway`, `liquibase`, `dependency-check`: tooled constraint, the build or the commit fails when it is violated.',
     guidanceLegend:
       '`guidance`: a rule of conduct for the agent, checked in review, with no tool behind it.',
     commands: 'Commands',

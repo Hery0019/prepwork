@@ -1,0 +1,23 @@
+# ADR 0004 — <%= it.d('Sécurité', 'Security') %>
+
+<%= it.d('Date', 'Date') %> : <%= it.today %> · <%= it.d('Statut', 'Status') %> : <%= it.d('acceptée', 'accepted') %>
+
+## <%= it.d('Contexte', 'Context') %>
+
+<%= it.d("Choix fait au questionnaire prepwork. La sécurité de base (secrets par variables d'environnement, Actuator restreint, CORS explicite, analyse des dépendances) s'applique quel que soit ce choix.", 'Choice made in the prepwork questionnaire. Baseline security (secrets through environment variables, restricted Actuator, explicit CORS, dependency scanning) applies whatever this choice.') %>
+
+## <%= it.d('Décision', 'Decision') %>
+
+<%= it.d("Option d'authentification", 'Authentication option') %> : **`<%= it.options.security %>`**
+
+<% if (it.options.security === 'none') { -%>
+<%= it.d("Aucune authentification : l'API n'est joignable que depuis un réseau de confiance. Passer à `session` ou `oauth2-resource-server` avant toute exposition publique.", 'No authentication: the API is reachable only from a trusted network. Switch to `session` or `oauth2-resource-server` before any public exposure.') %>
+<% } else if (it.options.security === 'session') { -%>
+<%= it.d('Authentification par session HTTP (Spring Security), adaptée à un front servi par la même origine.', 'HTTP session authentication (Spring Security), suited to a front end served from the same origin.') %>
+<% } else { -%>
+<%= it.d("Resource server OAuth2 : l'API valide des jetons JWT émis par un fournisseur d'identité externe (`OAUTH2_ISSUER_URI`).", 'OAuth2 resource server: the API validates JWT tokens issued by an external identity provider (`OAUTH2_ISSUER_URI`).') %>
+<% } -%>
+
+## <%= it.d('Conséquences', 'Consequences') %>
+
+<%= it.d('Le détail des règles est dans `.claude/skills/security/SKILL.md` ; changer d\'option passe par `scaffold.yaml` puis `prepwork sync`.', 'Rule details live in `.claude/skills/security/SKILL.md`; changing the option goes through `scaffold.yaml` then `prepwork sync`.') %>

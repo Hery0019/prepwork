@@ -1,0 +1,11 @@
+package <%= it.project.basePackage %>.common;
+
+/**
+ * <%= it.t("Ressource introuvable : traduite en 404 par ApiExceptionHandler. Les exceptions du domaine l'étendent.", "Resource not found: translated to 404 by ApiExceptionHandler. Domain exceptions extend it.") %>
+ */
+public class NotFoundException extends RuntimeException {
+
+    public NotFoundException(String message) {
+        super(message);
+    }
+}

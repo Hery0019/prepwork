@@ -1,0 +1,8 @@
+# yaml-language-server: $schema=../../../schema/files.schema.json
+files:
+  - source: Dockerfile.eta
+    target: Dockerfile
+  - source: .dockerignore.eta
+    target: .dockerignore
+  - source: compose.yaml.eta
+    target: compose.yaml

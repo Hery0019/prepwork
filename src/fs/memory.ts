@@ -29,6 +29,10 @@ export function createMemoryFileSystem(initial: Record<string, string> = {}): Me
       const prefix = `${key}/`;
       return Promise.resolve([...files.keys()].some((k) => k.startsWith(prefix)));
     },
+    remove(path) {
+      files.delete(normalize(path));
+      return Promise.resolve();
+    },
     list(dir) {
       const prefix = normalize(dir) === '' ? '' : `${normalize(dir)}/`;
       const seen = new Map<string, DirEntry>();

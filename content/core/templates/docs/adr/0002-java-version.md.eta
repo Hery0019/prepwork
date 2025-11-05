@@ -1,0 +1,15 @@
+# ADR 0002 — <%= it.d('Version de Java', 'Java version') %>
+
+<%= it.d('Date', 'Date') %> : <%= it.today %> · <%= it.d('Statut', 'Status') %> : <%= it.d('acceptée', 'accepted') %>
+
+## <%= it.d('Contexte', 'Context') %>
+
+<%= it.d('Spring Boot ' + it.versions.springBoot + ' (version épinglée par prepwork) supporte Java 17 et 21 LTS.', 'Spring Boot ' + it.versions.springBoot + ' (pinned by prepwork) supports Java 17 and 21 LTS.') %>
+
+## <%= it.d('Décision', 'Decision') %>
+
+**Java <%= it.stack.java %>**<%= it.stack.java === 21 ? it.d(' : records, pattern matching, threads virtuels disponibles.', ': records, pattern matching and virtual threads available.') : it.d(" : contrainte d'exploitation ; passer à 21 dès que possible.", ': operational constraint; move to 21 as soon as possible.') %>
+
+## <%= it.d('Conséquences', 'Consequences') %>
+
+<%= it.d('`java.version` est fixé dans `pom.xml` ; le Dockerfile et la CI utilisent la même version.', '`java.version` is set in `pom.xml`; the Dockerfile and CI use the same version.') %>

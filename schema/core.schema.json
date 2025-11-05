@@ -123,6 +123,8 @@
               "commitlint",
               "gitleaks",
               "modulith",
+              "flyway",
+              "liquibase",
               "dependency-check",
               "none"
             ]
@@ -213,6 +215,8 @@
               "commitlint",
               "gitleaks",
               "modulith",
+              "flyway",
+              "liquibase",
               "dependency-check",
               "none"
             ]

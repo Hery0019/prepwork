@@ -1,0 +1,4 @@
+# yaml-language-server: $schema=../../../schema/files.schema.json
+files:
+  - source: src/test/java/architecture/SecurityNoneArchitectureTest.java.eta
+    target: src/test/java/<%= it.project.basePackagePath %>/architecture/SecurityNoneArchitectureTest.java

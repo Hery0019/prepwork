@@ -1,0 +1,12 @@
+#!/bin/sh
+# pre-commit hook: no secret ever enters a commit (CORE-031). Enabled with `git config core.hooksPath .githooks`.
+
+if ! command -v gitleaks >/dev/null 2>&1; then
+  cat >&2 <<EOF
+pre-commit: gitleaks not found; install it: https://github.com/gitleaks/gitleaks#installing
+The commit is refused until the hook can verify that no secret is staged (CORE-031).
+EOF
+  exit 1
+fi
+
+exec gitleaks git --pre-commit --staged --redact --no-banner

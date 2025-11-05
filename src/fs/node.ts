@@ -1,4 +1,4 @@
-import { mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import type { DirEntry, FileSystem } from './types.js';
 
@@ -29,6 +29,9 @@ export function createNodeFileSystem(): FileSystem {
         if (isNotFound(error)) return false;
         throw error;
       }
+    },
+    async remove(path) {
+      await rm(path, { force: true });
     },
     async list(dir) {
       try {

@@ -1,0 +1,63 @@
+# yaml-language-server: $schema=../../../schema/option.schema.json
+# Conventions Git : toujours présente (commits conventionnels, auteur, hooks, .gitignore).
+meta:
+  id: git
+  version: 1.0.0
+  rule_prefix: GIT
+  summary:
+    en: Conventional commits, declared author, optional agent trailer, hooks for commit messages and secrets.
+    fr: Commits conventionnels, auteur déclaré, trailer d'agent optionnel, hooks pour les messages de commit et les secrets.
+skill: workflow
+rules:
+  - id: GIT-001
+    statement:
+      en: 'Commit messages follow Conventional Commits (`type(scope): subject`, subject of at most 72 characters), checked by the `commit-msg` hook.'
+      fr: 'Les messages de commit suivent Conventional Commits (`type(scope): subject`, sujet de 72 caractères au plus), vérifiés par le hook `commit-msg`.'
+    rationale:
+      en: The history becomes a changelog that machines and humans can read.
+      fr: L'historique devient un changelog lisible par les machines et les humains.
+    enforced_by: commitlint
+  - id: GIT-002
+    statement:
+      en: Commits are authored with the identity declared in `scaffold.yaml` (`git.author`), never with a machine default.
+      fr: Les commits sont signés avec l'identité déclarée dans `scaffold.yaml` (`git.author`), jamais avec une valeur par défaut de la machine.
+    rationale:
+      en: Authorship is a team decision recorded once, not a local accident.
+      fr: L'auteur est une décision d'équipe enregistrée une fois, pas un accident local.
+    enforced_by: none
+  - id: GIT-003
+    statement:
+      en: 'When `git.agent_trailer` is enabled in `scaffold.yaml`, every commit written by the agent ends with the trailer `Co-Authored-By: Claude <noreply@anthropic.com>`.'
+      fr: "Quand `git.agent_trailer` est activé dans `scaffold.yaml`, chaque commit écrit par l'agent se termine par le trailer `Co-Authored-By: Claude <noreply@anthropic.com>`."
+    rationale:
+      en: The team can tell agent-written commits apart in the history.
+      fr: L'équipe distingue dans l'historique les commits écrits par l'agent.
+    enforced_by: none
+  - id: GIT-004
+    statement:
+      en: The hooks in `.githooks/` are active on every clone (`git config core.hooksPath .githooks`); a commit that bypassed them is rejected in review.
+      fr: Les hooks de `.githooks/` sont actifs sur chaque clone (`git config core.hooksPath .githooks`) ; un commit qui les a contournés est refusé en revue.
+    rationale:
+      en: Hooks only protect the repository when everyone runs them.
+      fr: Les hooks ne protègent le dépôt que si tout le monde les exécute.
+    enforced_by: none
+  - id: GIT-005
+    statement:
+      en: Build outputs, IDE files and `.env` are ignored through `.gitignore`; nothing produced by the build is ever committed.
+      fr: Les sorties de build, fichiers d'IDE et `.env` sont ignorés via `.gitignore` ; rien de produit par le build n'est jamais commité.
+    rationale:
+      en: The repository contains sources and decisions, nothing that can be regenerated.
+      fr: Le dépôt contient des sources et des décisions, rien qui puisse être régénéré.
+    enforced_by: none
+anti_patterns:
+  - id: GIT-AP-001
+    statement:
+      en: '`git commit --no-verify` to get past a failing hook.'
+      fr: '`git commit --no-verify` pour passer outre un hook qui échoue.'
+    rationale:
+      en: The hook failed for a reason, a malformed message or a secret in the diff.
+      fr: Le hook a échoué pour une raison, un message mal formé ou un secret dans le diff.
+    enforced_by: none
+    instead:
+      en: Fix the message or remove the secret, then commit again.
+      fr: Corriger le message ou retirer le secret, puis commiter à nouveau.

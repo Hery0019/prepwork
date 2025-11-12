@@ -65,7 +65,7 @@ describe('full project rendering (layered)', () => {
     expect(paths).not.toContain('Dockerfile');
     expect(paths.some((p) => p.startsWith('.github/'))).toBe(false);
     const pom = files.find((f) => f.path === 'pom.xml')?.content ?? '';
-    expect(pom).toContain('spring-data-commons');
+    expect(pom).toContain('spring-boot-data-commons');
     expect(pom).not.toContain('spring-boot-starter-data-jpa');
   });
 

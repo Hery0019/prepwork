@@ -37,8 +37,9 @@ public class InMemoryNoteRepository implements NoteRepository {
 
     @Override
     public Page<Note> findAll(Pageable pageable) {
-        List<Note> sorted =
-                notes.values().stream().sorted(Comparator.comparing(Note::getId)).toList();
+        List<Note> sorted = notes.values().stream()
+                .sorted(Comparator.comparing(Note::getId))
+                .toList();
         int from = (int) Math.min(pageable.getOffset(), sorted.size());
         int to = Math.min(from + pageable.getPageSize(), sorted.size());
         return new PageImpl<>(sorted.subList(from, to), pageable, sorted.size());

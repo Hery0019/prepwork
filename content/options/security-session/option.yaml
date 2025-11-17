@@ -1,0 +1,119 @@
+# yaml-language-server: $schema=../../../schema/option.schema.json
+# Authentification par session HTTP (Spring Security). Exclusive avec les autres security-*.
+meta:
+  id: security-session
+  version: 1.0.0
+  rule_prefix: SECS
+  group: security
+  summary:
+    en: HTTP session authentication with Spring Security (form login and HTTP basic), users from environment variables.
+    fr: Authentification par session HTTP avec Spring Security (formulaire et HTTP basic), utilisateurs issus des variables d'environnement.
+skill: security
+rules:
+  - id: SECS-001
+    statement:
+      en: Every request outside `/actuator/health` and `/actuator/info` requires an authenticated session; the rule lives in `SecurityConfig` only.
+      fr: Toute requête hors `/actuator/health` et `/actuator/info` exige une session authentifiée ; la règle vit uniquement dans `SecurityConfig`.
+    rationale:
+      en: One place to read to know what is public.
+      fr: Un seul endroit à lire pour savoir ce qui est public.
+    enforced_by: none
+  - id: SECS-002
+    statement:
+      en: Credentials come from `APP_ADMIN_USERNAME` and `APP_ADMIN_PASSWORD`; the in-memory user store is replaced by a real one before any multi-user use.
+      fr: Les identifiants viennent de `APP_ADMIN_USERNAME` et `APP_ADMIN_PASSWORD` ; le magasin d'utilisateurs en mémoire est remplacé par un vrai avant tout usage multi-utilisateurs.
+    rationale:
+      en: The skeleton must start with real authentication and no secret in the repository.
+      fr: Le squelette doit démarrer avec une vraie authentification et aucun secret dans le dépôt.
+    enforced_by: gitleaks
+  - id: SECS-003
+    statement:
+      en: CSRF protection stays enabled; single-page clients read the `XSRF-TOKEN` cookie and send it back in the `X-XSRF-TOKEN` header.
+      fr: La protection CSRF reste activée ; les clients single-page lisent le cookie `XSRF-TOKEN` et le renvoient dans l'en-tête `X-XSRF-TOKEN`.
+    rationale:
+      en: A session cookie without CSRF protection lets any site act as the user.
+      fr: Un cookie de session sans protection CSRF permet à n'importe quel site d'agir au nom de l'utilisateur.
+    enforced_by: none
+  - id: SECS-004
+    statement:
+      en: Tests run with `app.security.enabled=false` and Spring Security auto-configuration excluded; authorization itself is verified by `SecurityConfigTest`, which re-enables it explicitly.
+      fr: Les tests tournent avec `app.security.enabled=false` et l'auto-configuration Spring Security exclue ; l'autorisation elle-même est vérifiée par `SecurityConfigTest`, qui la réactive explicitement.
+    rationale:
+      en: Business tests must not need credentials; security rules get their own test.
+      fr: Les tests métier ne doivent pas avoir besoin d'identifiants ; les règles de sécurité ont leur propre test.
+    enforced_by: none
+  - id: SECS-005
+    statement:
+      en: Passwords are stored and compared through the delegating `PasswordEncoder`; no `{noop}` password outside a test.
+      fr: Les mots de passe sont stockés et comparés via le `PasswordEncoder` délégué ; aucun mot de passe `{noop}` hors d'un test.
+    rationale:
+      en: A clear-text password in memory or in a store is a breach waiting for a dump.
+      fr: Un mot de passe en clair en mémoire ou en base est une fuite qui attend un dump.
+    enforced_by: none
+anti_patterns:
+  - id: SECS-AP-001
+    statement:
+      en: '`permitAll()` on `/api/**` "temporarily" to make a client work.'
+      fr: '`permitAll()` sur `/api/**` « temporairement » pour faire marcher un client.'
+    rationale:
+      en: The temporary rule ships to production because nothing fails without it.
+      fr: La règle temporaire part en production parce que rien n'échoue sans elle.
+    enforced_by: none
+    instead:
+      en: Authenticate the client; use `SecurityConfigTest` to check the rule you actually want.
+      fr: Authentifier le client ; vérifier la règle réellement voulue dans `SecurityConfigTest`.
+  - id: SECS-AP-002
+    statement:
+      en: Disabling CSRF because a `POST` returns 403.
+      fr: Désactiver CSRF parce qu'un `POST` renvoie 403.
+    rationale:
+      en: The 403 is the protection working; removing it opens every write endpoint.
+      fr: Le 403 est la protection qui fonctionne ; la retirer ouvre tous les endpoints d'écriture.
+    enforced_by: none
+    instead:
+      en: Send the `X-XSRF-TOKEN` header from the client.
+      fr: Envoyer l'en-tête `X-XSRF-TOKEN` depuis le client.
+maven:
+  dependencies:
+    - group_id: org.springframework.boot
+      artifact_id: spring-boot-starter-security
+      purpose:
+        en: Spring Security with session-based authentication.
+        fr: Spring Security avec authentification par session.
+    - group_id: org.springframework.boot
+      artifact_id: spring-boot-starter-security-test
+      scope: test
+      purpose:
+        en: '`@WithMockUser` and MockMvc security post-processors.'
+        fr: '`@WithMockUser` et post-processeurs de sécurité pour MockMvc.'
+application_properties:
+  main:
+    app:
+      security:
+        enabled: true
+        admin:
+          username: ${APP_ADMIN_USERNAME:admin}
+          password: ${APP_ADMIN_PASSWORD:change-me}
+  test:
+    app:
+      security:
+        enabled: false
+    spring:
+      autoconfigure:
+        exclude:
+          - org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration
+          - org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration
+          - org.springframework.boot.security.autoconfigure.web.servlet.SecurityFilterAutoConfiguration
+          - org.springframework.boot.security.autoconfigure.web.servlet.ServletWebSecurityAutoConfiguration
+          - org.springframework.boot.security.autoconfigure.actuate.web.servlet.ManagementWebSecurityAutoConfiguration
+env:
+  - name: APP_ADMIN_USERNAME
+    example: admin
+    comment:
+      en: Username of the bootstrap administrator (in-memory user store).
+      fr: Nom de l'administrateur initial (magasin d'utilisateurs en mémoire).
+  - name: APP_ADMIN_PASSWORD
+    example: change-me
+    comment:
+      en: Password of the bootstrap administrator; never the example value in production.
+      fr: Mot de passe de l'administrateur initial ; jamais la valeur d'exemple en production.

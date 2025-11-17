@@ -1,0 +1,54 @@
+# yaml-language-server: $schema=../../../schema/files.schema.json
+# Squelette du profil modular : modules `note` (émetteur) et `audit` (écouteur), tests Modulith.
+files:
+  # --- module note : API publique -------------------------------------------------------
+  - source: src/main/java/note/NoteService.java.eta
+    target: src/main/java/<%= it.project.basePackagePath %>/note/NoteService.java
+  - source: src/main/java/note/NoteDetails.java.eta
+    target: src/main/java/<%= it.project.basePackagePath %>/note/NoteDetails.java
+  - source: src/main/java/note/NoteCreated.java.eta
+    target: src/main/java/<%= it.project.basePackagePath %>/note/NoteCreated.java
+  - source: src/main/java/note/NoteNotFoundException.java.eta
+    target: src/main/java/<%= it.project.basePackagePath %>/note/NoteNotFoundException.java
+
+  # --- module note : internes ---------------------------------------------------------
+  - source: src/main/java/note/internal/Note.java.eta
+    target: src/main/java/<%= it.project.basePackagePath %>/note/internal/Note.java
+    when: stack.database != 'none'
+  - source: src/main/java/note/internal/Note.nodb.java.eta
+    target: src/main/java/<%= it.project.basePackagePath %>/note/internal/Note.java
+    when: stack.database == 'none'
+  - source: src/main/java/note/internal/NoteRepository.java.eta
+    target: src/main/java/<%= it.project.basePackagePath %>/note/internal/NoteRepository.java
+    when: stack.database != 'none'
+  - source: src/main/java/note/internal/NoteRepository.nodb.java.eta
+    target: src/main/java/<%= it.project.basePackagePath %>/note/internal/NoteRepository.java
+    when: stack.database == 'none'
+  - source: src/main/java/note/internal/InMemoryNoteRepository.java.eta
+    target: src/main/java/<%= it.project.basePackagePath %>/note/internal/InMemoryNoteRepository.java
+    when: stack.database == 'none'
+  - source: src/main/java/note/internal/NoteController.java.eta
+    target: src/main/java/<%= it.project.basePackagePath %>/note/internal/NoteController.java
+  - source: src/main/java/note/internal/NoteRequest.java.eta
+    target: src/main/java/<%= it.project.basePackagePath %>/note/internal/NoteRequest.java
+
+  # --- module audit ----------------------------------------------------------------------
+  - source: src/main/java/audit/AuditLog.java.eta
+    target: src/main/java/<%= it.project.basePackagePath %>/audit/AuditLog.java
+  - source: src/main/java/audit/internal/NoteCreatedListener.java.eta
+    target: src/main/java/<%= it.project.basePackagePath %>/audit/internal/NoteCreatedListener.java
+
+  # --- tests : un par niveau + Modulith + ArchUnit ------------------------------------------
+  - source: src/test/java/note/NoteServiceTest.java.eta
+    target: src/test/java/<%= it.project.basePackagePath %>/note/NoteServiceTest.java
+  - source: src/test/java/note/internal/NoteControllerTest.java.eta
+    target: src/test/java/<%= it.project.basePackagePath %>/note/internal/NoteControllerTest.java
+  - source: src/test/java/note/internal/NoteRepositoryTest.java.eta
+    target: src/test/java/<%= it.project.basePackagePath %>/note/internal/NoteRepositoryTest.java
+    when: stack.database != 'none'
+  - source: src/test/java/NoteIT.java.eta
+    target: src/test/java/<%= it.project.basePackagePath %>/NoteIT.java
+  - source: src/test/java/architecture/ModularityTest.java.eta
+    target: src/test/java/<%= it.project.basePackagePath %>/architecture/ModularityTest.java
+  - source: src/test/java/architecture/ModularArchitectureTest.java.eta
+    target: src/test/java/<%= it.project.basePackagePath %>/architecture/ModularArchitectureTest.java

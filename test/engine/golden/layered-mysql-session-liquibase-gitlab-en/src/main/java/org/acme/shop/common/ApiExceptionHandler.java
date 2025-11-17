@@ -1,0 +1,65 @@
+package org.acme.shop.common;
+
+import java.net.URI;
+import java.util.List;
+import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ProblemDetail;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+/**
+ * Single translation point from exceptions to RFC 9457 responses (CORE-010, CORE-011).
+ *
+ * <p>Validation errors (400) and framework exceptions are handled by the parent class; domain exceptions are translated here. No stack trace ever leaves the API.
+ */
+@RestControllerAdvice
+public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(ApiExceptionHandler.class);
+
+    /** One constraint violation on a field of the input DTO. */
+    public record FieldViolation(String field, String message) {}
+
+    @ExceptionHandler(NotFoundException.class)
+    ProblemDetail handleNotFound(NotFoundException exception) {
+        return problem(HttpStatus.NOT_FOUND, exception.getMessage());
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    ProblemDetail handleConflict(ConflictException exception) {
+        return problem(HttpStatus.CONFLICT, exception.getMessage());
+    }
+
+    @ExceptionHandler(Exception.class)
+    ProblemDetail handleUnexpected(Exception exception) {
+        log.error("Unexpected error", exception);
+        return problem(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred.");
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException exception, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        ProblemDetail problem = exception.getBody();
+        List<FieldViolation> violations = exception.getBindingResult().getFieldErrors().stream()
+                .map(error -> new FieldViolation(
+                        error.getField(), Objects.requireNonNullElse(error.getDefaultMessage(), "invalid")))
+                .toList();
+        problem.setProperty("errors", violations);
+        return handleExceptionInternal(exception, problem, headers, status, request);
+    }
+
+    private static ProblemDetail problem(HttpStatus status, String detail) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(status, detail);
+        problem.setType(URI.create("about:blank"));
+        return problem;
+    }
+}

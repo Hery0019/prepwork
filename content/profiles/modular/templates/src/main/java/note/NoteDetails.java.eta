@@ -1,0 +1,14 @@
+package <%= it.project.basePackage %>.note;
+
+import <%= it.project.basePackage %>.note.internal.Note;
+import java.time.Instant;
+
+/**
+ * <%= it.t("Vue publique d'une note : ce que les autres modules et l'API HTTP voient (MOD-007), jamais l'entité (CORE-012).", "Public view of a note: what other modules and the HTTP API see (MOD-007), never the entity (CORE-012).") %>
+ */
+public record NoteDetails(Long id, String title, String content, Instant createdAt) {
+
+    public static NoteDetails from(Note note) {
+        return new NoteDetails(note.getId(), note.getTitle(), note.getContent(), note.getCreatedAt());
+    }
+}

@@ -1,0 +1,4 @@
+# yaml-language-server: $schema=../../../schema/files.schema.json
+files:
+  - source: .gitlab-ci.yml.eta
+    target: .gitlab-ci.yml

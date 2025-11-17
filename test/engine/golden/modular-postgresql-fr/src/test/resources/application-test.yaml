@@ -1,0 +1,5 @@
+# Généré par prepwork. Activé par Maven pour tous les tests (spring.profiles.active=test).
+logging:
+  level:
+    root: WARN
+    mg.solumada.payflow: INFO

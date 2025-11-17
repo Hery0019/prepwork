@@ -1,0 +1,54 @@
+# CI de prepwork (CLAUDE.md §8) : vérifications de l'outil sur chaque commit, matrice de
+# génération (chaque profil × chaque option de sécurité × Flyway/Liquibase, plus sans base)
+# avec `mvn verify` sur les projets générés, sur les pull requests uniquement.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+
+  matrix:
+    if: github.event_name == 'pull_request'
+    needs: check
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [layered, modular]
+        security: [none, session, oauth2-resource-server]
+        migrations: [flyway, liquibase, none]
+    name: ${{ matrix.profile }} / ${{ matrix.security }} / ${{ matrix.migrations }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - run: pnpm install --frozen-lockfile
+      - name: Generate
+        run: pnpm matrix out ${{ matrix.profile }} ${{ matrix.security }} ${{ matrix.migrations }} postgresql
+      - name: Verify the generated project
+        working-directory: out
+        run: |
+          chmod +x mvnw
+          ./mvnw -B verify

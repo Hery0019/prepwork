@@ -1,0 +1,17 @@
+package <%= it.project.basePackage %>.note.internal;
+
+import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+/**
+ * <%= it.t("Accès aux notes, interne au module (MOD-004) : même contrat que Spring Data, sans base de données.", "Access to notes, internal to the module (MOD-004): same contract as Spring Data, without a database.") %>
+ */
+public interface NoteRepository {
+
+    Note save(Note note);
+
+    Optional<Note> findById(Long id);
+
+    Page<Note> findAll(Pageable pageable);
+}

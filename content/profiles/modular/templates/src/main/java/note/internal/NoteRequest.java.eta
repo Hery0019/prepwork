@@ -1,0 +1,11 @@
+package <%= it.project.basePackage %>.note.internal;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
+/**
+ * <%= it.t("DTO d'entrée, interne au module : contraintes Bean Validation ici et non dans la façade (CORE-013).", "Input DTO, internal to the module: Bean Validation constraints here and not in the facade (CORE-013).") %>
+ */
+public record NoteRequest(
+        @NotBlank @Size(max = 200) String title,
+        @Size(max = 2000) String content) {}

@@ -50,3 +50,23 @@ de l'authentification pour les slices). Les tests d'intégration sont nommés `*
 
 CORE-035 parle de « OWASP Dependency-Check ou équivalent » ; les pipelines générés utilisent Trivy
 (scan du `pom.xml`, échec sur CRITICAL/HIGH), qui ne demande ni clé NVD ni base locale.
+
+## Options de sécurité et tests slice
+
+`security-session` et `security-oauth2-resource-server` posent Spring Security via un
+`SecurityConfig` dans `common`, conditionné par `app.security.enabled` (vrai par défaut). Le profil
+Spring `test` reçoit de l'option `app.security.enabled: false` **et** l'exclusion des
+auto-configurations Spring Security (`spring.autoconfigure.exclude`) : les tests du profil
+(`@WebMvcTest`, `@SpringBootTest`) ignorent donc la sécurité sans la connaître, ce qui préserve
+l'orthogonalité profil ↔ option. L'autorisation est vérifiée par le `SecurityConfigTest` de
+l'option, qui réactive explicitement la sécurité sur un contrôleur sonde (`@WithMockUser`, ou
+`jwt()` avec un `JwtDecoder` simulé).
+
+## Profil `modular`
+
+Spring Modulith 2.1.1 (BOM). Un module = un sous-package direct du package de base : racine =
+API publique (façade `@Service`, records, événements), `internal` = entités, repositories,
+contrôleurs. Les événements sont des records publiés par la façade et consommés par
+`@EventListener` (pas de registre de publication persistant en v1, pour ne pas imposer de table
+supplémentaire). `ModularityTest` porte les ids MOD-001/002/003/AP-001 sur un
+`ApplicationModules.verify()` ; `ModularArchitectureTest` outille MOD-004/008/009/AP-004.

@@ -1,0 +1,282 @@
+# yaml-language-server: $schema=../../../schema/profile.schema.json
+# Profil `modular` : monolithe modulaire avec Spring Modulith, un module par domaine métier,
+# communication par événements, `ApplicationModules.verify()` dans les tests.
+meta:
+  id: modular
+  version: 1.0.0
+  rule_prefix: MOD
+  summary:
+    en: Modular monolith with Spring Modulith, one module per business domain, event-based communication.
+    fr: Monolithe modulaire avec Spring Modulith, un module par domaine métier, communication par événements.
+  when_to_use:
+    - en: Several business domains with their own vocabulary that must evolve independently.
+      fr: Plusieurs domaines métier avec leur propre vocabulaire, qui doivent évoluer indépendamment.
+    - en: A team that wants explicit, verified boundaries without paying for distributed services.
+      fr: Une équipe qui veut des frontières explicites et vérifiées sans payer le prix des services distribués.
+    - en: A code base expected to be split by domain later.
+      fr: Une base de code qu'on prévoit de découper par domaine plus tard.
+  when_not_to_use:
+    - en: One small domain where modules would be ceremony.
+      fr: Un seul petit domaine où les modules ne seraient que de la cérémonie.
+    - en: A team new to Spring that still needs to learn the layered basics first.
+      fr: Une équipe nouvelle sur Spring qui doit d'abord apprendre les bases du découpage en couches.
+
+architecture:
+  base_package: '{{basePackage}}'
+  layers: []
+
+rules:
+  - id: MOD-001
+    statement:
+      en: Every business module is a direct sub-package of the base package; its root holds the public API and `internal` holds everything else.
+      fr: Chaque module métier est un sous-package direct du package de base ; sa racine porte l'API publique et `internal` tout le reste.
+    rationale:
+      en: Spring Modulith derives the module boundaries from this layout and verifies them.
+      fr: Spring Modulith déduit les frontières des modules de cette disposition et les vérifie.
+    enforced_by: modulith
+  - id: MOD-002
+    statement:
+      en: A module only uses another module's root types or its events; nothing under `internal` crosses a module boundary.
+      fr: Un module n'utilise que les types racine d'un autre module ou ses événements ; rien sous `internal` ne traverse une frontière de module.
+    rationale:
+      en: The public root is the contract; internals can change without touching other modules.
+      fr: La racine publique est le contrat ; les internes changent sans toucher aux autres modules.
+    enforced_by: modulith
+  - id: MOD-003
+    statement:
+      en: There is no cyclic dependency between modules.
+      fr: Il n'existe aucune dépendance cyclique entre modules.
+    rationale:
+      en: A cycle turns two modules into one that is merely split across packages.
+      fr: Un cycle transforme deux modules en un seul, simplement étalé sur deux packages.
+    enforced_by: modulith
+  - id: MOD-004
+    statement:
+      en: Persistent entities, repositories and controllers live in `internal`; the module root exposes a service facade, records and events only.
+      fr: Entités persistantes, repositories et contrôleurs vivent dans `internal` ; la racine du module n'expose qu'une façade de service, des records et des événements.
+    rationale:
+      en: Persistence and HTTP are implementation details of a module, never its contract.
+      fr: Persistance et HTTP sont des détails d'implémentation d'un module, jamais son contrat.
+    enforced_by: archunit
+  - id: MOD-005
+    statement:
+      en: A side effect in another module is triggered by publishing a domain event, handled there by an `@EventListener`, never by calling that module's service from inside a transaction.
+      fr: Un effet de bord dans un autre module est déclenché par la publication d'un événement de domaine, traité là-bas par un `@EventListener`, jamais par l'appel du service de ce module dans une transaction.
+    rationale:
+      en: Events keep modules unaware of who reacts, which is what makes them separable later.
+      fr: Les événements laissent les modules ignorer qui réagit, ce qui permet de les séparer plus tard.
+    enforced_by: none
+  - id: MOD-006
+    statement:
+      en: Domain events are immutable records declared in the publishing module's root, named in the past tense (`NoteCreated`).
+      fr: Les événements de domaine sont des records immuables déclarés à la racine du module émetteur, nommés au passé (`NoteCreated`).
+    rationale:
+      en: The event is a fact that happened; consumers must be able to trust its shape.
+      fr: L'événement est un fait qui a eu lieu ; les consommateurs doivent pouvoir se fier à sa forme.
+    enforced_by: none
+  - id: MOD-007
+    statement:
+      en: The service facade at the module root returns public records, never the internal entity.
+      fr: La façade de service à la racine du module renvoie des records publics, jamais l'entité interne.
+    rationale:
+      en: An entity returned by the facade becomes de facto public API of the module.
+      fr: Une entité renvoyée par la façade devient de fait l'API publique du module.
+    enforced_by: none
+  - id: MOD-008
+    statement:
+      en: '`@Transactional` appears only on the service facade of a module.'
+      fr: "`@Transactional` n'apparaît que sur la façade de service d'un module."
+    rationale:
+      en: The facade is the unit of work of the module; transactions elsewhere overlap or never open.
+      fr: La façade est l'unité de travail du module ; une transaction ailleurs se chevauche ou ne s'ouvre jamais.
+    enforced_by: archunit
+  - id: MOD-009
+    statement:
+      en: Cross-cutting code (error handling, pagination, configuration) lives in `common` and depends on no business module.
+      fr: Le code transverse (gestion des erreurs, pagination, configuration) vit dans `common` et ne dépend d'aucun module métier.
+    rationale:
+      en: A shared package that depends on a module drags that module everywhere.
+      fr: Un package partagé qui dépend d'un module entraîne ce module partout.
+    enforced_by: archunit
+
+anti_patterns:
+  - id: MOD-AP-001
+    statement:
+      en: Importing `othermodule.internal.SomeRepository` to "read one row".
+      fr: Importer `othermodule.internal.SomeRepository` pour « lire une ligne ».
+    rationale:
+      en: The internal shape of the other module is now frozen by a foreign caller.
+      fr: La forme interne de l'autre module est désormais figée par un appelant étranger.
+    enforced_by: modulith
+    instead:
+      en: A method on that module's public facade, or a record it exposes.
+      fr: Une méthode sur la façade publique de ce module, ou un record qu'il expose.
+  - id: MOD-AP-002
+    statement:
+      en: A `shared` or `util` module that every other module depends on for business types.
+      fr: Un module `shared` ou `util` dont tous les autres dépendent pour des types métier.
+    rationale:
+      en: It is the old big ball of mud with a new name.
+      fr: C'est l'ancienne grosse boule de boue sous un nouveau nom.
+    enforced_by: none
+    instead:
+      en: Business types stay in the module that owns them; `common` holds only technical cross-cutting code.
+      fr: Les types métier restent dans le module qui les possède ; `common` ne contient que du code technique transverse.
+  - id: MOD-AP-003
+    statement:
+      en: Calling another module's facade from inside a transaction to keep two modules "in sync".
+      fr: Appeler la façade d'un autre module dans une transaction pour garder deux modules « synchronisés ».
+    rationale:
+      en: The two modules now fail together and can never be deployed apart.
+      fr: Les deux modules échouent désormais ensemble et ne pourront jamais être déployés séparément.
+    enforced_by: none
+    instead:
+      en: Publish a domain event and let the other module react in its own `@EventListener`.
+      fr: Publier un événement de domaine et laisser l'autre module réagir dans son propre `@EventListener`.
+  - id: MOD-AP-004
+    statement:
+      en: A controller placed at the module root "so it is easy to find".
+      fr: Un contrôleur placé à la racine du module « pour le retrouver facilement ».
+    rationale:
+      en: HTTP endpoints become part of the module's API for other modules.
+      fr: Les endpoints HTTP deviennent une partie de l'API du module pour les autres modules.
+    enforced_by: archunit
+    instead:
+      en: Controllers under `internal`; the root exposes the facade and the records.
+      fr: Les contrôleurs sous `internal` ; la racine expose la façade et les records.
+
+dependencies:
+  allowed:
+    - artifact: org.springframework.modulith:spring-modulith-starter-core
+      purpose:
+        en: Module model, verification and event publication support.
+        fr: Modèle des modules, vérification et support de la publication d'événements.
+    - artifact: org.springframework.modulith:spring-modulith-starter-test
+      purpose:
+        en: '`@ApplicationModuleTest` to bootstrap a single module in tests.'
+        fr: '`@ApplicationModuleTest` pour démarrer un seul module dans les tests.'
+    - artifact: org.springframework.boot:spring-boot-starter-webmvc
+      purpose:
+        en: REST controllers inside each module's `internal` package.
+        fr: Contrôleurs REST dans le package `internal` de chaque module.
+    - artifact: org.springframework.boot:spring-boot-starter-data-jpa
+      purpose:
+        en: Spring Data repositories and JPA entities, always under `internal`.
+        fr: Repositories Spring Data et entités JPA, toujours sous `internal`.
+    - artifact: org.springframework.boot:spring-boot-starter-validation
+      purpose:
+        en: Bean Validation on request DTOs.
+        fr: Bean Validation sur les DTO de requête.
+    - artifact: org.springframework.boot:spring-boot-starter-actuator
+      purpose:
+        en: Health and info endpoints.
+        fr: Endpoints health et info.
+  forbidden:
+    - artifact: com.h2database:h2
+      rationale:
+        en: Tests run on the real database engine through Testcontainers.
+        fr: Les tests tournent sur le vrai moteur de base de données via Testcontainers.
+    - artifact: org.projectlombok:lombok
+      rationale:
+        en: Records and explicit constructors cover the need; generated code hides what the agent must read.
+        fr: Les records et constructeurs explicites couvrent le besoin ; le code généré cache ce que l'agent doit lire.
+    - artifact: org.springframework.boot:spring-boot-starter-data-rest
+      rationale:
+        en: Exposes entities directly as the API, which contradicts the DTO rule.
+        fr: Expose les entités directement comme API, ce qui contredit la règle des DTO.
+    - artifact: org.springframework.boot:spring-boot-starter-web
+      rationale:
+        en: Legacy alias; the project uses `spring-boot-starter-webmvc`.
+        fr: Alias hérité ; le projet utilise `spring-boot-starter-webmvc`.
+  add_procedure:
+    - en: Check the `allowed` and `forbidden` lists above; a forbidden artifact is never added.
+      fr: Vérifier les listes `allowed` et `forbidden` ci-dessus ; un artefact interdit n'est jamais ajouté.
+    - en: If the artifact is not listed, propose it with its purpose and the alternative considered, then wait for confirmation.
+      fr: Si l'artefact n'est pas listé, le proposer avec son rôle et l'alternative envisagée, puis attendre confirmation.
+    - en: Add it in its own commit (`build(deps)`), without a version when the Spring Boot or Modulith BOM manages one.
+      fr: L'ajouter dans un commit dédié (`build(deps)`), sans version lorsque le BOM Spring Boot ou Modulith en gère une.
+    - en: Record it in `docs/adr/` if it changes how a module is written.
+      fr: L'enregistrer dans `docs/adr/` s'il change la façon d'écrire un module.
+
+reference_example:
+  feature:
+    en: '`note` module (create, read one, list) publishing `NoteCreated`; `audit` module counting created notes through an event listener.'
+    fr: "Module `note` (créer, lire une, lister) publiant `NoteCreated` ; module `audit` comptant les notes créées via un écouteur d'événement."
+  files:
+    - src/main/java/{{basePackage}}/note/NoteService.java
+    - src/main/java/{{basePackage}}/note/NoteDetails.java
+    - src/main/java/{{basePackage}}/note/NoteCreated.java
+    - src/main/java/{{basePackage}}/note/NoteNotFoundException.java
+    - src/main/java/{{basePackage}}/note/internal/Note.java
+    - src/main/java/{{basePackage}}/note/internal/NoteRepository.java
+    - src/main/java/{{basePackage}}/note/internal/NoteController.java
+    - src/main/java/{{basePackage}}/note/internal/NoteRequest.java
+    - src/main/java/{{basePackage}}/audit/AuditLog.java
+    - src/main/java/{{basePackage}}/audit/internal/NoteCreatedListener.java
+    - src/test/java/{{basePackage}}/note/NoteServiceTest.java
+    - src/test/java/{{basePackage}}/note/internal/NoteControllerTest.java
+    - src/test/java/{{basePackage}}/note/internal/NoteRepositoryTest.java
+    - src/test/java/{{basePackage}}/NoteIT.java
+    - src/test/java/{{basePackage}}/architecture/ModularityTest.java
+    - src/test/java/{{basePackage}}/architecture/ModularArchitectureTest.java
+  demonstrates:
+    - MOD-001
+    - MOD-002
+    - MOD-004
+    - MOD-005
+    - MOD-006
+    - MOD-007
+    - MOD-008
+    - CORE-011
+    - CORE-012
+    - CORE-013
+    - CORE-014
+    - CORE-015
+    - CORE-020
+    - CORE-022
+  tables:
+    - name: note
+      columns:
+        - { name: id, type: identity }
+        - { name: title, type: string, length: 200 }
+        - { name: content, type: string, length: 2000, nullable: true }
+        - { name: created_at, type: timestamp }
+
+skills:
+  architecture:
+    - MOD-001
+    - MOD-002
+    - MOD-003
+    - MOD-005
+    - MOD-006
+    - MOD-009
+    - MOD-AP-001
+    - MOD-AP-002
+    - MOD-AP-003
+    - MOD-AP-004
+  db:
+    - MOD-004
+    - MOD-008
+  api:
+    - MOD-007
+  testing: []
+  workflow: []
+  security: []
+
+maven:
+  boms:
+    - group_id: org.springframework.modulith
+      artifact_id: spring-modulith-bom
+      version: 2.1.1
+  dependencies:
+    - group_id: org.springframework.modulith
+      artifact_id: spring-modulith-starter-core
+      purpose:
+        en: Spring Modulith runtime (module model, event support).
+        fr: Runtime Spring Modulith (modèle des modules, support des événements).
+    - group_id: org.springframework.modulith
+      artifact_id: spring-modulith-starter-test
+      scope: test
+      purpose:
+        en: Module verification and module-scoped tests.
+        fr: Vérification des modules et tests à l'échelle d'un module.

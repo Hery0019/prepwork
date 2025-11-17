@@ -1,0 +1,13 @@
+package <%= it.project.basePackage %>.note;
+
+import <%= it.project.basePackage %>.common.NotFoundException;
+
+/**
+ * <%= it.t("Levée par la façade, traduite en 404 par ApiExceptionHandler : le contrôleur ne construit jamais de réponse d'erreur.", "Thrown by the facade, translated to 404 by ApiExceptionHandler: the controller never builds an error response.") %>
+ */
+public class NoteNotFoundException extends NotFoundException {
+
+    public NoteNotFoundException(Long id) {
+        super("Note %d not found".formatted(id));
+    }
+}

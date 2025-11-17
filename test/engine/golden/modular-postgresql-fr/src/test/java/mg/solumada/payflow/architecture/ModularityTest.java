@@ -1,0 +1,33 @@
+package mg.solumada.payflow.architecture;
+
+import mg.solumada.payflow.PayFlowApplication;
+import org.junit.jupiter.api.Test;
+import org.springframework.modulith.core.ApplicationModules;
+
+/**
+ * Vérification Spring Modulith : disposition des modules (MOD-001), accès aux internes (MOD-002), cycles (MOD-003). Une seule vérification couvre les trois règles ; chaque test porte l'identifiant qu'il documente.
+ */
+class ModularityTest {
+
+    private static final ApplicationModules MODULES = ApplicationModules.of(PayFlowApplication.class);
+
+    @Test
+    void MOD_001_modules_are_direct_sub_packages_with_an_internal_package() {
+        MODULES.verify();
+    }
+
+    @Test
+    void MOD_002_no_module_reaches_into_another_module_internals() {
+        MODULES.verify();
+    }
+
+    @Test
+    void MOD_003_no_cycle_between_modules() {
+        MODULES.verify();
+    }
+
+    @Test
+    void MOD_AP_001_no_import_of_another_module_internal_types() {
+        MODULES.verify();
+    }
+}

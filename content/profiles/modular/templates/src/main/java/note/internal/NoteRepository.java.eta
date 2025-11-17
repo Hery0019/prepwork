@@ -1,0 +1,8 @@
+package <%= it.project.basePackage %>.note.internal;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+/**
+ * <%= it.t("Accès aux notes, interne au module (MOD-004) : interface Spring Data, aucune logique métier.", "Access to notes, internal to the module (MOD-004): Spring Data interface, no business logic.") %>
+ */
+public interface NoteRepository extends JpaRepository<Note, Long> {}

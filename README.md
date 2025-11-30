@@ -16,7 +16,7 @@ pnpm install
 pnpm check          # typecheck + lint + content/ consistency check + tests
 pnpm check:content  # content/ consistency only (ids, prefixes, orthogonality, ArchUnit tests)
 pnpm schemas        # regenerates schema/*.schema.json from the Zod schemas
-pnpm dev -- --help  # runs the CLI from the sources
+pnpm dev --help     # runs the CLI from the sources
 ```
 
 ## CLI commands

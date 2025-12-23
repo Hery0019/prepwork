@@ -2,13 +2,13 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { defaultContentRoot } from '../../src/catalog/content-root.js';
 import { loadCatalog, type Catalog } from '../../src/catalog/load.js';
-import type { Scaffold } from '../../src/config/schema.js';
+import type { Scaffold } from '../../src/packs/spring-boot/scaffold.js';
 import { compose } from '../../src/engine/compose.js';
 import { renderProject } from '../../src/engine/render.js';
 import { PrepworkError } from '../../src/errors.js';
 import { createNodeFileSystem } from '../../src/fs/node.js';
 import { claudeCodeRenderer } from '../../src/renderers/index.js';
-import { SAMPLE_SCAFFOLD } from '../helpers/fixtures.js';
+import { SAMPLE_SCAFFOLD, TEST_PACK } from '../helpers/fixtures.js';
 import { expectGolden } from '../helpers/golden.js';
 
 const goldenRoot = join(import.meta.dirname, 'golden');
@@ -16,7 +16,7 @@ const COMPOSE_OPTIONS = { toolVersion: '0.1.0', today: '2026-09-02' };
 
 let cached: Catalog | undefined;
 async function catalog(): Promise<Catalog> {
-  cached ??= await loadCatalog(createNodeFileSystem(), defaultContentRoot());
+  cached ??= await loadCatalog(createNodeFileSystem(), defaultContentRoot(), TEST_PACK);
   return cached;
 }
 
@@ -27,7 +27,7 @@ const NO_DB_EN: Scaffold = {
     base_package: 'com.example.inventory',
     description: 'Stock levels',
   },
-  stack: { java: 17, database: 'none' },
+  stack: { target: 'spring-boot', java: 17, database: 'none' },
   options: { security: 'none', docker: false, ci: 'none' },
   git: { author: { name: 'Jane', email: 'jane@example.com' }, agent_trailer: false },
   language: { comments: 'en', docs: 'en' },
@@ -35,7 +35,7 @@ const NO_DB_EN: Scaffold = {
 
 describe('full project rendering (layered)', () => {
   it('renders the default project (PostgreSQL, Flyway, Docker, GitHub, fr) — golden', async () => {
-    const composition = compose(await catalog(), SAMPLE_SCAFFOLD, COMPOSE_OPTIONS);
+    const composition = compose(await catalog(), SAMPLE_SCAFFOLD, TEST_PACK, COMPOSE_OPTIONS);
     const files = renderProject(composition, claudeCodeRenderer);
     await expectGolden(join(goldenRoot, 'layered-postgresql-fr'), files);
 
@@ -53,7 +53,7 @@ describe('full project rendering (layered)', () => {
   });
 
   it('renders the no-database variant (Java 17, no docker, no CI, en) — golden', async () => {
-    const composition = compose(await catalog(), NO_DB_EN, COMPOSE_OPTIONS);
+    const composition = compose(await catalog(), NO_DB_EN, TEST_PACK, COMPOSE_OPTIONS);
     const files = renderProject(composition, claudeCodeRenderer);
     await expectGolden(join(goldenRoot, 'layered-none-en'), files);
 
@@ -72,7 +72,7 @@ describe('full project rendering (layered)', () => {
   it('leaves no unrendered placeholder or template tag behind', async () => {
     for (const scaffold of [SAMPLE_SCAFFOLD, NO_DB_EN]) {
       const files = renderProject(
-        compose(await catalog(), scaffold, COMPOSE_OPTIONS),
+        compose(await catalog(), scaffold, TEST_PACK, COMPOSE_OPTIONS),
         claudeCodeRenderer,
       );
       for (const file of files) {
@@ -87,10 +87,10 @@ describe('full project rendering (layered)', () => {
   it('applies when-conditions on Maven dependencies (Flyway module per database)', async () => {
     const mysql: Scaffold = {
       ...SAMPLE_SCAFFOLD,
-      stack: { java: 21, database: 'mysql', migrations: 'flyway' },
+      stack: { target: 'spring-boot', java: 21, database: 'mysql', migrations: 'flyway' },
     };
     const pom = renderProject(
-      compose(await catalog(), mysql, COMPOSE_OPTIONS),
+      compose(await catalog(), mysql, TEST_PACK, COMPOSE_OPTIONS),
       claudeCodeRenderer,
     ).find((f) => f.path === 'pom.xml')?.content;
     expect(pom).toContain('flyway-mysql');
@@ -100,8 +100,8 @@ describe('full project rendering (layered)', () => {
 
   it('rejects an unknown profile or option', async () => {
     const bad = { ...SAMPLE_SCAFFOLD, profile: 'hexagonal' as Scaffold['profile'] };
-    await expect(async () => compose(await catalog(), bad, COMPOSE_OPTIONS)).rejects.toBeInstanceOf(
-      PrepworkError,
-    );
+    await expect(async () =>
+      compose(await catalog(), bad, TEST_PACK, COMPOSE_OPTIONS),
+    ).rejects.toBeInstanceOf(PrepworkError);
   });
 });

@@ -14,7 +14,7 @@ describe('generated JSON schemas', () => {
   });
 
   it('describe the scaffold enums for IDE completion', () => {
-    const scaffold = JSON.parse(generateJsonSchemas().scaffold ?? '{}') as {
+    const scaffold = JSON.parse(generateJsonSchemas()['spring-boot/scaffold'] ?? '{}') as {
       properties: {
         profile: { enum: string[] };
         stack: { properties: { database: { enum: string[] } } };

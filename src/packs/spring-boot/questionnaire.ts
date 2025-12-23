@@ -1,40 +1,31 @@
-// Le questionnaire (CLAUDE.md §5) : ordre fixe, valeurs par défaut entre crochets, réponses
-// validées, puis récapitulatif et confirmation. Produit le scaffold et les valeurs qui n'y
-// entrent pas (URL de l'issuer OAuth2 → .env.example).
-import type { ComposeExtras } from '../engine/context.js';
+// Le questionnaire du pack `spring-boot` (CLAUDE.md §5) : ordre fixe, valeurs par défaut entre
+// crochets, réponses validées, puis récapitulatif et confirmation. Produit le scaffold et les
+// valeurs qui n'y entrent pas (URL de l'issuer OAuth2 → .env.example).
+import { PROJECT_NAME_PATTERN, SCAFFOLD_VERSION } from '../../config/schema.js';
+import type { ComposeExtras } from '../../engine/context.js';
+import { PrepworkError } from '../../errors.js';
+import type { Prompter } from '../../questionnaire/prompter.js';
+import type { ComposeExtras as Extras } from '../../engine/context.js';
+import type { QuestionnaireInput } from '../types.js';
+
+/** Profils proposés au questionnaire. */
+export type ProfileChoice = QuestionnaireInput['profiles'][number];
+
+/** Résultat typé du pack : le scaffold porte les champs Spring. */
+export interface SpringQuestionnaireResult {
+  scaffold: Scaffold;
+  extras: Extras;
+}
 import {
   basePackageProblem,
-  PROJECT_NAME_PATTERN,
-  SCAFFOLD_VERSION,
   ScaffoldSchema,
   type Ci,
   type Database,
   type JavaVersion,
   type Migrations,
-  type ProfileId,
   type Scaffold,
   type Security,
-} from '../config/schema.js';
-import { PrepworkError } from '../errors.js';
-import type { Prompter } from './prompter.js';
-
-/** Profils proposés, avec leur résumé pour guider le choix. */
-export interface ProfileChoice {
-  id: ProfileId;
-  summary: string;
-  whenToUse: string[];
-}
-
-export interface QuestionnaireInput {
-  profiles: ProfileChoice[];
-  /** Identité git globale, pré-remplie dans les questions 10. */
-  gitIdentity?: { name?: string | undefined; email?: string | undefined } | undefined;
-}
-
-export interface QuestionnaireResult {
-  scaffold: Scaffold;
-  extras: ComposeExtras;
-}
+} from './scaffold.js';
 
 const ORACLE_WARNING =
   "L'image Testcontainers d'Oracle (gvenzl/oracle-free) pèse plusieurs gigaoctets : premier " +
@@ -87,7 +78,7 @@ function summary(scaffold: Scaffold): string {
 export async function runQuestionnaire(
   prompter: Prompter,
   input: QuestionnaireInput,
-): Promise<QuestionnaireResult> {
+): Promise<SpringQuestionnaireResult> {
   if (input.profiles.length === 0) {
     throw new PrepworkError('CATALOG_NOT_FOUND', 'aucun profil disponible dans le catalogue');
   }
@@ -146,7 +137,7 @@ export async function runQuestionnaire(
   }
 
   // 6. Profil
-  const profile = await prompter.select<ProfileId>({
+  const profile = await prompter.select<string>({
     message: "6. Profil d'architecture",
     options: input.profiles.map((p) => ({
       value: p.id,

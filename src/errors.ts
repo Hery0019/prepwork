@@ -11,6 +11,7 @@ export type ErrorCode =
   | 'PLAN_CONFLICT'
   | 'MANIFEST_INVALID'
   | 'TARGET_NOT_EMPTY'
+  | 'UNKNOWN_STACK'
   | 'CANCELLED';
 
 export class PrepworkError extends Error {

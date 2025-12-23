@@ -6,12 +6,11 @@ import { PrepworkError } from '../errors.js';
 import { conditionPaths, parseCondition } from './condition.js';
 import type { Catalog, CatalogSource } from './load.js';
 import { catalogSources } from './load.js';
+import type { StackPack } from '../packs/types.js';
 import type { AntiPattern, LocalizedText, Rule } from './schema.js';
 import { allVariants } from './text.js';
 
 const CORE_PREFIX = 'CORE';
-/** Types d'application dont la présence d'un test portant l'id de la règle est vérifiée. */
-const TEST_BACKED_ENFORCERS = new Set(['archunit', 'modulith']);
 /** Segments d'identifiants d'option trop génériques pour servir de marqueur d'orthogonalité. */
 const GENERIC_OPTION_WORDS = new Set([
   'migrations',
@@ -112,8 +111,9 @@ function optionKeywords(optionId: string): string[] {
   return [...new Set([optionId, ...words])].filter((w) => !GENERIC_OPTION_WORDS.has(w));
 }
 
-export function validateCatalog(catalog: Catalog): Diagnostic[] {
+export function validateCatalog(catalog: Catalog, pack: StackPack): Diagnostic[] {
   const diagnostics: Diagnostic[] = [];
+  const testBacked = new Set(pack.testBackedEnforcers);
   const error = (source: string, message: string): void => {
     diagnostics.push({ level: 'error', source, message });
   };
@@ -224,20 +224,14 @@ export function validateCatalog(catalog: Catalog): Diagnostic[] {
     }
   }
 
-  // --- Conditions des dépendances Maven ------------------------------------------------------
+  // --- Conditions portées par les contributions du pack -------------------------------------
   for (const source of sources) {
+    if (source.kind === 'core') continue;
     const label = sourceLabel(source);
-    const maven =
-      source.kind === 'profile'
-        ? source.profile.maven
-        : source.kind === 'option'
-          ? source.option.maven
-          : undefined;
-    for (const dep of maven?.dependencies ?? []) {
-      if (dep.when === undefined) continue;
+    const contribution = source.kind === 'profile' ? source.profile : source.option;
+    for (const { where, when } of pack.contributionConditions(contribution)) {
       try {
-        const paths = conditionPaths(parseCondition(dep.when));
-        checkAxisPaths(source, paths, `maven.dependencies (${dep.artifact_id})`, error);
+        checkAxisPaths(source, conditionPaths(parseCondition(when)), where, error);
       } catch (e) {
         error(label, e instanceof PrepworkError ? e.message : String(e));
       }
@@ -266,7 +260,7 @@ export function validateCatalog(catalog: Catalog): Diagnostic[] {
       path.includes('src/test/'),
     );
     for (const rule of sourceRules(source)) {
-      if (!TEST_BACKED_ENFORCERS.has(rule.enforced_by)) continue;
+      if (!testBacked.has(rule.enforced_by)) continue;
       const token = rule.id.replace(/-/g, '_');
       const found = testTemplates.some(([, content]) => content.includes(token));
       if (found) continue;

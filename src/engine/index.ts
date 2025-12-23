@@ -4,7 +4,8 @@
 //   sync  : plan contre le manifeste, exécution des seules opérations sûres
 import type { Catalog } from '../catalog/load.js';
 import { readScaffold, SCAFFOLD_FILE, serializeScaffold } from '../config/io.js';
-import type { Scaffold } from '../config/schema.js';
+import type { BaseScaffold } from '../config/schema.js';
+import type { StackPack } from '../packs/types.js';
 import { PrepworkError } from '../errors.js';
 import type { FileSystem } from '../fs/types.js';
 import { joinPath } from '../fs/types.js';
@@ -33,6 +34,8 @@ export { renderProject, type GeneratedFile } from './render.js';
 export interface EngineDeps {
   fs: FileSystem;
   catalog: Catalog;
+  /** Pack de la stack du projet, cohérent avec le catalogue chargé. */
+  pack: StackPack;
   toolVersion: string;
   /** Renderer cible ; `claude-code` en v1. */
   rendererId?: string | undefined;
@@ -42,7 +45,7 @@ export interface EngineDeps {
 
 export interface InitRequest {
   projectDir: string;
-  scaffold: Scaffold;
+  scaffold: BaseScaffold;
   extras?: ComposeExtras | undefined;
   dryRun?: boolean | undefined;
 }
@@ -60,10 +63,10 @@ const TOLERATED_IN_EMPTY_DIR = new Set(['.git']);
 async function renderAndPlan(
   deps: EngineDeps,
   projectDir: string,
-  scaffold: Scaffold,
+  scaffold: BaseScaffold,
   extras: ComposeExtras | undefined,
 ): Promise<{ composition: Composition; plan: Plan }> {
-  const composition = compose(deps.catalog, scaffold, {
+  const composition = compose(deps.catalog, scaffold, deps.pack, {
     toolVersion: deps.toolVersion,
     extras,
     today: deps.today,
@@ -111,7 +114,7 @@ export async function runInit(deps: EngineDeps, request: InitRequest): Promise<E
 }
 
 export async function runCheck(deps: EngineDeps, projectDir: string): Promise<EngineResult> {
-  const scaffold = await readScaffold(deps.fs, projectDir);
+  const scaffold = await readScaffold(deps.fs, projectDir, deps.pack);
   const { composition, plan } = await renderAndPlan(deps, projectDir, scaffold, undefined);
   return { composition, plan };
 }
@@ -121,7 +124,7 @@ export async function runSync(
   projectDir: string,
   options: { dryRun?: boolean | undefined } = {},
 ): Promise<EngineResult> {
-  const scaffold = await readScaffold(deps.fs, projectDir);
+  const scaffold = await readScaffold(deps.fs, projectDir, deps.pack);
   const { composition, plan } = await renderAndPlan(deps, projectDir, scaffold, undefined);
   const execution = await executePlan(deps.fs, projectDir, plan, {
     dryRun: options.dryRun ?? false,

@@ -3,22 +3,23 @@ import { describe, expect, it } from 'vitest';
 import { defaultContentRoot } from '../../src/catalog/content-root.js';
 import { loadCatalog } from '../../src/catalog/load.js';
 import type { Option } from '../../src/catalog/schema.js';
-import { OptionSchema } from '../../src/catalog/schema.js';
-import type { Scaffold } from '../../src/config/schema.js';
+
+import type { Scaffold } from '../../src/packs/spring-boot/scaffold.js';
 import { createNodeFileSystem } from '../../src/fs/node.js';
 import { claudeCodeRenderer, getRenderer } from '../../src/renderers/index.js';
 import type { RenderInput } from '../../src/renderers/types.js';
-import { SAMPLE_SCAFFOLD } from '../helpers/fixtures.js';
+import { SAMPLE_SCAFFOLD, TEST_PACK } from '../helpers/fixtures.js';
 import { expectGolden } from '../helpers/golden.js';
 
 const goldenRoot = join(import.meta.dirname, 'golden', 'claude-code');
 
 async function inputFor(scaffold: Scaffold, options: Option[] = []): Promise<RenderInput> {
-  const catalog = await loadCatalog(createNodeFileSystem(), defaultContentRoot());
+  const catalog = await loadCatalog(createNodeFileSystem(), defaultContentRoot(), TEST_PACK);
   const profile = catalog.profiles.get(scaffold.profile);
   if (!profile) throw new Error(`profil ${scaffold.profile} absent`);
   return {
     scaffold,
+    pack: TEST_PACK,
     core: catalog.core.ruleSets,
     profile: profile.profile,
     options,
@@ -26,7 +27,7 @@ async function inputFor(scaffold: Scaffold, options: Option[] = []): Promise<Ren
   };
 }
 
-const sampleOption = OptionSchema.parse({
+const sampleOption = TEST_PACK.catalogSchemas.OptionSchema.parse({
   meta: {
     id: 'sample-option',
     version: '1.0.0',
@@ -74,7 +75,7 @@ describe('claude-code renderer', () => {
   it('renders in English with an option contributing rules and env vars', async () => {
     const scaffold: Scaffold = {
       ...SAMPLE_SCAFFOLD,
-      stack: { java: 17, database: 'none' },
+      stack: { target: 'spring-boot', java: 17, database: 'none' },
       options: { security: 'oauth2-resource-server', docker: false, ci: 'none' },
       git: { ...SAMPLE_SCAFFOLD.git, agent_trailer: false },
       language: { comments: 'en', docs: 'en' },

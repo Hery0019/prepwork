@@ -1,34 +1,23 @@
 // Composition : scaffold + catalogue → contexte de templates et liste des fichiers à rendre.
-// Composition additive uniquement (CLAUDE.md §2) : une contribution qui contredit une autre
-// est un conflit, jamais une surcharge silencieuse.
+// Composition additive uniquement (CLAUDE.md §2) : une contribution qui contredit une autre est
+// un conflit, jamais une surcharge silencieuse. Ce qui est propre à une stack (Maven, propriétés
+// Spring, aides de typage) est apporté par le pack via `pack.buildContext`.
 import { evaluateCondition, parseCondition } from '../catalog/condition.js';
 import type { Catalog, CatalogSource, OptionCatalog, ProfileCatalog } from '../catalog/load.js';
-import {
-  BASE_PACKAGE_PLACEHOLDER,
-  type EnvVar,
-  type FileEntry,
-  type MavenBom,
-  type MavenContribution,
-  type MavenDependency,
-  type PropertiesContribution,
-  type PropertyTree,
-} from '../catalog/schema.js';
+import type { EnvVar, FileEntry } from '../catalog/schema.js';
 import { pickText } from '../catalog/text.js';
-import { resolveOptionIds, type Scaffold } from '../config/schema.js';
+import type { BaseScaffold } from '../config/schema.js';
 import { PrepworkError } from '../errors.js';
+import type { StackPack } from '../packs/types.js';
 import {
-  javaTypeFor,
-  liquibaseTypeFor,
-  PINNED_VERSIONS,
-  sqlTypeFor,
   toClassName,
   yamlText,
+  type BaseTemplateContext,
   type ComposeExtras,
-  type MavenContext,
-  type PropertiesContext,
   type TemplateContext,
 } from './context.js';
 import { createTemplateEngine, type TemplateEngine } from './templates.js';
+import { cloneTree, mergeTree } from './tree.js';
 
 export interface PlannedTemplate {
   /** Étiquette de la source : `core`, `profiles/layered`, `options/docker`. */
@@ -41,8 +30,9 @@ export interface PlannedTemplate {
 }
 
 export interface Composition {
-  scaffold: Scaffold;
+  scaffold: BaseScaffold;
   catalog: Catalog;
+  pack: StackPack;
   profile: ProfileCatalog;
   options: OptionCatalog[];
   context: TemplateContext;
@@ -65,107 +55,8 @@ function sourceLabel(source: CatalogSource): string {
   return source.kind === 'core' ? 'core' : `${source.kind}s/${source.id}`;
 }
 
-// ---------------------------------------------------------------------------
-// Agrégats additifs
-// ---------------------------------------------------------------------------
-
-function mergeMaven(
-  contributions: readonly [string, MavenContribution | undefined][],
-  conditionContext: Record<string, unknown>,
-): MavenContext {
-  const boms = new Map<string, [string, MavenBom]>();
-  const dependencies = new Map<string, [string, MavenDependency]>();
-  const properties = new Map<string, [string, string]>();
-  for (const [label, contribution] of contributions) {
-    if (!contribution) continue;
-    for (const bom of contribution.boms) {
-      const key = `${bom.group_id}:${bom.artifact_id}`;
-      const previous = boms.get(key);
-      if (previous && previous[1].version !== bom.version) {
-        throw conflict(
-          `BOM \`${key}\` : version \`${previous[1].version}\` (${previous[0]}) vs \`${bom.version}\` (${label})`,
-        );
-      }
-      boms.set(key, [label, bom]);
-    }
-    for (const dep of contribution.dependencies) {
-      if (dep.when !== undefined && !evaluateCondition(dep.when, conditionContext)) continue;
-      const key = `${dep.group_id}:${dep.artifact_id}`;
-      const previous = dependencies.get(key);
-      if (previous) {
-        const same =
-          previous[1].version === dep.version &&
-          (previous[1].scope ?? 'compile') === (dep.scope ?? 'compile') &&
-          (previous[1].optional ?? false) === (dep.optional ?? false);
-        if (!same) {
-          throw conflict(
-            `dépendance \`${key}\` déclarée différemment par ${previous[0]} et ${label}`,
-          );
-        }
-        continue;
-      }
-      dependencies.set(key, [label, dep]);
-    }
-    for (const [key, value] of Object.entries(contribution.properties)) {
-      const previous = properties.get(key);
-      if (previous && previous[1] !== value) {
-        throw conflict(
-          `propriété Maven \`${key}\` : \`${previous[1]}\` (${previous[0]}) vs \`${value}\` (${label})`,
-        );
-      }
-      properties.set(key, [label, value]);
-    }
-  }
-  return {
-    boms: [...boms.values()].map(([, b]) => b),
-    dependencies: [...dependencies.values()].map(([, d]) => d),
-    properties: Object.fromEntries([...properties.entries()].map(([k, [, v]]) => [k, v])),
-  };
-}
-
-function isPlainObject(value: unknown): value is PropertyTree {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-function deepMerge(target: PropertyTree, source: PropertyTree, path: string, label: string): void {
-  for (const [key, value] of Object.entries(source)) {
-    const fullPath = path === '' ? key : `${path}.${key}`;
-    const existing = target[key];
-    if (existing === undefined) {
-      target[key] = isPlainObject(value) ? deepClone(value) : value;
-    } else if (isPlainObject(existing) && isPlainObject(value)) {
-      deepMerge(existing, value, fullPath, label);
-    } else if (JSON.stringify(existing) !== JSON.stringify(value)) {
-      throw conflict(
-        `propriété Spring \`${fullPath}\` : déjà définie avec une autre valeur (contribution de ${label})`,
-      );
-    }
-  }
-}
-
-function deepClone(tree: PropertyTree): PropertyTree {
-  return JSON.parse(JSON.stringify(tree)) as PropertyTree;
-}
-
-function mergeProperties(
-  contributions: readonly [string, PropertiesContribution | undefined][],
-): PropertiesContext {
-  const result: PropertiesContext = { main: {}, test: {}, profiles: {} };
-  for (const [label, contribution] of contributions) {
-    if (!contribution) continue;
-    for (const [document, tree] of Object.entries(contribution)) {
-      if (document === 'main') deepMerge(result.main, tree, '', label);
-      else if (document === 'test') deepMerge(result.test, tree, '', label);
-      else {
-        result.profiles[document] ??= {};
-        deepMerge(result.profiles[document], tree, '', label);
-      }
-    }
-  }
-  return result;
-}
-
-function mergeEnv(contributions: readonly [string, readonly EnvVar[]][]): EnvVar[] {
+/** Variables d'environnement contribuées par les options : additives, exemples identiques. */
+export function mergeEnv(contributions: readonly [string, readonly EnvVar[]][]): EnvVar[] {
   const vars = new Map<string, [string, EnvVar]>();
   for (const [label, list] of contributions) {
     for (const variable of list) {
@@ -181,11 +72,7 @@ function mergeEnv(contributions: readonly [string, readonly EnvVar[]][]): EnvVar
   return [...vars.values()].map(([, v]) => v);
 }
 
-// ---------------------------------------------------------------------------
-// Composition
-// ---------------------------------------------------------------------------
-
-function resolveProfile(catalog: Catalog, scaffold: Scaffold): ProfileCatalog {
+function resolveProfile(catalog: Catalog, scaffold: BaseScaffold): ProfileCatalog {
   const profile = catalog.profiles.get(scaffold.profile);
   if (!profile) {
     throw new PrepworkError(
@@ -196,8 +83,12 @@ function resolveProfile(catalog: Catalog, scaffold: Scaffold): ProfileCatalog {
   return profile;
 }
 
-function resolveOptions(catalog: Catalog, scaffold: Scaffold): OptionCatalog[] {
-  return resolveOptionIds(scaffold).map((id) => {
+function resolveOptions(
+  catalog: Catalog,
+  scaffold: BaseScaffold,
+  pack: StackPack,
+): OptionCatalog[] {
+  return pack.resolveOptionIds(scaffold).map((id) => {
     const option = catalog.options.get(id);
     if (!option) {
       throw new PrepworkError(
@@ -210,103 +101,53 @@ function resolveOptions(catalog: Catalog, scaffold: Scaffold): OptionCatalog[] {
 }
 
 export function buildContext(
-  scaffold: Scaffold,
+  scaffold: BaseScaffold,
   profile: ProfileCatalog,
   options: readonly OptionCatalog[],
+  pack: StackPack,
   toolVersion: string,
   extras: ComposeExtras,
   today: string,
 ): TemplateContext {
-  const basePackage = scaffold.project.base_package;
   const docs = scaffold.language.docs;
   const comments = scaffold.language.comments;
-  const database = scaffold.stack.database;
-  const p = profile.profile;
+  const meta = profile.profile.meta;
 
-  const conditionContext: Record<string, unknown> = {
-    project: { name: scaffold.project.name, basePackage },
-    stack: { java: scaffold.stack.java, database, migrations: scaffold.stack.migrations ?? null },
-    profile: profile.id,
-    options: scaffold.options,
-    optionIds: options.map((o) => o.id),
-    git: { agentTrailer: scaffold.git.agent_trailer },
-    language: { comments, docs },
-  };
-  const maven = mergeMaven(
-    [
-      [`profiles/${profile.id}`, p.maven],
-      ...options.map((o): [string, MavenContribution | undefined] => [
-        `options/${o.id}`,
-        o.option.maven,
-      ]),
-    ],
-    conditionContext,
-  );
-  const properties = mergeProperties([
-    [`profiles/${profile.id}`, p.application_properties],
-    ...options.map((o): [string, PropertiesContribution | undefined] => [
-      `options/${o.id}`,
-      o.option.application_properties,
-    ]),
-  ]);
-  const env = mergeEnv(
-    options.map((o): [string, readonly EnvVar[]] => [`options/${o.id}`, o.option.env]),
-  );
-
-  return {
+  const base: BaseTemplateContext = {
     project: {
       name: scaffold.project.name,
       description: scaffold.project.description,
-      basePackage,
-      basePackagePath: basePackage.replace(/\./g, '/'),
       className: toClassName(scaffold.project.name),
-      groupId: basePackage,
-      artifactId: scaffold.project.name,
-      dbName: scaffold.project.name.replace(/-/g, '_'),
-    },
-    stack: {
-      java: scaffold.stack.java,
-      database,
-      migrations: scaffold.stack.migrations ?? null,
     },
     profile: profile.id,
     profileInfo: {
-      id: p.meta.id,
-      version: p.meta.version,
-      summary: pickText(p.meta.summary, docs),
-      whenToUse: p.meta.when_to_use.map((t) => pickText(t, docs)),
-      whenNotToUse: p.meta.when_not_to_use.map((t) => pickText(t, docs)),
+      id: meta.id,
+      version: meta.version,
+      summary: pickText(meta.summary, docs),
+      whenToUse: meta.when_to_use.map((t) => pickText(t, docs)),
+      whenNotToUse: meta.when_not_to_use.map((t) => pickText(t, docs)),
     },
-    options: scaffold.options,
     optionIds: options.map((o) => o.id),
     git: { author: scaffold.git.author, agentTrailer: scaffold.git.agent_trailer },
     language: { comments, docs },
-    maven,
-    properties,
-    env,
-    tables: p.reference_example.tables,
-    layers: p.architecture.layers.map((l) => ({
-      id: l.id,
-      package: l.package.split(BASE_PACKAGE_PLACEHOLDER).join(basePackage),
-      mayDependOn: [...l.may_depend_on],
-    })),
+    env: mergeEnv(
+      options.map((o): [string, readonly EnvVar[]] => [`options/${o.id}`, o.option.env]),
+    ),
     toolVersion,
     today,
-    versions: PINNED_VERSIONS,
     extras,
     t: (fr, en) => (comments === 'fr' ? fr : en),
     d: (fr, en) => (docs === 'fr' ? fr : en),
     text: (value) => pickText(value, docs),
     yaml: yamlText,
-    merge: (base, contribution) => {
-      const result = deepClone(base);
-      deepMerge(result, contribution, '', 'template');
+    merge: (tree, contribution) => {
+      const result = cloneTree(tree);
+      mergeTree(result, contribution, '', 'template');
       return result;
     },
-    sqlType: (column) => sqlTypeFor(column, database),
-    javaType: javaTypeFor,
-    liquibaseType: liquibaseTypeFor,
   };
+
+  return pack.buildContext(base, { scaffold, profile, options });
 }
 
 function planFiles(
@@ -351,20 +192,22 @@ function planFiles(
 
 export function compose(
   catalog: Catalog,
-  scaffold: Scaffold,
+  scaffold: BaseScaffold,
+  pack: StackPack,
   options: ComposeOptions,
 ): Composition {
   const profile = resolveProfile(catalog, scaffold);
-  const resolvedOptions = resolveOptions(catalog, scaffold);
+  const resolvedOptions = resolveOptions(catalog, scaffold, pack);
   const context = buildContext(
     scaffold,
     profile,
     resolvedOptions,
+    pack,
     options.toolVersion,
     options.extras ?? {},
     options.today ?? new Date().toISOString().slice(0, 10),
   );
   const engine = options.engine ?? createTemplateEngine();
   const files = planFiles([catalog.core, profile, ...resolvedOptions], context, engine);
-  return { scaffold, catalog, profile, options: resolvedOptions, context, files };
+  return { scaffold, catalog, pack, profile, options: resolvedOptions, context, files };
 }

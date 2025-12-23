@@ -1,5 +1,6 @@
 // Vue "prête à rendre" de l'entrée : règles résolues dans la langue de la documentation,
-// regroupées par skill puis par source. Partagée par CLAUDE.md et les skills.
+// regroupées par skill puis par source. Partagée par CLAUDE.md et les skills. Les skills eux-
+// mêmes (identifiants, ordre, titres) viennent du pack : le renderer ne les connaît pas.
 import type {
   AntiPattern,
   CoreRuleSet,
@@ -7,10 +8,9 @@ import type {
   Option,
   Profile,
   Rule,
-  SkillName,
 } from '../../catalog/schema.js';
-import { BASE_PACKAGE_PLACEHOLDER, SKILL_NAMES } from '../../catalog/schema.js';
 import { pickText } from '../../catalog/text.js';
+import type { SkillPresentation } from '../../packs/types.js';
 import type { RenderInput } from '../types.js';
 import { STRINGS, type Strings } from './i18n.js';
 
@@ -34,7 +34,7 @@ export interface SourceGroup {
 }
 
 export interface SkillView {
-  name: SkillName;
+  name: string;
   groups: SourceGroup[];
 }
 
@@ -42,10 +42,9 @@ export interface RenderModel {
   input: RenderInput;
   language: Language;
   strings: Strings;
-  skills: Record<SkillName, SkillView>;
-  /** Package Java concret substitué au placeholder. */
-  basePackage: string;
-  basePackagePath: string;
+  /** Skills du pack, dans l'ordre d'affichage. */
+  skillList: SkillPresentation[];
+  skills: Record<string, SkillView>;
 }
 
 function resolveRule(rule: Rule, language: Language): ResolvedRule {
@@ -61,19 +60,13 @@ function resolveAntiPattern(ap: AntiPattern, language: Language): ResolvedRule {
   return { ...resolveRule(ap, language), instead: pickText(ap.instead, language) };
 }
 
-function emptySkills(): Record<SkillName, SkillView> {
-  const skills = {} as Record<SkillName, SkillView>;
-  for (const name of SKILL_NAMES) skills[name] = { name, groups: [] };
-  return skills;
-}
-
 function coreGroups(
   core: readonly CoreRuleSet[],
   language: Language,
   strings: Strings,
-): Map<SkillName, SourceGroup> {
+): Map<string, SourceGroup> {
   // Plusieurs fichiers core peuvent viser le même skill (workflow + language) : on fusionne.
-  const groups = new Map<SkillName, SourceGroup>();
+  const groups = new Map<string, SourceGroup>();
   for (const set of core) {
     const group = groups.get(set.skill) ?? {
       kind: 'core',
@@ -95,14 +88,15 @@ function coreGroups(
 
 function profileGroups(
   profile: Profile,
+  skillIds: readonly string[],
   language: Language,
   strings: Strings,
-): Map<SkillName, SourceGroup> {
+): Map<string, SourceGroup> {
   const rulesById = new Map(profile.rules.map((r) => [r.id, r]));
   const antiPatternsById = new Map(profile.anti_patterns.map((a) => [a.id, a]));
-  const groups = new Map<SkillName, SourceGroup>();
-  for (const name of SKILL_NAMES) {
-    const ids = profile.skills[name];
+  const groups = new Map<string, SourceGroup>();
+  for (const name of skillIds) {
+    const ids = profile.skills[name] ?? [];
     if (ids.length === 0) continue;
     const group: SourceGroup = {
       kind: 'profile',
@@ -137,33 +131,33 @@ function optionGroup(option: Option, language: Language, strings: Strings): Sour
 export function buildModel(input: RenderInput): RenderModel {
   const language = input.scaffold.language.docs;
   const strings = STRINGS[language];
-  const skills = emptySkills();
+  const skillList = input.pack.presentation.skills(language);
+  const skills: Record<string, SkillView> = {};
+  for (const skill of skillList) skills[skill.id] = { name: skill.id, groups: [] };
 
   const core = coreGroups(input.core, language, strings);
-  const profile = profileGroups(input.profile, language, strings);
-  for (const name of SKILL_NAMES) {
-    const coreGroup = core.get(name);
-    if (coreGroup) skills[name].groups.push(coreGroup);
-    const profileGroup = profile.get(name);
-    if (profileGroup) skills[name].groups.push(profileGroup);
-  }
-  for (const option of input.options) {
-    skills[option.skill].groups.push(optionGroup(option, language, strings));
-  }
-
-  const basePackage = input.scaffold.project.base_package;
-  return {
-    input,
+  const profile = profileGroups(
+    input.profile,
+    skillList.map((s) => s.id),
     language,
     strings,
-    skills,
-    basePackage,
-    basePackagePath: basePackage.replace(/\./g, '/'),
-  };
+  );
+  for (const skill of skillList) {
+    const view = skills[skill.id];
+    if (view === undefined) continue;
+    const coreGroup = core.get(skill.id);
+    if (coreGroup) view.groups.push(coreGroup);
+    const profileGroup = profile.get(skill.id);
+    if (profileGroup) view.groups.push(profileGroup);
+  }
+  for (const option of input.options) {
+    skills[option.skill]?.groups.push(optionGroup(option, language, strings));
+  }
+
+  return { input, language, strings, skillList, skills };
 }
 
-/** Remplace le placeholder du catalogue par le package concret (forme package ou chemin). */
-export function substituteBasePackage(model: RenderModel, value: string): string {
-  const replacement = value.includes('/') ? model.basePackagePath : model.basePackage;
-  return value.split(BASE_PACKAGE_PLACEHOLDER).join(replacement);
+/** Remplace les placeholders du catalogue par leur valeur concrète (le pack sait comment). */
+export function substitute(model: RenderModel, value: string): string {
+  return model.input.pack.presentation.substitute(model.input.scaffold, value);
 }

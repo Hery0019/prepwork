@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { PrepworkError } from '../../src/errors.js';
-import { runQuestionnaire, type ProfileChoice } from '../../src/questionnaire/questions.js';
+import { runQuestionnaire, type ProfileChoice } from '../../src/packs/spring-boot/questionnaire.js';
 import { createScriptedPrompter, type ScriptedAnswer } from '../../src/questionnaire/scripted.js';
 
 const PROFILES: ProfileChoice[] = [
@@ -33,13 +33,13 @@ describe('questionnaire', () => {
     const prompter = createScriptedPrompter(DEFAULT_ANSWERS);
     const result = await runQuestionnaire(prompter, { profiles: PROFILES });
     expect(result.scaffold).toEqual({
-      scaffold_version: '1.0.0',
+      scaffold_version: '1.1.0',
       project: {
         name: 'pay-flow',
         base_package: 'mg.solumada.payflow',
         description: 'Payment flows',
       },
-      stack: { java: 21, database: 'postgresql', migrations: 'flyway' },
+      stack: { target: 'spring-boot', java: 21, database: 'postgresql', migrations: 'flyway' },
       profile: 'layered',
       options: { security: 'none', docker: true, ci: 'github' },
       git: { author: { name: 'Hery', email: 'hery@example.com' }, agent_trailer: true },
@@ -92,6 +92,7 @@ describe('questionnaire', () => {
     ]);
     const result = await runQuestionnaire(prompter, { profiles: PROFILES });
     expect(result.scaffold.stack).toEqual({
+      target: 'spring-boot',
       java: 17,
       database: 'oracle',
       migrations: 'liquibase',
@@ -124,7 +125,7 @@ describe('questionnaire', () => {
       true,
     ]);
     const withoutDb = await runQuestionnaire(noDb, { profiles: PROFILES });
-    expect(withoutDb.scaffold.stack).toEqual({ java: 21, database: 'none' });
+    expect(withoutDb.scaffold.stack).toEqual({ target: 'spring-boot', java: 21, database: 'none' });
     expect(noDb.asked.some((q) => q.startsWith('5a'))).toBe(false);
   });
 

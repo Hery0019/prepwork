@@ -1,5 +1,5 @@
 {
-  "title": "prepwork profile.yaml",
+  "title": "prepwork profile.yaml (spring-boot)",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
@@ -127,10 +127,6 @@
     "architecture": {
       "type": "object",
       "properties": {
-        "base_package": {
-          "type": "string",
-          "const": "{{basePackage}}"
-        },
         "layers": {
           "type": "array",
           "items": {
@@ -140,7 +136,7 @@
                 "type": "string",
                 "pattern": "^[a-z][a-z0-9-]*$"
               },
-              "package": {
+              "target": {
                 "type": "string",
                 "pattern": "^\\{\\{basePackage\\}\\}(\\.[a-z][a-z0-9]*)*$"
               },
@@ -154,16 +150,20 @@
             },
             "required": [
               "id",
-              "package",
+              "target",
               "may_depend_on"
             ],
             "additionalProperties": false
           }
+        },
+        "base_package": {
+          "type": "string",
+          "const": "{{basePackage}}"
         }
       },
       "required": [
-        "base_package",
-        "layers"
+        "layers",
+        "base_package"
       ],
       "additionalProperties": false
     },

@@ -24,16 +24,16 @@ architecture:
   base_package: '{{basePackage}}'
   layers:
     - id: web
-      package: '{{basePackage}}.web'
+      target: '{{basePackage}}.web'
       may_depend_on: [service, domain]
     - id: service
-      package: '{{basePackage}}.service'
+      target: '{{basePackage}}.service'
       may_depend_on: [repository, domain]
     - id: repository
-      package: '{{basePackage}}.repository'
+      target: '{{basePackage}}.repository'
       may_depend_on: [domain]
     - id: domain
-      package: '{{basePackage}}.domain'
+      target: '{{basePackage}}.domain'
       may_depend_on: []
 
 rules:

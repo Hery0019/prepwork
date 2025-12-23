@@ -3,12 +3,13 @@
 // Usage : pnpm matrix <outDir> <profile> <security> <migrations|none> [database]
 import { defaultContentRoot, loadCatalog } from '../src/catalog/index.js';
 import { serializeScaffold } from '../src/config/io.js';
-import { ScaffoldSchema, type Scaffold } from '../src/config/schema.js';
 import { compose } from '../src/engine/compose.js';
 import { renderProject } from '../src/engine/render.js';
 import { PrepworkError } from '../src/errors.js';
 import { createNodeFileSystem } from '../src/fs/node.js';
 import { joinPath } from '../src/fs/types.js';
+import { getPack } from '../src/packs/index.js';
+import { ScaffoldSchema } from '../src/packs/spring-boot/scaffold.js';
 import { claudeCodeRenderer } from '../src/renderers/index.js';
 
 const [outDir, profile, security, migrations, database = 'postgresql'] = process.argv.slice(2);
@@ -19,8 +20,8 @@ if (!outDir || !profile || !security || !migrations) {
 
 try {
   const noDb = migrations === 'none' || database === 'none';
-  const scaffold: Scaffold = ScaffoldSchema.parse({
-    scaffold_version: '1.0.0',
+  const scaffold = ScaffoldSchema.parse({
+    scaffold_version: '1.1.0',
     project: {
       name: `matrix-${profile}`,
       base_package: `mg.solumada.matrix.${profile.replace(/-/g, '')}`,
@@ -33,9 +34,10 @@ try {
     language: { comments: 'fr', docs: 'fr' },
   });
   const fs = createNodeFileSystem();
-  const catalog = await loadCatalog(fs, defaultContentRoot());
+  const pack = getPack(scaffold.stack.target);
+  const catalog = await loadCatalog(fs, defaultContentRoot(), pack);
   const files = renderProject(
-    compose(catalog, scaffold, { toolVersion: 'matrix' }),
+    compose(catalog, scaffold, pack, { toolVersion: 'matrix' }),
     claudeCodeRenderer,
   );
   await fs.writeText(joinPath(outDir, 'scaffold.yaml'), serializeScaffold(scaffold));

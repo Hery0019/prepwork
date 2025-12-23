@@ -4,19 +4,20 @@
 // Sans scaffold, un exemple par défaut (layered, PostgreSQL, Flyway, fr) est utilisé.
 import { readFile } from 'node:fs/promises';
 import { defaultContentRoot, loadCatalog } from '../src/catalog/index.js';
-import { parseScaffold, serializeScaffold } from '../src/config/io.js';
-import type { Scaffold } from '../src/config/schema.js';
+import { parseScaffold, readStackTarget, serializeScaffold } from '../src/config/io.js';
+import type { BaseScaffold } from '../src/config/schema.js';
 import { compose } from '../src/engine/compose.js';
 import { renderProject } from '../src/engine/render.js';
 import { PrepworkError } from '../src/errors.js';
 import { createNodeFileSystem } from '../src/fs/node.js';
 import { joinPath } from '../src/fs/types.js';
+import { getPack } from '../src/packs/index.js';
 import { claudeCodeRenderer } from '../src/renderers/index.js';
 
-const DEFAULT_SCAFFOLD: Scaffold = {
-  scaffold_version: '1.0.0',
+const DEFAULT_SCAFFOLD = {
+  scaffold_version: '1.1.0',
   project: { name: 'pay-flow', base_package: 'mg.solumada.payflow', description: 'Payment flows' },
-  stack: { java: 21, database: 'postgresql', migrations: 'flyway' },
+  stack: { target: 'spring-boot', java: 21, database: 'postgresql', migrations: 'flyway' },
   profile: 'layered',
   options: { security: 'none', docker: true, ci: 'github' },
   git: { author: { name: 'Hery', email: 'hery@example.com' }, agent_trailer: true },
@@ -31,11 +32,13 @@ if (!outDir) {
 
 try {
   const fs = createNodeFileSystem();
-  const scaffold = scaffoldPath
-    ? parseScaffold(await readFile(scaffoldPath, 'utf8'), scaffoldPath)
-    : DEFAULT_SCAFFOLD;
-  const catalog = await loadCatalog(fs, defaultContentRoot());
-  const composition = compose(catalog, scaffold, { toolVersion: '0.1.0-dev' });
+  const text = scaffoldPath
+    ? await readFile(scaffoldPath, 'utf8')
+    : JSON.stringify(DEFAULT_SCAFFOLD);
+  const pack = getPack(readStackTarget(text, scaffoldPath ?? 'scaffold par défaut'));
+  const scaffold: BaseScaffold = parseScaffold(text, pack, scaffoldPath ?? 'scaffold par défaut');
+  const catalog = await loadCatalog(fs, defaultContentRoot(), pack);
+  const composition = compose(catalog, scaffold, pack, { toolVersion: '0.1.0-dev' });
   const files = renderProject(composition, claudeCodeRenderer);
   await fs.writeText(joinPath(outDir, 'scaffold.yaml'), serializeScaffold(scaffold));
   for (const file of files) await fs.writeText(joinPath(outDir, file.path), file.content);

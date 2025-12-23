@@ -4,14 +4,14 @@ import { Command } from 'commander';
 import { defaultContentRoot, loadCatalog, validateCatalog } from '../catalog/index.js';
 import type { Catalog } from '../catalog/load.js';
 import { pickText } from '../catalog/text.js';
-import { parseScaffold } from '../config/io.js';
-import type { ProfileId } from '../config/schema.js';
+import { parseScaffold, readScaffoldText, readStackTarget, SCAFFOLD_FILE } from '../config/io.js';
 import { runCheck, runInit, runSync, type EngineDeps } from '../engine/index.js';
 import { formatDiagnostic, hasErrors, PrepworkError } from '../errors.js';
 import type { FileSystem } from '../fs/types.js';
 import { joinPath, toPosix } from '../fs/types.js';
+import { getPack, PACK_IDS } from '../packs/index.js';
+import type { QuestionnaireInput, StackPack } from '../packs/types.js';
 import type { Prompter } from '../questionnaire/prompter.js';
-import { runQuestionnaire, type ProfileChoice } from '../questionnaire/questions.js';
 import { readGlobalGitIdentity, setupGitRepository, type CommandRunner } from './git.js';
 import { createConsoleReporter, isClean, reportPlan, type Reporter } from './report.js';
 
@@ -34,9 +34,13 @@ export interface CliResult {
   exitCode: number;
 }
 
-async function loadValidatedCatalog(deps: CliDeps, reporter: Reporter): Promise<Catalog> {
-  const catalog = await loadCatalog(deps.fs, deps.contentRoot ?? defaultContentRoot());
-  const diagnostics = validateCatalog(catalog);
+async function loadValidatedCatalog(
+  deps: CliDeps,
+  reporter: Reporter,
+  pack: StackPack,
+): Promise<Catalog> {
+  const catalog = await loadCatalog(deps.fs, deps.contentRoot ?? defaultContentRoot(), pack);
+  const diagnostics = validateCatalog(catalog, pack);
   for (const d of diagnostics)
     (d.level === 'error' ? reporter.error : reporter.warn)(formatDiagnostic(d));
   if (hasErrors(diagnostics)) {
@@ -55,9 +59,9 @@ function resolveDir(deps: CliDeps, dir: string | undefined): string {
   return absolute ? posix : joinPath(deps.cwd, posix);
 }
 
-function profileChoices(catalog: Catalog): ProfileChoice[] {
+function profileChoices(catalog: Catalog): QuestionnaireInput['profiles'] {
   return [...catalog.profiles.values()].map((p) => ({
-    id: p.id as ProfileId,
+    id: p.id,
     summary: pickText(p.profile.meta.summary, 'fr'),
     whenToUse: p.profile.meta.when_to_use.map((t) => pickText(t, 'fr')),
   }));
@@ -83,78 +87,100 @@ export function createProgram(deps: CliDeps): { program: Command; result: CliRes
       },
     });
 
-  const engineDeps = (catalog: Catalog): EngineDeps => ({
+  const engineDeps = (catalog: Catalog, pack: StackPack): EngineDeps => ({
     fs: deps.fs,
     catalog,
+    pack,
     toolVersion: deps.toolVersion,
     today: deps.today,
   });
+
+  /** Pack d'un projet existant : lu dans son `scaffold.yaml` (absence = `spring-boot`). */
+  const packOfProject = async (projectDir: string): Promise<StackPack> =>
+    getPack(readStackTarget(await readScaffoldText(deps.fs, projectDir), SCAFFOLD_FILE));
 
   program
     .command('init')
     .description('Questionnaire, scaffold.yaml et génération complète dans un répertoire vide')
     .argument('[dir]', 'répertoire cible (créé si absent)', '.')
     .option('--scaffold <file>', 'utiliser ce scaffold.yaml au lieu du questionnaire')
+    .option('--stack <id>', `stack cible (${PACK_IDS.join(', ')})`)
     .option('--dry-run', 'calculer le plan sans rien écrire', false)
     .option('--no-git', 'ne pas initialiser ni configurer le dépôt git')
-    .action(async (dir: string, options: { scaffold?: string; dryRun: boolean; git: boolean }) => {
-      const projectDir = resolveDir(deps, dir);
-      const catalog = await loadValidatedCatalog(deps, reporter);
+    .action(
+      async (
+        dir: string,
+        options: { scaffold?: string; stack?: string; dryRun: boolean; git: boolean },
+      ) => {
+        const projectDir = resolveDir(deps, dir);
 
-      let scaffold;
-      let extras;
-      if (options.scaffold) {
-        const path = resolveDir(deps, options.scaffold);
-        const text = await deps.fs.readText(path);
-        if (text === undefined)
-          throw new PrepworkError('SCAFFOLD_NOT_FOUND', `${path} introuvable`);
-        scaffold = parseScaffold(text, path);
-      } else {
-        const identity = await readGlobalGitIdentity(deps.commands);
-        const answers = await runQuestionnaire(deps.prompter(), {
-          profiles: profileChoices(catalog),
-          gitIdentity: identity,
-        });
-        scaffold = answers.scaffold;
-        extras = answers.extras;
-      }
-
-      const outcome = await runInit(engineDeps(catalog), {
-        projectDir,
-        scaffold,
-        extras,
-        dryRun: options.dryRun,
-      });
-      reportPlan(reporter, outcome.plan, {
-        verb: options.dryRun ? 'Plan (dry-run)' : 'Généré',
-        executed: !options.dryRun,
-      });
-      if (options.dryRun) return;
-
-      reporter.info(`scaffold.yaml et .scaffold/manifest.json écrits dans ${projectDir}`);
-      if (options.git) {
-        const hasGitDir = await deps.fs.exists(joinPath(projectDir, '.git'));
-        const git = await setupGitRepository(
-          deps.commands,
-          projectDir,
-          scaffold.git.author,
-          hasGitDir,
-        );
-        if (git.problem !== undefined) {
-          reporter.warn(
-            `git non configuré (${git.problem}) : lancer \`git init\` et \`git config core.hooksPath .githooks\` à la main`,
-          );
+        let scaffold;
+        let extras;
+        let pack: StackPack;
+        let catalog: Catalog;
+        if (options.scaffold) {
+          const path = resolveDir(deps, options.scaffold);
+          const text = await deps.fs.readText(path);
+          if (text === undefined)
+            throw new PrepworkError('SCAFFOLD_NOT_FOUND', `${path} introuvable`);
+          pack = getPack(options.stack ?? readStackTarget(text, path));
+          catalog = await loadValidatedCatalog(deps, reporter, pack);
+          scaffold = parseScaffold(text, pack, path);
         } else {
-          reporter.info(
-            `git ${git.initialized ? 'initialisé' : 'existant'} : auteur et hooks (.githooks) configurés`,
-          );
+          pack = getPack(options.stack);
+          catalog = await loadValidatedCatalog(deps, reporter, pack);
+          if (pack.runQuestionnaire === undefined) {
+            throw new PrepworkError(
+              'UNKNOWN_STACK',
+              `la stack \`${pack.id}\` n'a pas encore de questionnaire : utiliser --scaffold`,
+            );
+          }
+          const identity = await readGlobalGitIdentity(deps.commands);
+          const answers = await pack.runQuestionnaire(deps.prompter(), {
+            profiles: profileChoices(catalog),
+            gitIdentity: identity,
+          });
+          scaffold = answers.scaffold;
+          extras = answers.extras;
         }
-      }
-      reporter.info(
-        "Le hook pre-commit exige gitleaks (https://github.com/gitleaks/gitleaks#installing) : sans lui, aucun commit n'est possible.",
-      );
-      reporter.info("Prochaine étape : ./mvnw verify, puis un premier commit par l'équipe.");
-    });
+
+        const outcome = await runInit(engineDeps(catalog, pack), {
+          projectDir,
+          scaffold,
+          extras,
+          dryRun: options.dryRun,
+        });
+        reportPlan(reporter, outcome.plan, {
+          verb: options.dryRun ? 'Plan (dry-run)' : 'Généré',
+          executed: !options.dryRun,
+        });
+        if (options.dryRun) return;
+
+        reporter.info(`scaffold.yaml et .scaffold/manifest.json écrits dans ${projectDir}`);
+        if (options.git) {
+          const hasGitDir = await deps.fs.exists(joinPath(projectDir, '.git'));
+          const git = await setupGitRepository(
+            deps.commands,
+            projectDir,
+            scaffold.git.author,
+            hasGitDir,
+          );
+          if (git.problem !== undefined) {
+            reporter.warn(
+              `git non configuré (${git.problem}) : lancer \`git init\` et \`git config core.hooksPath .githooks\` à la main`,
+            );
+          } else {
+            reporter.info(
+              `git ${git.initialized ? 'initialisé' : 'existant'} : auteur et hooks (.githooks) configurés`,
+            );
+          }
+        }
+        reporter.info(
+          "Le hook pre-commit exige gitleaks (https://github.com/gitleaks/gitleaks#installing) : sans lui, aucun commit n'est possible.",
+        );
+        reporter.info("Prochaine étape : ./mvnw verify, puis un premier commit par l'équipe.");
+      },
+    );
 
   program
     .command('check')
@@ -165,8 +191,9 @@ export function createProgram(deps: CliDeps): { program: Command; result: CliRes
     .option('--dry-run', "sans effet : check n'écrit jamais", false)
     .action(async (dir: string) => {
       const projectDir = resolveDir(deps, dir);
-      const catalog = await loadValidatedCatalog(deps, reporter);
-      const outcome = await runCheck(engineDeps(catalog), projectDir);
+      const pack = await packOfProject(projectDir);
+      const catalog = await loadValidatedCatalog(deps, reporter, pack);
+      const outcome = await runCheck(engineDeps(catalog, pack), projectDir);
       reportPlan(reporter, outcome.plan, { verb: 'Plan', executed: false });
       if (isClean(outcome.plan)) reporter.info('Projet à jour.');
       else result.exitCode = 1;
@@ -179,8 +206,11 @@ export function createProgram(deps: CliDeps): { program: Command; result: CliRes
     .option('--dry-run', 'calculer le plan sans rien écrire', false)
     .action(async (dir: string, options: { dryRun: boolean }) => {
       const projectDir = resolveDir(deps, dir);
-      const catalog = await loadValidatedCatalog(deps, reporter);
-      const outcome = await runSync(engineDeps(catalog), projectDir, { dryRun: options.dryRun });
+      const pack = await packOfProject(projectDir);
+      const catalog = await loadValidatedCatalog(deps, reporter, pack);
+      const outcome = await runSync(engineDeps(catalog, pack), projectDir, {
+        dryRun: options.dryRun,
+      });
       reportPlan(reporter, outcome.plan, {
         verb: options.dryRun ? 'Plan (dry-run)' : 'Synchronisé',
         executed: !options.dryRun,

@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../../../schema/react/option.schema.json
+# Intégration continue GitLab CI.
+meta:
+  id: ci-gitlab
+  version: 1.0.0
+  rule_prefix: CIGL
+  group: ci
+  summary:
+    en: A GitLab CI pipeline runs the checks on every merge request.
+    fr: Un pipeline GitLab CI lance les vérifications sur chaque merge request.
+skill: workflow
+rules:
+  - id: CIGL-001
+    statement:
+      en: The pipeline runs the type check, the lint, the tests and the build on every merge request.
+      fr: Le pipeline lance la vérification de types, le lint, les tests et le build sur chaque merge request.
+    rationale:
+      en: What the machine does not check on the branch is checked by the user in production.
+      fr: Ce que la machine ne vérifie pas sur la branche, c'est l'utilisateur qui le vérifie en production.
+    enforced_by: none
+  - id: CIGL-002
+    statement:
+      en: Dependencies are installed from the lockfile with a frozen install, and the store is cached between runs.
+      fr: Les dépendances sont installées depuis le fichier de verrouillage avec une installation figée, et le store est mis en cache entre les exécutions.
+    rationale:
+      en: A resolution that differs from the local one turns CI into a lottery.
+      fr: Une résolution différente de celle du poste transforme la CI en loterie.
+    enforced_by: none

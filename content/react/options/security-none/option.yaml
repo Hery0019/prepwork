@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../../../schema/react/option.schema.json
+# Aucune authentification.
+meta:
+  id: security-none
+  version: 1.0.0
+  rule_prefix: SECN
+  group: security
+  summary:
+    en: No authentication in the interface; the API is reached directly.
+    fr: Aucune authentification dans l'interface ; l'API est appelée directement.
+skill: security
+rules:
+  - id: SECN-001
+    statement:
+      en: No route is hidden behind a client-side check that pretends to protect it.
+      fr: Aucune route n'est cachée derrière un contrôle côté client qui prétend la protéger.
+    rationale:
+      en: A check the browser performs protects nothing; it only misleads the next reader.
+      fr: Un contrôle effectué par le navigateur ne protège rien ; il trompe seulement le lecteur suivant.
+    enforced_by: none
+  - id: SECN-002
+    statement:
+      en: No authentication dependency is added without changing this choice in `scaffold.yaml` first.
+      fr: Aucune dépendance d'authentification n'est ajoutée sans changer d'abord ce choix dans `scaffold.yaml`.
+    rationale:
+      en: Authentication added on the side, screen by screen, is how a hole is left open.
+      fr: Une authentification ajoutée à côté, écran par écran, est la façon dont un trou reste ouvert.
+    enforced_by: none

@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../../schema/core.schema.json
+# yaml-language-server: $schema=../../../schema/spring-boot/core.schema.json
 # Sécurité de base (CLAUDE.md §4), indépendante de l'option security-*.
 id: security
 skill: security

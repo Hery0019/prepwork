@@ -154,3 +154,29 @@ remonte dans `content/common/`, consommé par les deux packs.
 4. Squelette Vite, tokens, shadcn, feature `notes`, lint de frontières ; vérifié par
    `pnpm build && pnpm lint && pnpm test && pnpm e2e`.
 5. Questionnaire du pack `react`, puis matrice de génération front.
+
+## Amendements
+
+**2026-09-03, en écrivant le contenu (étape 2 ci-dessus).**
+
+- **Le préfixe du `core/` reste `CORE-`, pas `WEB-`.** Le contrôle de cohérence réserve `CORE` aux
+  règles de `core/`, quel que soit le pack, et les identifiants ne sont uniques qu'à l'intérieur
+  d'un catalogue. Deux préfixes pour la même notion auraient coûté un point d'extension sans rien
+  apporter au lecteur.
+- **L'option des formulaires s'appelle `forms-rhf`**, et non `forms-rhf-zod` : le contrôle
+  d'orthogonalité déduit ses marqueurs de l'identifiant de l'option, et `zod` — dépendance du
+  profil, citée par les règles de base — en serait devenu un.
+- **Trois points d'extension supplémentaires** sont apparus en généralisant : `carriesRuleEvidence`
+  (quel template peut porter la preuve d'une règle outillée : un test côté Spring, une
+  configuration de lint côté React), `genericOptionWords` (les mots trop banals pour servir de
+  marqueur d'orthogonalité) et `catalogSpecValues` (l'union des valeurs des packs, pour le schéma
+  JSON de `content/common`).
+- **Deux formulations partagées ont été nettoyées** : la règle `CORE-007` et la ligne « interdit à
+  l'agent » du renderer ne parlent plus de migration de base de données — la protection reste,
+  portée par les options `migrations-*` qui apportent les migrations. Sept golden files du pack
+  `spring-boot` changent d'une ligne, délibérément.
+- **`.gitignore` ignorait les `CLAUDE.md` des golden files** : le motif `CLAUDE.md` s'applique à
+  toutes les profondeurs. Il est ancré (`/CLAUDE.md`) et les cinq fichiers manquants sont commités —
+  sans quoi le test golden échouait sur un clone neuf, donc en CI.
+- **Le contraste des presets est vérifié par un test**, et non plus seulement annoncé : les huit
+  paires de texte de chaque preset, dans les deux thèmes, restent au-dessus de 4,5:1.

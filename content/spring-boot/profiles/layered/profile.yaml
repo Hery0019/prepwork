@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../../../schema/profile.schema.json
+# yaml-language-server: $schema=../../../../schema/spring-boot/profile.schema.json
 # Profil `layered` : monolithe en couches web / service / repository / domain.
 meta:
   id: layered

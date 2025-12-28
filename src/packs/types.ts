@@ -6,7 +6,7 @@
 // Règle de garde : le cœur ne teste jamais `pack.id`. Une différence de stack qui ne s'exprime
 // pas par un de ces points d'extension est un défaut de découpage.
 import type { ZodError, ZodType } from 'zod';
-import type { CatalogSchemas, Option, Profile } from '../catalog/schema.js';
+import type { CatalogSchemaSpec, CatalogSchemas, Option, Profile } from '../catalog/schema.js';
 import type { OptionCatalog, ProfileCatalog } from '../catalog/load.js';
 import type { BaseScaffold } from '../config/schema.js';
 import type { BaseTemplateContext, TemplateContext } from '../engine/context.js';
@@ -72,7 +72,12 @@ export interface PackPresentation {
   /** Sections propres à la stack dans un skill : tables SQL du `db`, par exemple. */
   skillSections(
     skillId: string,
-    context: { profile: Profile; options: readonly Option[]; language: string },
+    context: {
+      scaffold: BaseScaffold;
+      profile: Profile;
+      options: readonly Option[];
+      language: string;
+    },
   ): SkillSections | undefined;
 }
 
@@ -85,8 +90,14 @@ export interface StackPack {
   scaffoldSchema: ScaffoldParser;
   /** Schémas du catalogue, construits depuis la déclaration du pack. */
   catalogSchemas: CatalogSchemas;
+  /** Valeurs déclarées par le pack, pour composer un schéma valable pour tous. */
+  catalogSpecValues: Pick<CatalogSchemaSpec, 'enforcedBy' | 'skills'>;
   /** Applications dont `check:content` vérifie qu'un test porte l'id de la règle. */
   testBackedEnforcers: readonly string[];
+  /** Template pouvant porter la preuve d'une règle outillée (test, configuration de lint). */
+  carriesRuleEvidence(templatePath: string): boolean;
+  /** Segments d'identifiants d'option trop génériques pour servir de marqueur d'orthogonalité. */
+  genericOptionWords: readonly string[];
   /**
    * Conditions `when` portées par les contributions d'un profil ou d'une option (dépendances
    * Maven, paquets npm…). `check:content` vérifie qu'elles respectent l'orthogonalité des axes.

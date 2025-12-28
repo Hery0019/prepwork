@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../../../schema/option.schema.json
+# yaml-language-server: $schema=../../../../schema/spring-boot/option.schema.json
 # Pipeline GitLab CI. Exclusive avec ci-github.
 meta:
   id: ci-gitlab

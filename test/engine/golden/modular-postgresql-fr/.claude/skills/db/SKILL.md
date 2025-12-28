@@ -39,7 +39,7 @@ Migrations de schéma en fichiers SQL versionnés, appliquées par Flyway au dé
 
 ### Règles
 
-- **FLY-001** · `flyway` — Tout changement de schéma est un nouveau fichier `src/main/resources/db/migration/V<n>__<description>.sql` ; une migration appliquée n'est jamais modifiée.
+- **FLY-001** · `flyway` — Tout changement de schéma est un nouveau fichier `src/main/resources/db/migration/V<n>__<description>.sql` ; une migration appliquée n'est jamais modifiée ni supprimée.
   Pourquoi : Flyway enregistre une empreinte par migration et refuse de démarrer si l'une a changé.
 - **FLY-002** · guidance — Les migrations sont du SQL brut écrit pour le moteur de base de données du projet, sans abstraction multi-moteurs.
   Pourquoi : Le SQL qui tourne en production est celui qui a été relu.

@@ -1,0 +1,42 @@
+# yaml-language-server: $schema=../../../../schema/react/option.schema.json
+# Authentification OIDC derrière un backend-for-frontend.
+meta:
+  id: security-oidc-bff
+  version: 1.0.0
+  rule_prefix: SECO
+  group: security
+  summary:
+    en: The session lives in a backend-for-frontend; the browser never sees a token.
+    fr: La session vit dans un backend-for-frontend ; le navigateur ne voit jamais de jeton.
+skill: security
+rules:
+  - id: SECO-001
+    statement:
+      en: The browser never handles an access or refresh token; the backend-for-frontend holds the session and sets an http-only cookie.
+      fr: Le navigateur ne manipule jamais de jeton d'accès ni de rafraîchissement ; le backend-for-frontend tient la session et pose un cookie http-only.
+    rationale:
+      en: A token readable by JavaScript is a token an injected script can steal.
+      fr: Un jeton lisible par JavaScript est un jeton qu'un script injecté peut voler.
+    enforced_by: none
+  - id: SECO-002
+    statement:
+      en: A 401 response sends the user to the login endpoint of the backend-for-frontend, never into a silent retry loop.
+      fr: Une réponse 401 envoie l'utilisateur vers l'endpoint de connexion du backend-for-frontend, jamais dans une boucle de réessai silencieuse.
+    rationale:
+      en: A retry loop on an expired session hammers the API and leaves the user on a blank screen.
+      fr: Une boucle de réessai sur une session expirée martèle l'API et laisse l'utilisateur devant un écran vide.
+    enforced_by: none
+  - id: SECO-003
+    statement:
+      en: Hiding a route in the client is a convenience; the API refuses an unauthorised call whatever the interface shows.
+      fr: Masquer une route dans le client est un confort ; l'API refuse un appel non autorisé quoi qu'affiche l'interface.
+    rationale:
+      en: The interface is downloadable and modifiable by anyone.
+      fr: L'interface est téléchargeable et modifiable par n'importe qui.
+    enforced_by: none
+env:
+  - name: VITE_AUTH_LOGIN_PATH
+    example: /bff/login
+    comment:
+      en: Path of the backend-for-frontend endpoint that starts the login flow.
+      fr: Chemin de l'endpoint du backend-for-frontend qui démarre la connexion.

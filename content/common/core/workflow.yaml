@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../../schema/core.schema.json
+# yaml-language-server: $schema=../../../schema/common/core.schema.json
 # Workflow de l'agent (CLAUDE.md §4). Une règle = une phrase vérifiable.
 id: workflow
 skill: workflow
@@ -56,8 +56,8 @@ rules:
     enforced_by: none
   - id: CORE-007
     statement:
-      en: The agent never runs `git push`, `git reset --hard`, `git clean`, and never deletes a database migration.
-      fr: L'agent n'exécute jamais `git push`, `git reset --hard`, `git clean`, et ne supprime jamais une migration de base de données.
+      en: The agent never runs `git push`, `git reset --hard` or `git clean`.
+      fr: L'agent n'exécute jamais `git push`, `git reset --hard` ni `git clean`.
     rationale:
       en: These actions are irreversible or affect shared state; only a human takes them.
       fr: Ces actions sont irréversibles ou touchent un état partagé ; seul un humain les prend.

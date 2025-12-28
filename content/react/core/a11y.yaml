@@ -1,0 +1,92 @@
+# yaml-language-server: $schema=../../../schema/react/core.schema.json
+# Accessibilité (ADR 0007 §5) : un corps de règles à lire avant de toucher au balisage.
+id: a11y
+skill: a11y
+title:
+  en: Accessibility
+  fr: Accessibilité
+rules:
+  - id: CORE-030
+    statement:
+      en: The native element comes first (`button`, `a`, `input`, `dialog`); a `role` is added only when no native element fits.
+      fr: L'élément natif passe en premier (`button`, `a`, `input`, `dialog`) ; un `role` n'est ajouté que si aucun élément natif ne convient.
+    rationale:
+      en: Native elements bring keyboard behaviour, focus and semantics for free.
+      fr: Les éléments natifs apportent gratuitement le clavier, le focus et la sémantique.
+    enforced_by: jsx-a11y
+  - id: CORE-031
+    statement:
+      en: Every form control has a visible label associated by `htmlFor` and `id`.
+      fr: Tout champ de formulaire a un libellé visible associé par `htmlFor` et `id`.
+    rationale:
+      en: A placeholder is not a label; it disappears as soon as the user types.
+      fr: Un placeholder n'est pas un libellé ; il disparaît dès que l'utilisateur saisit.
+    enforced_by: jsx-a11y
+  - id: CORE-032
+    statement:
+      en: Every image carries an `alt`; a decorative image carries `alt=""`.
+      fr: Toute image porte un `alt` ; une image décorative porte `alt=""`.
+    rationale:
+      en: A missing `alt` makes a screen reader announce the file name.
+      fr: Un `alt` manquant fait annoncer le nom du fichier par un lecteur d'écran.
+    enforced_by: jsx-a11y
+  - id: CORE-033
+    statement:
+      en: Text keeps a contrast ratio of at least 4.5:1 against its background, 3:1 for text of 24px or bolder.
+      fr: Le texte garde un contraste d'au moins 4,5:1 avec son fond, 3:1 pour un texte de 24px ou plus gras.
+    rationale:
+      en: Below that, the screen becomes unreadable outdoors and for a large part of users.
+      fr: En dessous, l'écran devient illisible en extérieur et pour une grande partie des utilisateurs.
+    enforced_by: none
+  - id: CORE-034
+    statement:
+      en: An interactive target measures at least 44 by 44 pixels, padding included.
+      fr: Une cible interactive mesure au moins 44 sur 44 pixels, marge intérieure comprise.
+    rationale:
+      en: Below that size a touch screen turns every tap into a lottery.
+      fr: En dessous, un écran tactile transforme chaque appui en loterie.
+    enforced_by: none
+  - id: CORE-035
+    statement:
+      en: No positive `tabIndex`; the focus order follows the DOM order.
+      fr: Aucun `tabIndex` positif ; l'ordre de focus suit l'ordre du DOM.
+    rationale:
+      en: A hand-made focus order breaks at the first inserted element.
+      fr: Un ordre de focus fait à la main casse dès le premier élément inséré.
+    enforced_by: jsx-a11y
+  - id: CORE-036
+    statement:
+      en: 'Animations and transitions are neutralised under `prefers-reduced-motion: reduce`.'
+      fr: 'Animations et transitions sont neutralisées sous `prefers-reduced-motion: reduce`.'
+    rationale:
+      en: Motion causes real discomfort for part of the users; the preference is theirs.
+      fr: Le mouvement provoque une gêne réelle chez une partie des utilisateurs ; la préférence leur appartient.
+    enforced_by: stylelint
+  - id: CORE-037
+    statement:
+      en: A status or error message is announced through `role="alert"` or an `aria-live` region, never by colour alone.
+      fr: Un message d'état ou d'erreur est annoncé par `role="alert"` ou une région `aria-live`, jamais par la couleur seule.
+    rationale:
+      en: A user who does not see the colour must still receive the information.
+      fr: Un utilisateur qui ne voit pas la couleur doit tout de même recevoir l'information.
+    enforced_by: none
+  - id: CORE-038
+    statement:
+      en: A modal traps focus while open and returns it to the element that opened it when closed.
+      fr: Une modale piège le focus tant qu'elle est ouverte et le rend à l'élément qui l'a ouverte à la fermeture.
+    rationale:
+      en: Without it a keyboard user is left navigating the page behind the dialog.
+      fr: Sans cela, un utilisateur au clavier se retrouve à naviguer dans la page derrière la boîte de dialogue.
+    enforced_by: none
+anti_patterns:
+  - id: CORE-AP-030
+    statement:
+      en: Signalling an invalid field with a red border only.
+      fr: Signaler un champ invalide par une bordure rouge seulement.
+    rationale:
+      en: The information is invisible to a colour-blind user and to a screen reader.
+      fr: L'information est invisible pour un daltonien et pour un lecteur d'écran.
+    instead:
+      en: Add a text message linked to the field and announced in a live region.
+      fr: Ajouter un message texte relié au champ et annoncé dans une région live.
+    enforced_by: none

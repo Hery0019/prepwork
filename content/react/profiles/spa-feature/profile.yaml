@@ -1,0 +1,301 @@
+# yaml-language-server: $schema=../../../../schema/react/profile.schema.json
+# Profil `spa-feature` (ADR 0007 §2 et §3) : SPA Vite, un dossier par cas d'usage, frontières
+# outillées par eslint-plugin-boundaries et dependency-cruiser.
+meta:
+  id: spa-feature
+  version: 1.0.0
+  rule_prefix: SPA
+  summary:
+    en: Vite single-page application, one directory per use case, imports flowing strictly downwards.
+    fr: Application monopage Vite, un dossier par cas d'usage, imports circulant strictement vers le bas.
+  when_to_use:
+    - en: The interface talks to an HTTP API that already exists or is being built alongside it.
+      fr: L'interface parle à une API HTTP déjà là ou construite en parallèle.
+    - en: The team is small enough for one repository and one deployment unit.
+      fr: L'équipe est assez petite pour un seul dépôt et une seule unité de déploiement.
+    - en: Screens are composed of a handful of independent use cases.
+      fr: Les écrans se composent de quelques cas d'usage indépendants.
+  when_not_to_use:
+    - en: The product needs server-side rendering or streaming for SEO or first paint.
+      fr: Le produit a besoin de rendu serveur ou de streaming pour le référencement ou le premier affichage.
+    - en: Several teams own separate parts of the same interface and deploy independently.
+      fr: Plusieurs équipes possèdent des parties distinctes de la même interface et déploient séparément.
+    - en: The application is mostly static content with little interaction.
+      fr: L'application est surtout du contenu statique avec peu d'interaction.
+
+architecture:
+  layers:
+    - id: app
+      target: src/app
+      may_depend_on: [features, entities, shared]
+    - id: features
+      target: src/features/*
+      may_depend_on: [entities, shared]
+    - id: entities
+      target: src/entities/*
+      may_depend_on: [shared]
+    - id: shared
+      target: src/shared
+      may_depend_on: []
+
+rules:
+  - id: SPA-001
+    statement:
+      en: Every use case is a directory under `src/features/` holding `ui/`, `model/`, `api/` and an `index.ts` that is its only public entry point.
+      fr: Chaque cas d'usage est un dossier sous `src/features/` qui porte `ui/`, `model/`, `api/` et un `index.ts` qui est son seul point d'entrée public.
+    rationale:
+      en: A feature that can be read, moved or deleted on its own is what keeps a growing interface understandable.
+      fr: Une feature qui se lit, se déplace ou se supprime seule est ce qui garde compréhensible une interface qui grossit.
+    enforced_by: eslint-boundaries
+  - id: SPA-002
+    statement:
+      en: A feature never imports another feature; two features are composed in `app/`.
+      fr: Une feature n'importe jamais une autre feature ; deux features se composent dans `app/`.
+    rationale:
+      en: Cross-imports between features are how a modular interface silently becomes one block.
+      fr: Les imports croisés entre features sont la façon dont une interface modulaire devient un bloc en silence.
+    enforced_by: eslint-boundaries
+  - id: SPA-003
+    statement:
+      en: Only the public index of a layer is imported; reaching into a feature's internal files is forbidden.
+      fr: Seul l'index public d'une couche est importé ; atteindre un fichier interne d'une feature est interdit.
+    rationale:
+      en: Without a public surface, every internal rename becomes a breaking change for the whole app.
+      fr: Sans surface publique, chaque renommage interne devient un changement cassant pour toute l'application.
+    enforced_by: eslint-boundaries
+  - id: SPA-004
+    statement:
+      en: '`shared/` contains nothing that names the business domain: no entity type, no feature name, no endpoint.'
+      fr: '`shared/` ne contient rien qui nomme le domaine métier : aucun type d''entité, aucun nom de feature, aucun endpoint.'
+    rationale:
+      en: The day business vocabulary enters `shared/`, everything depends on everything again.
+      fr: Le jour où le vocabulaire métier entre dans `shared/`, tout dépend de nouveau de tout.
+    enforced_by: eslint-boundaries
+  - id: SPA-005
+    statement:
+      en: An entity under `src/entities/` holds the shape of a domain object, its zod schema and its display components, and no use case.
+      fr: Une entité sous `src/entities/` porte la forme d'un objet du domaine, son schéma zod et ses composants d'affichage, et aucun cas d'usage.
+    rationale:
+      en: Two features displaying the same object must show it the same way without depending on each other.
+      fr: Deux features qui affichent le même objet doivent le montrer de la même façon sans dépendre l'une de l'autre.
+    enforced_by: none
+  - id: SPA-006
+    statement:
+      en: A feature never imports from `app/`; composition flows one way only.
+      fr: Une feature n'importe jamais depuis `app/` ; la composition ne circule que dans un sens.
+    rationale:
+      en: The reverse import is what makes a feature impossible to reuse on another screen.
+      fr: L'import inverse est ce qui rend une feature impossible à réutiliser sur un autre écran.
+    enforced_by: eslint-boundaries
+  - id: SPA-007
+    statement:
+      en: Routes are declared in `src/app`, and each route loads its feature lazily.
+      fr: Les routes sont déclarées dans `src/app`, et chaque route charge sa feature en différé.
+    rationale:
+      en: The routing map stays readable in one file and the first bundle stays small.
+      fr: La carte du routage reste lisible dans un seul fichier et le premier bundle reste petit.
+    enforced_by: none
+  - id: SPA-008
+    statement:
+      en: The dependency graph has no cycle and no orphan module.
+      fr: Le graphe de dépendances n'a ni cycle ni module orphelin.
+    rationale:
+      en: A cycle breaks lazy loading and tree-shaking; an orphan is dead code nobody dares delete.
+      fr: Un cycle casse le chargement différé et le tree-shaking ; un orphelin est du code mort que personne n'ose supprimer.
+    enforced_by: dependency-cruiser
+  - id: SPA-009
+    statement:
+      en: A feature's `api/` module is the only place that names its endpoints and builds its cache keys.
+      fr: Le module `api/` d'une feature est le seul endroit qui nomme ses endpoints et construit ses clés de cache.
+    rationale:
+      en: An endpoint written in two places is an endpoint changed in one.
+      fr: Un endpoint écrit à deux endroits est un endpoint modifié à un seul.
+    enforced_by: none
+  - id: SPA-010
+    statement:
+      en: A component used by two features moves to `shared/ui` in its own commit, stripped of business vocabulary.
+      fr: Un composant utilisé par deux features remonte dans `shared/ui` dans son propre commit, débarrassé du vocabulaire métier.
+    rationale:
+      en: Promoting a component is a decision; copying it is how a design system dies.
+      fr: Promouvoir un composant est une décision ; le copier est la façon dont meurt un design system.
+    enforced_by: none
+  - id: SPA-011
+    statement:
+      en: Tests live next to the code they cover, inside the feature, never in a global test directory.
+      fr: Les tests vivent à côté du code qu'ils couvrent, dans la feature, jamais dans un dossier de tests global.
+    rationale:
+      en: Deleting a feature must delete its tests with it.
+      fr: Supprimer une feature doit supprimer ses tests avec elle.
+    enforced_by: none
+  - id: SPA-012
+    statement:
+      en: A new feature is created with its `index.ts` in the first commit; a feature without a public index does not exist for the rest of the application.
+      fr: Une nouvelle feature est créée avec son `index.ts` dès le premier commit ; une feature sans index public n'existe pas pour le reste de l'application.
+    rationale:
+      en: The index is where the author decides what is public, before anyone depends on the rest.
+      fr: L'index est l'endroit où l'auteur décide de ce qui est public, avant que quiconque dépende du reste.
+    enforced_by: eslint-boundaries
+
+anti_patterns:
+  - id: SPA-AP-001
+    statement:
+      en: A `src/utils/` directory collecting whatever fits nowhere else.
+      fr: Un dossier `src/utils/` qui collecte tout ce qui ne va nulle part ailleurs.
+    rationale:
+      en: It becomes a dependency of every layer and belongs to none.
+      fr: Il devient une dépendance de toutes les couches et n'appartient à aucune.
+    instead:
+      en: Put the function in `shared/lib` under a name that says what it does, or inside the only feature that uses it.
+      fr: Placer la fonction dans `shared/lib` sous un nom qui dit ce qu'elle fait, ou dans la seule feature qui l'utilise.
+    enforced_by: eslint-boundaries
+  - id: SPA-AP-002
+    statement:
+      en: Importing `../../features/notes/model/useNotes` to reuse a hook.
+      fr: Importer `../../features/notes/model/useNotes` pour réutiliser un hook.
+    rationale:
+      en: The importing feature now breaks whenever the other one reorganises its internals.
+      fr: La feature qui importe casse désormais dès que l'autre réorganise son intérieur.
+    instead:
+      en: Export the hook from the feature index if it is public, otherwise move the shared logic down to `entities/` or `shared/`.
+      fr: Exporter le hook depuis l'index de la feature s'il est public, sinon descendre la logique commune dans `entities/` ou `shared/`.
+    enforced_by: eslint-boundaries
+
+dependencies:
+  allowed:
+    - artifact: react-router
+      purpose:
+        en: Routing and lazy loading of the screens declared in `app/`.
+        fr: Routage et chargement différé des écrans déclarés dans `app/`.
+    - artifact: zod
+      purpose:
+        en: Validation of everything that enters the application, and inference of the matching types.
+        fr: Validation de tout ce qui entre dans l'application, et inférence des types correspondants.
+    - artifact: class-variance-authority
+      purpose:
+        en: Component variants declared next to the component, on top of the tokens.
+        fr: Variantes d'un composant déclarées à côté de lui, au-dessus des tokens.
+    - artifact: '@radix-ui/react-*'
+      purpose:
+        en: Accessible primitives for dialogs, menus and popovers, styled with the project tokens.
+        fr: Primitives accessibles pour dialogues, menus et popovers, stylées avec les tokens du projet.
+  forbidden:
+    - artifact: moment
+      rationale:
+        en: Unmaintained and heavy; `Intl` and the native date API cover the need.
+        fr: Non maintenu et lourd ; `Intl` et l'API de dates native couvrent le besoin.
+    - artifact: lodash
+      rationale:
+        en: The whole library for two helpers; the language now has them.
+        fr: Toute la bibliothèque pour deux fonctions ; le langage les fournit désormais.
+    - artifact: axios
+      rationale:
+        en: '`fetch` plus the api layer already give typed calls and error handling.'
+        fr: '`fetch` et la couche api donnent déjà des appels typés et la gestion des erreurs.'
+  add_procedure:
+    - en: Check that neither the standard library nor an already allowed dependency covers the need.
+      fr: Vérifier que ni la bibliothèque standard ni une dépendance déjà autorisée ne couvre le besoin.
+    - en: Propose the dependency, its purpose and its weight in the bundle, then wait for confirmation.
+      fr: Proposer la dépendance, son rôle et son poids dans le bundle, puis attendre confirmation.
+    - en: Add it in its own commit (`build(deps)`) touching only `package.json` and the lockfile.
+      fr: L'ajouter dans un commit dédié (`build(deps)`) qui ne touche que `package.json` et le fichier de verrouillage.
+    - en: Record it in `docs/adr/` when it changes how a layer is written.
+      fr: L'enregistrer dans `docs/adr/` quand elle change la façon d'écrire une couche.
+
+reference_example:
+  feature:
+    en: 'The `notes` feature: a paginated list with its three states, a validated creation form and a detail view.'
+    fr: 'La feature `notes` : une liste paginée avec ses trois états, un formulaire de création validé et une vue de détail.'
+  files:
+    - src/entities/note/model/note.ts
+    - src/entities/note/ui/NoteCard.tsx
+    - src/features/notes/api/notesApi.ts
+    - src/features/notes/model/useNotes.ts
+    - src/features/notes/ui/NoteList.tsx
+    - src/features/notes/ui/NoteForm.tsx
+    - src/features/notes/index.ts
+    - src/app/routes.tsx
+  routes:
+    - /notes
+    - /notes/new
+    - /notes/:id
+  demonstrates:
+    - SPA-001
+    - SPA-002
+    - SPA-003
+    - CORE-010
+    - CORE-040
+    - CORE-050
+    - CORE-060
+
+skills:
+  architecture:
+    - SPA-001
+    - SPA-002
+    - SPA-003
+    - SPA-004
+    - SPA-005
+    - SPA-006
+    - SPA-007
+    - SPA-008
+    - SPA-012
+    - SPA-AP-001
+    - SPA-AP-002
+  ui:
+    - SPA-010
+  data:
+    - SPA-009
+  testing:
+    - SPA-011
+
+npm:
+  dependencies:
+    - name: react
+      version: ^19.1.0
+      purpose:
+        en: The user interface library.
+        fr: La bibliothèque d'interface.
+    - name: react-dom
+      version: ^19.1.0
+      purpose:
+        en: Rendering React into the browser DOM.
+        fr: Rendu de React dans le DOM du navigateur.
+    - name: react-router
+      version: ^7.6.0
+      purpose:
+        en: Routing of the screens declared in `app/`.
+        fr: Routage des écrans déclarés dans `app/`.
+    - name: zod
+      version: ^3.25.0
+      purpose:
+        en: Validation at the boundaries and inference of the resulting types.
+        fr: Validation aux frontières et inférence des types qui en découlent.
+    - name: class-variance-authority
+      version: ^0.7.1
+      purpose:
+        en: Component variants built on the design tokens.
+        fr: Variantes de composants construites sur les tokens du design.
+    - name: clsx
+      version: ^2.1.1
+      purpose:
+        en: Conditional composition of class names.
+        fr: Composition conditionnelle des noms de classes.
+  scripts:
+    dev: vite
+    build: tsc -b && vite build
+    preview: vite preview
+    typecheck: tsc --noEmit
+    lint: eslint . && depcruise src
+    format: prettier --write .
+    test: vitest run
+config:
+  eslint:
+    boundaries:
+      elements:
+        - type: app
+          pattern: src/app
+        - type: features
+          pattern: src/features/*
+        - type: entities
+          pattern: src/entities/*
+        - type: shared
+          pattern: src/shared

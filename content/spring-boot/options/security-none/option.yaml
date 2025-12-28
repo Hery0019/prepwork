@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../../../schema/option.schema.json
+# yaml-language-server: $schema=../../../../schema/spring-boot/option.schema.json
 # Aucune authentification. Exclusive avec security-session et security-oauth2-resource-server.
 meta:
   id: security-none

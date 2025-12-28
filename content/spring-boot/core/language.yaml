@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../../schema/core.schema.json
+# yaml-language-server: $schema=../../../schema/spring-boot/core.schema.json
 # Langue (CLAUDE.md §4) : identifiants toujours en anglais, commentaires et docs configurables.
 id: language
 skill: workflow

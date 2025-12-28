@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../../schema/core.schema.json
+# yaml-language-server: $schema=../../../schema/spring-boot/core.schema.json
 # Tests (CLAUDE.md §4).
 id: testing
 skill: testing

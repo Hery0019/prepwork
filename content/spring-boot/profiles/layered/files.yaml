@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../../../schema/files.schema.json
+# yaml-language-server: $schema=../../../../schema/spring-boot/files.schema.json
 # Squelette du profil layered : exemple de référence `Note` et tests ArchUnit.
 # Les variantes sans base de données remplacent JPA par un repository en mémoire.
 files:

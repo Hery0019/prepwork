@@ -1,0 +1,43 @@
+# yaml-language-server: $schema=../../../../schema/react/option.schema.json
+# Cache serveur : TanStack Query détient l'état serveur.
+meta:
+  id: data-tanstack-query
+  version: 1.0.0
+  rule_prefix: QRY
+  group: data
+  summary:
+    en: TanStack Query owns server state, its cache keys and its invalidations.
+    fr: TanStack Query détient l'état serveur, ses clés de cache et ses invalidations.
+skill: data
+rules:
+  - id: QRY-001
+    statement:
+      en: Server state goes through TanStack Query; a `useEffect` paired with a `useState` is never used to load data.
+      fr: L'état serveur passe par TanStack Query ; un `useEffect` associé à un `useState` ne sert jamais à charger des données.
+    rationale:
+      en: The library already handles caching, deduplication, retries and stale data; rewriting it by hand loses all four.
+      fr: La bibliothèque gère déjà cache, déduplication, réessais et péremption ; les réécrire à la main perd les quatre.
+    enforced_by: none
+  - id: QRY-002
+    statement:
+      en: Cache keys are produced by a factory exported by the feature, never written inline at the call site.
+      fr: Les clés de cache sont produites par une fabrique exportée par la feature, jamais écrites en ligne à l'appel.
+    rationale:
+      en: A key typed twice is a cache that is never invalidated.
+      fr: Une clé écrite deux fois est un cache qui n'est jamais invalidé.
+    enforced_by: none
+  - id: QRY-003
+    statement:
+      en: A mutation declares the entries it invalidates; there is no manual refetch loop and no cache patched by hand outside an optimistic update.
+      fr: Une mutation déclare les entrées qu'elle invalide ; il n'y a ni boucle de rechargement manuelle ni cache modifié à la main hors mise à jour optimiste.
+    rationale:
+      en: Invalidation is the contract of the cache; everything else drifts silently.
+      fr: L'invalidation est le contrat du cache ; tout le reste dérive en silence.
+    enforced_by: none
+npm:
+  dependencies:
+    - name: '@tanstack/react-query'
+      version: ^5.75.0
+      purpose:
+        en: Cache, deduplication and invalidation of server state.
+        fr: Cache, déduplication et invalidation de l'état serveur.

@@ -1,0 +1,47 @@
+# yaml-language-server: $schema=../../../../schema/react/option.schema.json
+# Internationalisation de l'interface.
+meta:
+  id: i18n
+  version: 1.0.0
+  rule_prefix: INTL
+  summary:
+    en: User-visible text goes through translation files, one namespace per feature.
+    fr: Le texte visible passe par des fichiers de traduction, un espace de noms par feature.
+skill: ui
+rules:
+  - id: INTL-001
+    statement:
+      en: No user-visible string is written in JSX; every text goes through the translation function.
+      fr: Aucune chaîne visible n'est écrite dans le JSX ; tout texte passe par la fonction de traduction.
+    rationale:
+      en: A single hard-coded string is enough to make a screen untranslatable.
+      fr: Une seule chaîne en dur suffit à rendre un écran intraduisible.
+    enforced_by: eslint
+  - id: INTL-002
+    statement:
+      en: Keys are namespaced by feature and written in full; a key is never built by concatenation.
+      fr: Les clés portent l'espace de noms de leur feature et sont écrites en entier ; une clé n'est jamais construite par concaténation.
+    rationale:
+      en: A concatenated key cannot be found by search, nor detected as missing.
+      fr: Une clé concaténée ne se retrouve ni par recherche, ni comme manquante.
+    enforced_by: none
+  - id: INTL-003
+    statement:
+      en: Dates, numbers and plurals are formatted through `Intl` or the library helpers, never by hand.
+      fr: Dates, nombres et pluriels sont formatés par `Intl` ou les fonctions de la bibliothèque, jamais à la main.
+    rationale:
+      en: Hand-made formatting is right in one language and wrong in the next.
+      fr: Un formatage fait à la main est juste dans une langue et faux dans la suivante.
+    enforced_by: none
+npm:
+  dependencies:
+    - name: i18next
+      version: ^25.1.0
+      purpose:
+        en: Loading of the translation files and interpolation.
+        fr: Chargement des fichiers de traduction et interpolation.
+    - name: react-i18next
+      version: ^15.5.0
+      purpose:
+        en: Translation hook and provider for the components.
+        fr: Hook et provider de traduction pour les composants.

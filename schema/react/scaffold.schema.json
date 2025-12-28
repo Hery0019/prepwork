@@ -1,0 +1,197 @@
+{
+  "title": "prepwork scaffold.yaml (react)",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "scaffold_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "project": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      },
+      "required": [
+        "name",
+        "description"
+      ],
+      "additionalProperties": false
+    },
+    "stack": {
+      "type": "object",
+      "properties": {
+        "target": {
+          "default": "react",
+          "type": "string",
+          "const": "react"
+        }
+      },
+      "additionalProperties": false
+    },
+    "profile": {
+      "type": "string",
+      "enum": [
+        "spa-feature"
+      ]
+    },
+    "options": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "string",
+          "enum": [
+            "tanstack-query",
+            "none"
+          ]
+        },
+        "forms": {
+          "type": "string",
+          "enum": [
+            "rhf",
+            "none"
+          ]
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "zustand",
+            "context"
+          ]
+        },
+        "security": {
+          "type": "string",
+          "enum": [
+            "none",
+            "oidc-bff",
+            "session"
+          ]
+        },
+        "i18n": {
+          "type": "boolean"
+        },
+        "e2e": {
+          "type": "boolean"
+        },
+        "docker": {
+          "type": "boolean"
+        },
+        "ci": {
+          "type": "string",
+          "enum": [
+            "github",
+            "gitlab",
+            "none"
+          ]
+        }
+      },
+      "required": [
+        "data",
+        "forms",
+        "state",
+        "security",
+        "i18n",
+        "e2e",
+        "docker",
+        "ci"
+      ],
+      "additionalProperties": false
+    },
+    "design": {
+      "type": "object",
+      "properties": {
+        "preset": {
+          "type": "string",
+          "enum": [
+            "app-sober",
+            "editorial",
+            "dense"
+          ]
+        },
+        "dark": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "preset",
+        "dark"
+      ],
+      "additionalProperties": false
+    },
+    "git": {
+      "type": "object",
+      "properties": {
+        "author": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "email": {
+              "type": "string",
+              "format": "email",
+              "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+            }
+          },
+          "required": [
+            "name",
+            "email"
+          ],
+          "additionalProperties": false
+        },
+        "agent_trailer": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "author",
+        "agent_trailer"
+      ],
+      "additionalProperties": false
+    },
+    "language": {
+      "type": "object",
+      "properties": {
+        "comments": {
+          "type": "string",
+          "enum": [
+            "fr",
+            "en"
+          ]
+        },
+        "docs": {
+          "type": "string",
+          "enum": [
+            "fr",
+            "en"
+          ]
+        }
+      },
+      "required": [
+        "comments",
+        "docs"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "scaffold_version",
+    "project",
+    "stack",
+    "profile",
+    "options",
+    "design",
+    "git",
+    "language"
+  ],
+  "additionalProperties": false
+}

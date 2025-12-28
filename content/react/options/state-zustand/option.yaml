@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=../../../../schema/react/option.schema.json
+# État client : un store zustand par sujet.
+meta:
+  id: state-zustand
+  version: 1.0.0
+  rule_prefix: ZUS
+  group: state
+  summary:
+    en: Client state lives in small zustand stores exposing selectors.
+    fr: L'état client vit dans de petits stores zustand qui exposent des sélecteurs.
+skill: architecture
+rules:
+  - id: ZUS-001
+    statement:
+      en: A store holds client state only; server data never enters it.
+      fr: Un store ne porte que de l'état client ; aucune donnée serveur n'y entre.
+    rationale:
+      en: Server data in a store is a second cache that nobody invalidates.
+      fr: Une donnée serveur dans un store est un second cache que personne n'invalide.
+    enforced_by: none
+  - id: ZUS-002
+    statement:
+      en: A component subscribes through a selector, never to the whole store.
+      fr: Un composant s'abonne par un sélecteur, jamais au store entier.
+    rationale:
+      en: Subscribing to everything re-renders every screen on every change.
+      fr: S'abonner à tout re-rend tous les écrans à chaque changement.
+    enforced_by: none
+npm:
+  dependencies:
+    - name: zustand
+      version: ^5.0.0
+      purpose:
+        en: Small stores for client state, without a provider.
+        fr: Petits stores pour l'état client, sans provider.

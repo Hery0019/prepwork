@@ -11,16 +11,6 @@ import type { AntiPattern, LocalizedText, Rule } from './schema.js';
 import { allVariants } from './text.js';
 
 const CORE_PREFIX = 'CORE';
-/** Segments d'identifiants d'option trop génériques pour servir de marqueur d'orthogonalité. */
-const GENERIC_OPTION_WORDS = new Set([
-  'migrations',
-  'security',
-  'ci',
-  'none',
-  'git',
-  'resource',
-  'server',
-]);
 
 interface RuleLike {
   id: string;
@@ -106,9 +96,9 @@ function wordPattern(word: string): RegExp {
   return new RegExp(`(^|[^a-z0-9-])${escaped}(?![a-z0-9-])`, 'i');
 }
 
-function optionKeywords(optionId: string): string[] {
-  const words = optionId.split('-').filter((w) => !GENERIC_OPTION_WORDS.has(w));
-  return [...new Set([optionId, ...words])].filter((w) => !GENERIC_OPTION_WORDS.has(w));
+function optionKeywords(optionId: string, generic: ReadonlySet<string>): string[] {
+  const words = optionId.split('-').filter((w) => !generic.has(w));
+  return [...new Set([optionId, ...words])].filter((w) => !generic.has(w));
 }
 
 export function validateCatalog(catalog: Catalog, pack: StackPack): Diagnostic[] {
@@ -167,7 +157,8 @@ export function validateCatalog(catalog: Catalog, pack: StackPack): Diagnostic[]
 
   // --- Orthogonalité profil ↔ option (textes) --------------------------------------------
   const profileIds = [...catalog.profiles.keys()];
-  const optionWords = [...catalog.options.keys()].flatMap(optionKeywords);
+  const generic = new Set(pack.genericOptionWords);
+  const optionWords = [...catalog.options.keys()].flatMap((id) => optionKeywords(id, generic));
   for (const source of catalog.options.values()) {
     const label = sourceLabel(source);
     for (const text of sourceTexts(source)) {
@@ -257,7 +248,7 @@ export function validateCatalog(catalog: Catalog, pack: StackPack): Diagnostic[]
   for (const source of sources) {
     const label = sourceLabel(source);
     const testTemplates = [...source.templates.entries()].filter(([path]) =>
-      path.includes('src/test/'),
+      pack.carriesRuleEvidence(path),
     );
     for (const rule of sourceRules(source)) {
       if (!testBacked.has(rule.enforced_by)) continue;

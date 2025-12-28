@@ -1,0 +1,84 @@
+# yaml-language-server: $schema=../../../schema/react/core.schema.json
+# Tests (ADR 0007 §5) : trois niveaux, MSW à la frontière réseau, sélection par rôle.
+id: testing
+skill: testing
+title:
+  en: Testing
+  fr: Tests
+rules:
+  - id: CORE-060
+    statement:
+      en: 'Three levels, no more: unit for pure logic, component with Testing Library and MSW, end-to-end with Playwright.'
+      fr: 'Trois niveaux, pas un de plus : unitaire pour la logique pure, composant avec Testing Library et MSW, bout en bout avec Playwright.'
+    rationale:
+      en: The right level is the cheapest one that genuinely exercises the behaviour.
+      fr: Le bon niveau est le moins coûteux qui exerce réellement le comportement.
+    enforced_by: none
+  - id: CORE-061
+    statement:
+      en: A component test selects by role and accessible name; a CSS class or a DOM node is never used as a selector.
+      fr: Un test de composant sélectionne par rôle et nom accessible ; une classe CSS ou un nœud du DOM n'est jamais utilisé comme sélecteur.
+    rationale:
+      en: A test that queries the DOM the way a user does survives a restyling and checks accessibility on the way.
+      fr: Un test qui interroge le DOM comme un utilisateur survit à une refonte du style et vérifie l'accessibilité au passage.
+    enforced_by: eslint
+  - id: CORE-062
+    statement:
+      en: HTTP is stubbed with MSW at the network boundary; `fetch` and the api module are never mocked.
+      fr: Le HTTP est simulé par MSW à la frontière réseau ; `fetch` et le module api ne sont jamais mockés.
+    rationale:
+      en: 'MSW is to the front what Testcontainers is to the back: no fake at the boundary under test.'
+      fr: 'MSW est au front ce que Testcontainers est au back : aucun faux à la frontière testée.'
+    enforced_by: none
+  - id: CORE-063
+    statement:
+      en: A test is named `subject_condition_expectedResult`.
+      fr: Un test est nommé `subject_condition_expectedResult`.
+    rationale:
+      en: The failure report then reads as a sentence, without opening the file.
+      fr: Le rapport d'échec se lit alors comme une phrase, sans ouvrir le fichier.
+    enforced_by: none
+  - id: CORE-064
+    statement:
+      en: There is no numeric coverage target; the reference journey is covered end to end instead.
+      fr: Il n'y a pas d'objectif chiffré de couverture ; le parcours de référence est couvert de bout en bout à la place.
+    rationale:
+      en: A percentage is reached by testing getters; a journey is not.
+      fr: Un pourcentage s'atteint en testant des accesseurs ; un parcours non.
+    enforced_by: none
+  - id: CORE-065
+    statement:
+      en: No snapshot of a rendered page; snapshots are limited to serialisable data structures.
+      fr: Aucun instantané d'une page rendue ; les instantanés se limitent à des structures de données sérialisables.
+    rationale:
+      en: A page snapshot fails on every visual change and is updated without being read.
+      fr: Un instantané de page échoue à chaque changement visuel et est mis à jour sans être lu.
+    enforced_by: none
+  - id: CORE-066
+    statement:
+      en: A test never waits on a fixed delay; it waits on a condition through `findBy` or `waitFor`.
+      fr: Un test n'attend jamais un délai fixe ; il attend une condition via `findBy` ou `waitFor`.
+    rationale:
+      en: A fixed delay is either too short in CI or wasted time on every run.
+      fr: Un délai fixe est soit trop court en CI, soit du temps perdu à chaque exécution.
+    enforced_by: eslint
+  - id: CORE-067
+    statement:
+      en: The three levels are written in the same change as the code they cover.
+      fr: Les trois niveaux sont écrits dans le même changement que le code qu'ils couvrent.
+    rationale:
+      en: A change without its tests is not finished; deferring them is how they disappear.
+      fr: Un changement sans ses tests n'est pas terminé ; les reporter est le meilleur moyen de ne jamais les écrire.
+    enforced_by: none
+anti_patterns:
+  - id: CORE-AP-060
+    statement:
+      en: Waiting for a rendering with a `setTimeout` inside a test.
+      fr: Attendre un rendu avec un `setTimeout` dans un test.
+    rationale:
+      en: The test becomes flaky on a loaded machine and slow on a fast one.
+      fr: Le test devient instable sur une machine chargée et lent sur une machine rapide.
+    instead:
+      en: Await the expected element or state with `findBy` or `waitFor`.
+      fr: Attendre l'élément ou l'état attendu avec `findBy` ou `waitFor`.
+    enforced_by: eslint

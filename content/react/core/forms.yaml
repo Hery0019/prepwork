@@ -1,0 +1,56 @@
+# yaml-language-server: $schema=../../../schema/react/core.schema.json
+# Formulaires (ADR 0007 §5) : un schéma, un type, un message par champ.
+id: forms
+skill: data
+title:
+  en: Forms
+  fr: Formulaires
+rules:
+  - id: CORE-050
+    statement:
+      en: A form is described by a single zod schema, and its TypeScript type is inferred from that schema.
+      fr: Un formulaire est décrit par un unique schéma zod, et son type TypeScript est inféré de ce schéma.
+    rationale:
+      en: A type written next to a schema is a second truth that will disagree with the first.
+      fr: Un type écrit à côté d'un schéma est une seconde vérité qui finira par contredire la première.
+    enforced_by: typescript
+  - id: CORE-051
+    statement:
+      en: The rules validated on the client are the ones the server enforces; the client never adds a rule of its own.
+      fr: Les règles validées côté client sont celles que le serveur applique ; le client n'ajoute jamais une règle qui lui est propre.
+    rationale:
+      en: A client-only rule is a promise the API does not keep.
+      fr: Une règle uniquement côté client est une promesse que l'API ne tient pas.
+    enforced_by: none
+  - id: CORE-052
+    statement:
+      en: An error message is linked to its field by `aria-describedby` and displayed next to it.
+      fr: Un message d'erreur est relié à son champ par `aria-describedby` et affiché à côté de lui.
+    rationale:
+      en: A message at the top of a long form is never read by the person who needs it.
+      fr: Un message en haut d'un formulaire long n'est jamais lu par celui qui en a besoin.
+    enforced_by: jsx-a11y
+  - id: CORE-053
+    statement:
+      en: The submit control is disabled while the submission is pending and enabled again on failure.
+      fr: Le bouton de soumission est désactivé pendant l'envoi et réactivé en cas d'échec.
+    rationale:
+      en: Without it, a slow network produces duplicate records.
+      fr: Sans cela, un réseau lent produit des enregistrements en double.
+    enforced_by: none
+  - id: CORE-054
+    statement:
+      en: Every field is registered with the form library; controlled and uncontrolled inputs are never mixed in one form.
+      fr: Chaque champ est enregistré auprès de la bibliothèque de formulaires ; contrôlé et non contrôlé ne sont jamais mélangés dans un même formulaire.
+    rationale:
+      en: The mix produces values that reset without any visible cause.
+      fr: Le mélange produit des valeurs qui se réinitialisent sans cause visible.
+    enforced_by: none
+  - id: CORE-055
+    statement:
+      en: A validation error coming from the server is mapped onto the field that caused it, or onto the form when it has no field.
+      fr: Une erreur de validation venue du serveur est rattachée au champ qui l'a causée, ou au formulaire quand elle n'a pas de champ.
+    rationale:
+      en: An error shown far from its cause forces the user to guess.
+      fr: Une erreur affichée loin de sa cause oblige l'utilisateur à deviner.
+    enforced_by: none

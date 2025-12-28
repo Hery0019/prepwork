@@ -1,0 +1,293 @@
+{
+  "title": "prepwork core rule set (common)",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "skill": {
+      "type": "string",
+      "enum": [
+        "architecture",
+        "db",
+        "api",
+        "testing",
+        "workflow",
+        "security",
+        "ui",
+        "a11y",
+        "data"
+      ]
+    },
+    "title": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[^\\n]+$"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "en": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[^\\n]+$"
+            },
+            "fr": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[^\\n]+$"
+            }
+          },
+          "required": [
+            "en",
+            "fr"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "rules": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Z]{2,5}-\\d{3}$"
+          },
+          "statement": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[^\\n]+$"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "en": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\n]+$"
+                  },
+                  "fr": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\n]+$"
+                  }
+                },
+                "required": [
+                  "en",
+                  "fr"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "rationale": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[^\\n]+$"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "en": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\n]+$"
+                  },
+                  "fr": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\n]+$"
+                  }
+                },
+                "required": [
+                  "en",
+                  "fr"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "enforced_by": {
+            "type": "string",
+            "enum": [
+              "archunit",
+              "spotless",
+              "commitlint",
+              "gitleaks",
+              "modulith",
+              "flyway",
+              "liquibase",
+              "dependency-check",
+              "none",
+              "eslint-boundaries",
+              "dependency-cruiser",
+              "typescript",
+              "eslint",
+              "jsx-a11y",
+              "stylelint",
+              "prettier",
+              "vitest",
+              "playwright"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "statement",
+          "rationale",
+          "enforced_by"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "anti_patterns": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Z]{2,5}-AP-\\d{3}$"
+          },
+          "statement": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[^\\n]+$"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "en": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\n]+$"
+                  },
+                  "fr": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\n]+$"
+                  }
+                },
+                "required": [
+                  "en",
+                  "fr"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "rationale": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[^\\n]+$"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "en": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\n]+$"
+                  },
+                  "fr": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\n]+$"
+                  }
+                },
+                "required": [
+                  "en",
+                  "fr"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "enforced_by": {
+            "type": "string",
+            "enum": [
+              "archunit",
+              "spotless",
+              "commitlint",
+              "gitleaks",
+              "modulith",
+              "flyway",
+              "liquibase",
+              "dependency-check",
+              "none",
+              "eslint-boundaries",
+              "dependency-cruiser",
+              "typescript",
+              "eslint",
+              "jsx-a11y",
+              "stylelint",
+              "prettier",
+              "vitest",
+              "playwright"
+            ]
+          },
+          "instead": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[^\\n]+$"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "en": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\n]+$"
+                  },
+                  "fr": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\n]+$"
+                  }
+                },
+                "required": [
+                  "en",
+                  "fr"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "statement",
+          "rationale",
+          "enforced_by",
+          "instead"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "id",
+    "skill",
+    "title",
+    "rules"
+  ],
+  "additionalProperties": false
+}

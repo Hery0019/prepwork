@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../../../schema/option.schema.json
+# yaml-language-server: $schema=../../../../schema/spring-boot/option.schema.json
 # Migrations de schéma avec Flyway (SQL versionné). Exclusive avec migrations-liquibase.
 meta:
   id: migrations-flyway
@@ -12,8 +12,8 @@ skill: db
 rules:
   - id: FLY-001
     statement:
-      en: Every schema change is a new file `src/main/resources/db/migration/V<n>__<description>.sql`; an applied migration is never edited.
-      fr: Tout changement de schéma est un nouveau fichier `src/main/resources/db/migration/V<n>__<description>.sql` ; une migration appliquée n'est jamais modifiée.
+      en: Every schema change is a new file `src/main/resources/db/migration/V<n>__<description>.sql`; an applied migration is never edited nor deleted.
+      fr: Tout changement de schéma est un nouveau fichier `src/main/resources/db/migration/V<n>__<description>.sql` ; une migration appliquée n'est jamais modifiée ni supprimée.
     rationale:
       en: Flyway records a checksum per migration and refuses to start when one changed.
       fr: Flyway enregistre une empreinte par migration et refuse de démarrer si l'une a changé.

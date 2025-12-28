@@ -156,6 +156,7 @@ function securityExtra(model: RenderModel): Extra {
 function packExtra(model: RenderModel, skillId: string): Extra {
   return (
     model.input.pack.presentation.skillSections(skillId, {
+      scaffold: model.input.scaffold,
       profile: model.input.profile,
       options: model.input.options,
       language: model.language,

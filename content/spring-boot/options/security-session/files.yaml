@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../../../schema/files.schema.json
+# yaml-language-server: $schema=../../../../schema/spring-boot/files.schema.json
 files:
   - source: src/main/java/common/SecurityConfig.java.eta
     target: src/main/java/<%= it.project.basePackagePath %>/common/SecurityConfig.java

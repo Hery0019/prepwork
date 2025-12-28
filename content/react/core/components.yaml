@@ -1,0 +1,95 @@
+# yaml-language-server: $schema=../../../schema/react/core.schema.json
+# Composants (ADR 0007 §5) : ce qu'un composant doit toujours faire, quelle que soit la feature.
+id: components
+skill: ui
+title:
+  en: Components
+  fr: Composants
+rules:
+  - id: CORE-010
+    statement:
+      en: A component that can be loading, empty or failing renders an explicit state for each of the three, and never returns `null` instead.
+      fr: Un composant qui peut être en chargement, vide ou en erreur rend un état explicite pour chacun des trois, et ne retourne jamais `null` à la place.
+    rationale:
+      en: These three states are the ones an agent left alone forgets; a blank screen is the most expensive bug to diagnose.
+      fr: Ce sont les trois états qu'un agent laissé libre oublie ; un écran blanc est le bug le plus coûteux à diagnostiquer.
+    enforced_by: none
+  - id: CORE-011
+    statement:
+      en: Every interactive component handles the disabled state and shows a visible `:focus-visible` ring.
+      fr: Tout composant interactif gère l'état désactivé et montre un anneau `:focus-visible` visible.
+    rationale:
+      en: With loading, empty and error, these are the five states that make a component finished.
+      fr: Avec chargement, vide et erreur, ce sont les cinq états qui rendent un composant fini.
+    enforced_by: none
+  - id: CORE-012
+    statement:
+      en: A presentational component receives its data through props and never calls the network or a query hook itself.
+      fr: Un composant de présentation reçoit ses données par ses props et n'appelle jamais lui-même le réseau ni un hook de requête.
+    rationale:
+      en: A component that fetches cannot be reused, previewed or tested without a server.
+      fr: Un composant qui va chercher ses données ne peut être ni réutilisé, ni prévisualisé, ni testé sans serveur.
+    enforced_by: none
+  - id: CORE-013
+    statement:
+      en: One file exports one component; its variants live in the same file through `cva`, never as copied files.
+      fr: Un fichier exporte un composant ; ses variantes vivent dans le même fichier via `cva`, jamais dans des fichiers copiés.
+    rationale:
+      en: A copied variant drifts from the original at the first change.
+      fr: Une variante copiée diverge de l'original dès le premier changement.
+    enforced_by: none
+  - id: CORE-014
+    statement:
+      en: Props are typed explicitly and `any` never appears, in a component or in a hook.
+      fr: Les props sont typées explicitement et `any` n'apparaît jamais, ni dans un composant ni dans un hook.
+    rationale:
+      en: The prop types are the contract other developers and the agent read first.
+      fr: Le type des props est le contrat que les autres développeurs et l'agent lisent en premier.
+    enforced_by: typescript
+  - id: CORE-015
+    statement:
+      en: A list renders a stable business key, never the array index.
+      fr: Une liste rend une clé métier stable, jamais l'index du tableau.
+    rationale:
+      en: An index key corrupts local state as soon as the list is sorted or filtered.
+      fr: Une clé d'index corrompt l'état local dès que la liste est triée ou filtrée.
+    enforced_by: eslint
+  - id: CORE-016
+    statement:
+      en: Business logic longer than one ternary lives in a hook or a plain function, never inline in JSX.
+      fr: Une logique métier plus longue qu'un ternaire vit dans un hook ou une fonction simple, jamais dans le JSX.
+    rationale:
+      en: JSX describes what is displayed; logic buried in it is untestable.
+      fr: Le JSX décrit ce qui est affiché ; une logique qui s'y cache est intestable.
+    enforced_by: none
+  - id: CORE-017
+    statement:
+      en: '`useEffect` is used only to synchronise with something outside React; anything derivable is computed during render.'
+      fr: '`useEffect` ne sert qu''à se synchroniser avec quelque chose d''extérieur à React ; tout ce qui est dérivable est calculé au rendu.'
+    rationale:
+      en: Effects that recompute state are the main source of extra renders and stale values.
+      fr: Les effets qui recalculent un état sont la première source de rendus superflus et de valeurs périmées.
+    enforced_by: none
+anti_patterns:
+  - id: CORE-AP-010
+    statement:
+      en: Returning `null` while data is loading, leaving the user in front of a blank area.
+      fr: Retourner `null` pendant le chargement, laissant l'utilisateur devant une zone vide.
+    rationale:
+      en: The user cannot tell a slow screen from a broken one.
+      fr: L'utilisateur ne peut pas distinguer un écran lent d'un écran cassé.
+    instead:
+      en: Render the skeleton or the spinner of the design system, sized like the final content.
+      fr: Rendre le squelette ou le spinner du design system, dimensionné comme le contenu final.
+    enforced_by: none
+  - id: CORE-AP-011
+    statement:
+      en: A `<div onClick>` used as a button.
+      fr: Un `<div onClick>` utilisé comme bouton.
+    rationale:
+      en: It is unreachable by keyboard and invisible to assistive technology.
+      fr: Il est inatteignable au clavier et invisible pour les technologies d'assistance.
+    instead:
+      en: Use a `<button>`, styled with the tokens of the design system.
+      fr: Utiliser un `<button>`, stylé avec les tokens du design system.
+    enforced_by: jsx-a11y

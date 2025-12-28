@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../../../schema/option.schema.json
+# yaml-language-server: $schema=../../../../schema/spring-boot/option.schema.json
 # Resource server OAuth2 (jetons JWT d'un fournisseur d'identité externe). Exclusive avec les autres security-*.
 meta:
   id: security-oauth2-resource-server

@@ -17,7 +17,10 @@ export const springBootPack: StackPack = {
   contentDir: STACK_TARGET,
   scaffoldSchema: ScaffoldSchema,
   catalogSchemas: schemas,
+  catalogSpecValues: { enforcedBy: CATALOG_SPEC.enforcedBy, skills: CATALOG_SPEC.skills },
   testBackedEnforcers: TEST_BACKED_ENFORCERS,
+  carriesRuleEvidence: (path) => path.includes('src/test/'),
+  genericOptionWords: ['migrations', 'security', 'ci', 'none', 'git', 'resource', 'server'],
 
   contributionConditions(source) {
     const dependencies = mavenOf(source)?.dependencies ?? [];

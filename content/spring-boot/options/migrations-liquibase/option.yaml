@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../../../schema/option.schema.json
+# yaml-language-server: $schema=../../../../schema/spring-boot/option.schema.json
 # Migrations de schéma avec Liquibase (changelogs YAML). Exclusive avec migrations-flyway.
 meta:
   id: migrations-liquibase

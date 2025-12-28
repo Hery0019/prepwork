@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=../../../../schema/react/option.schema.json
+# Image de production et environnement local.
+meta:
+  id: docker
+  version: 1.0.0
+  rule_prefix: DOCK
+  summary:
+    en: Multi-stage image that builds the bundle and serves it as static files.
+    fr: Image multi-étapes qui construit le bundle et le sert en fichiers statiques.
+skill: workflow
+rules:
+  - id: DOCK-001
+    statement:
+      en: The image is built by the multi-stage `Dockerfile` from the sources, never from a bundle built on a developer machine.
+      fr: L'image est construite par le `Dockerfile` multi-étapes depuis les sources, jamais depuis un bundle construit sur un poste.
+    rationale:
+      en: The build is then reproducible and identical in CI and on any machine.
+      fr: La construction est alors reproductible et identique en CI et sur n'importe quel poste.
+    enforced_by: none
+  - id: DOCK-002
+    statement:
+      en: The container runs as a non-root user and exposes a single port.
+      fr: Le conteneur tourne avec un utilisateur non root et n'expose qu'un seul port.
+    rationale:
+      en: A compromised process must not own the container.
+      fr: Un processus compromis ne doit pas posséder le conteneur.
+    enforced_by: none
+  - id: DOCK-003
+    statement:
+      en: Runtime configuration is injected when the container starts, never baked into the bundle at build time.
+      fr: La configuration d'exécution est injectée au démarrage du conteneur, jamais figée dans le bundle à la construction.
+    rationale:
+      en: Otherwise the same image cannot be promoted from staging to production.
+      fr: Sinon la même image ne peut pas passer de la recette à la production.
+    enforced_by: none

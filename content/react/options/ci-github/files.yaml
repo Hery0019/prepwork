@@ -1,0 +1,4 @@
+# yaml-language-server: $schema=../../../../schema/react/files.schema.json
+files:
+  - source: .github/workflows/ci.yaml.eta
+    target: .github/workflows/ci.yaml

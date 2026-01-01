@@ -252,7 +252,7 @@ export function validateCatalog(catalog: Catalog, pack: StackPack): Diagnostic[]
     );
     for (const rule of sourceRules(source)) {
       if (!testBacked.has(rule.enforced_by)) continue;
-      const token = rule.id.replace(/-/g, '_');
+      const token = pack.ruleEvidenceToken(rule.id);
       const found = testTemplates.some(([, content]) => content.includes(token));
       if (found) continue;
       const message = `règle \`${rule.id}\` (enforced_by: ${rule.enforced_by}) sans test nommé \`${token}\``;

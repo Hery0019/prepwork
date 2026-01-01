@@ -1,0 +1,33 @@
+/// <reference types="vitest/config" />
+<%= it.t("// Configuration Vite et Vitest. Les alias reflètent les couches du profil.", "// Vite and Vitest configuration. The aliases mirror the profile layers.") %>
+import { fileURLToPath, URL } from 'node:url';
+import tailwindcss from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
+
+const resolvePath = (path: string): string => fileURLToPath(new URL(path, import.meta.url));
+
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+  resolve: {
+    alias: {
+<% it.layers.forEach(function (layer) { -%>
+      '@<%= layer.id %>': resolvePath('./<%= layer.path.replace('/*', '') %>'),
+<% }) -%>
+    },
+  },
+  test: {
+    environment: 'jsdom',
+    // <%= it.t("Les tests tournent avec la configuration d'un environnement réel : rien n'est deviné.", "Tests run with the configuration of a real environment: nothing is guessed.") %>
+    env: {
+      VITE_API_BASE_URL: 'http://localhost:8080/api/v1',
+<% if (it.options.security === 'oidc-bff') { -%>
+      VITE_AUTH_LOGIN_PATH: '/bff/login',
+<% } -%>
+    },
+    globals: true,
+    setupFiles: ['./vitest.setup.ts'],
+    include: ['src/**/*.test.{ts,tsx}'],
+    css: true,
+  },
+});

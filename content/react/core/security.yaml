@@ -25,7 +25,7 @@ rules:
   - id: CORE-072
     statement:
       en: '`dangerouslySetInnerHTML` is used only on content sanitised by the dedicated module of `shared/`.'
-      fr: '`dangerouslySetInnerHTML` n''est utilisé que sur du contenu assaini par le module dédié de `shared/`.'
+      fr: "`dangerouslySetInnerHTML` n'est utilisé que sur du contenu assaini par le module dédié de `shared/`."
     rationale:
       en: Any other use turns a stored string into script execution.
       fr: Tout autre usage transforme une chaîne stockée en exécution de script.

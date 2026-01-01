@@ -1,0 +1,19 @@
+# ADR 0002 — <%= it.d("Contrat visuel", "Visual contract") %>
+
+<%= it.d('Date', 'Date') %> : <%= it.today %> · <%= it.d('Statut', 'Status') %> : <%= it.d('accepté', 'accepted') %>
+
+## <%= it.d('Contexte', 'Context') %>
+
+<%= it.d("Sans contrat visuel écrit, chaque écran invente sa typographie, ses espacements et ses couleurs.", "Without a written visual contract, every screen invents its own typography, spacing and colours.") %>
+
+## <%= it.d('Décision', 'Decision') %>
+
+<%= it.d('Preset', 'Preset') %> `<%= it.design.preset.id %>`<% if (it.design.dark) { %>, <%= it.d('avec thème sombre', 'with a dark theme') %><% } %>.
+
+- <%= it.d('Typographie', 'Typography') %> : <%= it.design.preset.fonts.heading %> / <%= it.design.preset.fonts.body %>
+- <%= it.d('Échelle', 'Scale') %> : <%= it.design.preset.scaleRatio %> · <%= it.d('graisses', 'weights') %> <%= it.design.preset.weights.join(', ') %>
+- <%= it.d('Espacement de base', 'Base spacing') %> : <%= it.design.preset.spacingBase %>px · <%= it.d('rayon', 'radius') %> <%= it.design.preset.radius %>px
+
+## <%= it.d('Conséquences', 'Consequences') %>
+
+<%= it.d("Les valeurs vivent dans src/shared/styles/tokens.css, qui appartient à l'équipe : c'est là qu'on adapte la marque. Chaque token devient une classe utilitaire, et Stylelint refuse toute couleur écrite ailleurs.", "The values live in src/shared/styles/tokens.css, owned by the team: that is where the brand is adjusted. Every token becomes a utility class, and Stylelint refuses any colour written elsewhere.") %>

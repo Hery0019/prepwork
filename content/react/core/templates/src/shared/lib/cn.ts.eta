@@ -1,0 +1,6 @@
+<%= it.t("// Composition conditionnelle de classes : une seule façon de le faire dans le projet.", "// Conditional class composition: one single way to do it in the project.") %>
+import { clsx, type ClassValue } from 'clsx';
+
+export function cn(...values: ClassValue[]): string {
+  return clsx(values);
+}

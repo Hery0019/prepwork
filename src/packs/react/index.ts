@@ -19,6 +19,8 @@ export const reactPack: StackPack = {
   /** Les frontières sont outillées par une configuration nommée, pas par un test unitaire. */
   carriesRuleEvidence: (path) =>
     path.includes('eslint') || path.includes('dependency-cruiser') || path.includes('.test.'),
+  /** Une règle de lint porte l'identifiant tel quel : `SPA-002-no-cross-feature-import`. */
+  ruleEvidenceToken: (id) => id,
   genericOptionWords: ['data', 'forms', 'state', 'security', 'ci', 'none', 'git', 'i18n', 'e2e'],
 
   contributionConditions(source) {

@@ -57,7 +57,7 @@ rules:
   - id: CORE-026
     statement:
       en: '`!important` never appears in the project stylesheets.'
-      fr: '`!important` n''apparaît jamais dans les feuilles de style du projet.'
+      fr: "`!important` n'apparaît jamais dans les feuilles de style du projet."
     rationale:
       en: It is the sign of a specificity problem that the next developer will have to solve twice.
       fr: C'est le signe d'un problème de spécificité que le développeur suivant devra résoudre deux fois.

@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../../../../schema/react/files.schema.json
+files:
+  - source: Dockerfile.eta
+    target: Dockerfile
+  - source: nginx.conf.eta
+    target: nginx.conf
+  - source: docker-entrypoint.sh.eta
+    target: docker-entrypoint.sh
+  - source: public/runtime-config.js.eta
+    target: public/runtime-config.js
+  - source: .dockerignore.eta
+    target: .dockerignore
+  - source: compose.yaml.eta
+    target: compose.yaml

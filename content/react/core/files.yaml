@@ -1,0 +1,106 @@
+# yaml-language-server: $schema=../../../schema/react/files.schema.json
+# Socle du pack react : outillage, bootstrap, configuration, kit d'interface et documentation.
+# Le socle est le seul à connaître les choix de stack et les options : c'est lui qui les assemble.
+files:
+  # --- outillage -------------------------------------------------------------------------
+  - source: package.json.eta
+    target: package.json
+  - source: pnpm-workspace.yaml.eta
+    target: pnpm-workspace.yaml
+  - source: tsconfig.json.eta
+    target: tsconfig.json
+  - source: vite.config.ts.eta
+    target: vite.config.ts
+  - source: index.html.eta
+    target: index.html
+  - source: stylelint.config.js.eta
+    target: stylelint.config.js
+  - source: .prettierrc.eta
+    target: .prettierrc
+  - source: .prettierignore.eta
+    target: .prettierignore
+  - source: vitest.setup.ts.eta
+    target: vitest.setup.ts
+  - source: .gitignore.eta
+    target: .gitignore
+  - source: .gitattributes.eta
+    target: .gitattributes
+  - source: .env.example.eta
+    target: .env.example
+    owner: team
+
+  # --- bootstrap et socle applicatif -----------------------------------------------------
+  - source: src/main.tsx.eta
+    target: src/main.tsx
+  - source: src/app/providers.tsx.eta
+    target: src/app/providers.tsx
+  - source: src/shared/config/env.ts.eta
+    target: src/shared/config/env.ts
+  - source: src/shared/api/errors.ts.eta
+    target: src/shared/api/errors.ts
+  - source: src/shared/api/httpClient.ts.eta
+    target: src/shared/api/httpClient.ts
+  - source: src/shared/lib/cn.ts.eta
+    target: src/shared/lib/cn.ts
+  - source: src/shared/lib/text.ts.eta
+    target: src/shared/lib/text.ts
+  - source: src/shared/test/server.ts.eta
+    target: src/shared/test/server.ts
+  - source: src/shared/test/render.tsx.eta
+    target: src/shared/test/render.tsx
+
+  # --- contrat visuel --------------------------------------------------------------------
+  - source: src/shared/styles/app.css.eta
+    target: src/shared/styles/app.css
+  - source: src/shared/styles/tokens.css.eta
+    target: src/shared/styles/tokens.css
+    owner: team
+
+  # --- kit d'interface : copié dans le dépôt, donc possédé par l'équipe -------------------
+  - source: src/shared/ui/Alert.tsx.eta
+    target: src/shared/ui/Alert.tsx
+    owner: team
+  - source: src/shared/ui/Button.tsx.eta
+    target: src/shared/ui/Button.tsx
+    owner: team
+  - source: src/shared/ui/Card.tsx.eta
+    target: src/shared/ui/Card.tsx
+    owner: team
+  - source: src/shared/ui/Input.tsx.eta
+    target: src/shared/ui/Input.tsx
+    owner: team
+  - source: src/shared/ui/Skeleton.tsx.eta
+    target: src/shared/ui/Skeleton.tsx
+    owner: team
+  - source: src/shared/ui/index.ts.eta
+    target: src/shared/ui/index.ts
+    owner: team
+
+  # --- documentation : appartient à l'équipe ---------------------------------------------
+  - source: README.md.eta
+    target: README.md
+    owner: team
+  - source: docs/glossary.md.eta
+    target: docs/glossary.md
+    owner: team
+  - source: docs/adr/README.md.eta
+    target: docs/adr/README.md
+    owner: team
+  - source: docs/adr/0001-architecture-profile.md.eta
+    target: docs/adr/0001-architecture-profile.md
+    owner: team
+  - source: docs/adr/0002-design-preset.md.eta
+    target: docs/adr/0002-design-preset.md
+    owner: team
+  - source: docs/adr/0003-data-and-state.md.eta
+    target: docs/adr/0003-data-and-state.md
+    owner: team
+  - source: docs/adr/0004-security.md.eta
+    target: docs/adr/0004-security.md
+    owner: team
+  - source: docs/adr/0005-delivery.md.eta
+    target: docs/adr/0005-delivery.md
+    owner: team
+  - source: docs/adr/0006-languages.md.eta
+    target: docs/adr/0006-languages.md
+    owner: team

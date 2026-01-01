@@ -1,0 +1,50 @@
+// Niveau composant : Testing Library et MSW, sélection par rôle (CORE-060, CORE-061, CORE-062).
+import { screen } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
+import { renderWithProviders } from '@shared/test/render';
+import { server } from '@shared/test/server';
+import { aNote, notesHandlers } from '../api/handlers';
+import { NoteList } from './NoteList';
+
+describe('NoteList', () => {
+  it('NoteList_notesAvailable_showsThemAsAList', async () => {
+    server.use(notesHandlers.page([aNote(), aNote({ id: 'n-2', title: 'Deuxième note' })]));
+
+    renderWithProviders(<NoteList />);
+
+    expect(await screen.findByRole('heading', { name: 'Première note' })).toBeVisible();
+    expect(screen.getByRole('heading', { name: 'Deuxième note' })).toBeVisible();
+    expect(screen.getAllByRole('listitem')).toHaveLength(2);
+  });
+
+  it('NoteList_noNote_showsTheEmptyStateAndTheWayOut', async () => {
+    server.use(notesHandlers.page([]));
+
+    renderWithProviders(<NoteList />);
+
+    expect(
+      await screen.findByText('Aucune note pour le moment.'),
+    ).toBeVisible();
+    expect(screen.getByRole('link')).toHaveAttribute('href', '/notes/new');
+  });
+
+  it('NoteList_requestFails_showsAnAnnouncedError', async () => {
+    server.use(notesHandlers.failure());
+
+    renderWithProviders(<NoteList />);
+
+    expect(await screen.findByRole('alert')).toBeVisible();
+  });
+
+  it('NoteList_whileLoading_showsABusyPlaceholder', () => {
+    server.use(notesHandlers.page([aNote()]));
+
+    renderWithProviders(<NoteList />);
+
+    expect(
+      screen.getByRole('status', {
+        name: 'Chargement des notes',
+      }),
+    ).toBeInTheDocument();
+  });
+});

@@ -10,11 +10,9 @@ import { resolveOptionIds, ScaffoldSchema } from '../../src/packs/react/scaffold
 const SCAFFOLD = {
   scaffold_version: '1.1.0',
   project: { name: 'note-book', description: 'Notes management interface' },
-  stack: { target: 'react' },
+  stack: { target: 'react', data: 'tanstack-query', forms: 'rhf' },
   profile: 'spa-feature',
   options: {
-    data: 'tanstack-query',
-    forms: 'rhf',
     state: 'zustand',
     security: 'oidc-bff',
     i18n: false,
@@ -29,7 +27,10 @@ const SCAFFOLD = {
 
 describe('react scaffold', () => {
   it('accepts the documented example and defaults the stack target', () => {
-    const parsed = ScaffoldSchema.parse({ ...SCAFFOLD, stack: {} });
+    const parsed = ScaffoldSchema.parse({
+      ...SCAFFOLD,
+      stack: { data: 'tanstack-query', forms: 'rhf' },
+    });
     expect(parsed.stack.target).toBe('react');
   });
 
@@ -49,9 +50,8 @@ describe('react scaffold', () => {
   it('drops the optional options and keeps git when everything is off', () => {
     const minimal = ScaffoldSchema.parse({
       ...SCAFFOLD,
+      stack: { target: 'react', data: 'none', forms: 'none' },
       options: {
-        data: 'none',
-        forms: 'none',
         state: 'context',
         security: 'none',
         i18n: false,

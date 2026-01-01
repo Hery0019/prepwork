@@ -1,0 +1,67 @@
+/* <%= it.d("Contrat visuel du projet — preset `" + it.design.preset.id + "`.", "Visual contract of the project — `" + it.design.preset.id + "` preset.") %> */
+/* <%= it.d("Ce fichier appartient à l'équipe : c'est ici que vit la marque. prepwork ne le réécrit jamais.", "This file belongs to the team: this is where the brand lives. prepwork never rewrites it.") %> */
+/* <%= it.d("Les tokens sont déclarés dans les espaces de noms de Tailwind : chacun devient une classe", "The tokens are declared in Tailwind namespaces: each one becomes a utility class") %> */
+/* <%= it.d("utilitaire (`bg-primary`, `text-lg`, `rounded-md`), ce qui rend inutile toute valeur écrite à la main (CORE-020, CORE-021).", "(`bg-primary`, `text-lg`, `rounded-md`), which makes any hand-written value unnecessary (CORE-020, CORE-021).") %> */
+@theme {
+  --font-heading: <%= it.design.preset.fonts.heading %>;
+  --font-body: <%= it.design.preset.fonts.body %>;
+  --font-mono: <%= it.design.preset.fonts.mono %>;
+
+  --leading-body: <%= it.design.preset.lineHeight.body %>;
+  --leading-heading: <%= it.design.preset.lineHeight.heading %>;
+
+  /* <%= it.d("Longueur de ligne du corps de texte : `max-w-measure`.", "Line length of the body text: `max-w-measure`.") %> */
+  --container-measure: <%= it.design.preset.measure %>;
+
+<%
+// Échelle modulaire : sept crans autour du corps de texte, au ratio du preset.
+const ratio = Number(it.design.preset.scaleRatio);
+const steps = [['xs', -2], ['sm', -1], ['base', 0], ['lg', 1], ['xl', 2], ['2xl', 3], ['3xl', 4]];
+steps.forEach(function (step) {
+  const size = (Math.pow(ratio, step[1])).toFixed(3).replace(/0+$/, '').replace(/\.$/, '');
+-%>
+  --text-<%= step[0] %>: <%= size %>rem;
+<%
+});
+-%>
+
+  /* <%= it.d("Pas d'espacement : `p-4` vaut quatre fois cette valeur.", "Spacing step: `p-4` is four times this value.") %> */
+  --spacing: <%= it.design.preset.spacingBase %>px;
+
+  --radius-sm: <%= Math.round(it.design.preset.radius / 2) %>px;
+  --radius-md: <%= it.design.preset.radius %>px;
+  --radius-lg: <%= Math.round(it.design.preset.radius * 1.5) %>px;
+
+<%
+Object.entries(it.design.preset.light).forEach(function (entry) {
+-%>
+  --color-<%= entry[0] %>: <%= entry[1] %>;
+<%
+});
+-%>
+}
+<% if (it.design.dark) { -%>
+
+/* <%= it.d("CORE-023 : le thème sombre redéfinit les mêmes tokens, il n'ajoute aucune couleur.", "CORE-023: the dark theme redefines the same tokens, it adds no colour.") %> */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+<%
+Object.entries(it.design.preset.dark).forEach(function (entry) {
+-%>
+    --color-<%= entry[0] %>: <%= entry[1] %>;
+<%
+});
+-%>
+  }
+}
+
+:root[data-theme='dark'] {
+<%
+Object.entries(it.design.preset.dark).forEach(function (entry) {
+-%>
+  --color-<%= entry[0] %>: <%= entry[1] %>;
+<%
+});
+-%>
+}
+<% } -%>

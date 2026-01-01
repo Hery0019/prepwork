@@ -1,0 +1,20 @@
+// CORE-047: an HTTP failure becomes a domain error before it reaches a component.
+export type ApiErrorKind = 'not-found' | 'conflict' | 'unauthorized' | 'invalid' | 'unavailable';
+
+export class ApiError extends Error {
+  readonly kind: ApiErrorKind;
+
+  constructor(kind: ApiErrorKind, message: string) {
+    super(message);
+    this.name = 'ApiError';
+    this.kind = kind;
+  }
+}
+
+export function errorKindForStatus(status: number): ApiErrorKind {
+  if (status === 404) return 'not-found';
+  if (status === 409) return 'conflict';
+  if (status === 401 || status === 403) return 'unauthorized';
+  if (status >= 400 && status < 500) return 'invalid';
+  return 'unavailable';
+}

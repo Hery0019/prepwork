@@ -1,0 +1,73 @@
+// DNONE-001: without a caching library, each screen carries its three states explicitly.
+// The state is a discriminated union: the compiler guarantees `data` is never read before it exists.
+import { useCallback, useEffect, useState } from 'react';
+import type { Note, NoteDraft, NotePage } from '@entities/note';
+import { createNote, getNote, listNotes, notesKeys } from '../api/notesApi';
+
+type State<T> =
+  | { isPending: true; data: undefined; error: undefined }
+  | { isPending: false; data: undefined; error: Error }
+  | { isPending: false; data: T; error: undefined };
+
+export type Resource<T> = State<T> & { refetch: () => void };
+
+const PENDING = { isPending: true, data: undefined, error: undefined } as const;
+
+function useResource<T>(load: () => Promise<T>, key: readonly unknown[]): Resource<T> {
+  const [state, setState] = useState<State<T>>(PENDING);
+  const [reloads, setReloads] = useState(0);
+  const dependency = JSON.stringify(key);
+
+  useEffect(() => {
+    // The controller does not cancel the request: it says whether its answer still counts.
+    const controller = new AbortController();
+    setState(PENDING);
+    load()
+      .then((data) => {
+        if (!controller.signal.aborted) setState({ isPending: false, data, error: undefined });
+      })
+      .catch((cause: unknown) => {
+        if (!controller.signal.aborted) {
+          setState({ isPending: false, data: undefined, error: cause as Error });
+        }
+      });
+    return () => {
+      controller.abort();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dependency, reloads]);
+
+  const refetch = useCallback(() => {
+    setReloads((value) => value + 1);
+  }, []);
+
+  return { ...state, refetch };
+}
+
+export function useNotes(page = 0) {
+  return useResource<NotePage>(() => listNotes(page), notesKeys.page(page));
+}
+
+export function useNote(id: string) {
+  return useResource<Note>(() => getNote(id), notesKeys.detail(id));
+}
+
+export function useCreateNote() {
+  const [isPending, setPending] = useState(false);
+  const [error, setError] = useState<Error>();
+
+  const mutateAsync = useCallback(async (draft: NoteDraft): Promise<Note> => {
+    setPending(true);
+    setError(undefined);
+    try {
+      return await createNote(draft);
+    } catch (cause) {
+      setError(cause as Error);
+      throw cause;
+    } finally {
+      setPending(false);
+    }
+  }, []);
+
+  return { mutateAsync, isPending, error };
+}

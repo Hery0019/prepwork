@@ -29,13 +29,15 @@ export const ScaffoldSchema = z
       .object({
         /** Absent dans un scaffold écrit à la main : la valeur par défaut désigne ce pack. */
         target: z.literal(STACK_TARGET).default(STACK_TARGET),
+        /** Bibliothèque de données : elle change l'écriture de chaque feature, comme la base côté back. */
+        data: DataSchema,
+        /** Bibliothèque de formulaires, pour la même raison. */
+        forms: FormsSchema,
       })
       .strict(),
     profile: ProfileIdSchema,
     options: z
       .object({
-        data: DataSchema,
-        forms: FormsSchema,
         state: StateSchema,
         security: SecuritySchema,
         i18n: z.boolean(),
@@ -69,10 +71,10 @@ export function asReactScaffold(scaffold: BaseScaffold): Scaffold {
 
 /** Identifiants d'options du catalogue résolus à partir du scaffold (CLAUDE.md §2). */
 export function resolveOptionIds(scaffold: BaseScaffold): string[] {
-  const { options } = asReactScaffold(scaffold);
+  const { stack, options } = asReactScaffold(scaffold);
   const ids = [
-    `data-${options.data}`,
-    `forms-${options.forms}`,
+    `data-${stack.data}`,
+    `forms-${stack.forms}`,
     `state-${options.state}`,
     `security-${options.security}`,
   ];

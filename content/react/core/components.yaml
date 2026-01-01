@@ -65,7 +65,7 @@ rules:
   - id: CORE-017
     statement:
       en: '`useEffect` is used only to synchronise with something outside React; anything derivable is computed during render.'
-      fr: '`useEffect` ne sert qu''à se synchroniser avec quelque chose d''extérieur à React ; tout ce qui est dérivable est calculé au rendu.'
+      fr: "`useEffect` ne sert qu'à se synchroniser avec quelque chose d'extérieur à React ; tout ce qui est dérivable est calculé au rendu."
     rationale:
       en: Effects that recompute state are the main source of extra renders and stale values.
       fr: Les effets qui recalculent un état sont la première source de rendus superflus et de valeurs périmées.

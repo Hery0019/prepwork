@@ -1,0 +1,13 @@
+# ADR 0003 — <%= it.d("Données et état", "Data and state") %>
+
+<%= it.d('Date', 'Date') %> : <%= it.today %> · <%= it.d('Statut', 'Status') %> : <%= it.d('accepté', 'accepted') %>
+
+## <%= it.d('Décision', 'Decision') %>
+
+- <%= it.d('Données serveur', 'Server data') %> : `<%= it.stack.data %>`
+- <%= it.d('Formulaires', 'Forms') %> : `<%= it.stack.forms %>`
+- <%= it.d('État client', 'Client state') %> : `<%= it.options.state %>`
+
+## <%= it.d('Conséquences', 'Consequences') %>
+
+<%= it.d("Tout appel réseau passe par le module api/ d'une feature et sa réponse est validée par un schéma zod (CORE-040, CORE-041). L'état serveur et l'état client ne se mélangent pas.", "Every network call goes through the api/ module of a feature and its response is validated by a zod schema (CORE-040, CORE-041). Server state and client state never mix.") %>

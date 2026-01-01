@@ -1,0 +1,14 @@
+# ADR 0006 — <%= it.d("Langues", "Languages") %>
+
+<%= it.d('Date', 'Date') %> : <%= it.today %> · <%= it.d('Statut', 'Status') %> : <%= it.d('accepté', 'accepted') %>
+
+## <%= it.d('Décision', 'Decision') %>
+
+- <%= it.d('Identifiants du code', 'Code identifiers') %> : <%= it.d('anglais, toujours', 'English, always') %>
+- <%= it.d('Commentaires', 'Comments') %> : <%= it.language.comments %>
+- <%= it.d('Documentation', 'Documentation') %> : <%= it.language.docs %>
+- <%= it.d('Interface', 'Interface') %> : <%= it.options.i18n ? it.d('traduite (i18next)', 'translated (i18next)') : it.d('une seule langue', 'single language') %>
+
+## <%= it.d('Conséquences', 'Consequences') %>
+
+<%= it.d("Le texte affiché passe par t() même sans i18n : activer les traductions plus tard reste mécanique.", "Displayed text goes through t() even without i18n: enabling translations later stays mechanical.") %>

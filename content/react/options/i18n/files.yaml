@@ -1,0 +1,8 @@
+# yaml-language-server: $schema=../../../../schema/react/files.schema.json
+files:
+  - source: src/shared/i18n/config.ts.eta
+    target: src/shared/i18n/config.ts
+  - source: src/shared/i18n/locales/fr.json.eta
+    target: src/shared/i18n/locales/fr.json
+  - source: src/shared/i18n/locales/en.json.eta
+    target: src/shared/i18n/locales/en.json

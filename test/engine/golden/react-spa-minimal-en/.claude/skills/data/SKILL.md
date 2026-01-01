@@ -15,7 +15,7 @@ Marker after the identifier: a tool name = tooled constraint (the build or the c
 
 ### Rules
 
-- **CORE-040** · `eslint-boundaries` — Every network call goes through the `api/` module of a feature; no component and no hook calls `fetch` directly.
+- **CORE-040** · `eslint` — Every network call goes through the `api/` module of a feature; no component and no hook calls `fetch` directly.
   Why: One place holds the base URL, the headers, the error handling and the validation.
 - **CORE-041** · `typescript` — A response is validated by a zod schema at the boundary, and the inferred type is the only type used downstream.
   Why: Without validation, a silent API change becomes a runtime error three screens later.

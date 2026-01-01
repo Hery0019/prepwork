@@ -1,0 +1,48 @@
+<%= it.t("// CORE-040 : la seule porte d'entrée du réseau. Les modules `api/` des features passent par ici.", "// CORE-040: the single network entry point. The `api/` modules of the features go through it.") %>
+import type { ZodType } from 'zod';
+import { env } from '@shared/config/env';
+import { ApiError, errorKindForStatus } from './errors';
+
+export interface RequestOptions<T> {
+  <%= it.t("/** Schéma appliqué à la réponse : CORE-041, rien n'entre sans validation. */", '/** Schema applied to the response: CORE-041, nothing enters unvalidated. */') %>
+  schema: ZodType<T>;
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  body?: unknown;
+}
+
+export async function request<T>(path: string, options: RequestOptions<T>): Promise<T> {
+  const { schema, method = 'GET', body } = options;
+
+  const init: RequestInit = { method };
+  if (body !== undefined) {
+    init.headers = { 'content-type': 'application/json' };
+    init.body = JSON.stringify(body);
+  }
+<% if (it.options.security !== 'none') { -%>
+  // <%= it.t("SECS-001 / SECO-001 : le navigateur porte le cookie de session, jamais un jeton.", "SECS-001 / SECO-001: the browser carries the session cookie, never a token.") %>
+  init.credentials = 'include';
+<% } -%>
+
+  let response: Response;
+  try {
+    response = await fetch(`${env.apiBaseUrl}${path}`, init);
+  } catch {
+    throw new ApiError('unavailable', <%= it.t("'Le service est injoignable.'", "'The service is unreachable.'") %>);
+  }
+
+  if (!response.ok) {
+<% if (it.options.security === 'oidc-bff') { -%>
+    // SECO-002 : une session expirée renvoie vers la connexion, jamais dans une boucle de réessai.
+    if (response.status === 401) {
+      window.location.assign(env.authLoginPath);
+    }
+<% } -%>
+    throw new ApiError(
+      errorKindForStatus(response.status),
+      <%= it.t('`La requête a échoué (${response.status}).`', '`The request failed (${response.status}).`') %>,
+    );
+  }
+
+  if (response.status === 204) return schema.parse(undefined);
+  return schema.parse(await response.json());
+}

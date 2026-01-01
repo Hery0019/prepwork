@@ -1,0 +1,13 @@
+#!/bin/sh
+# <%= it.t("DOCK-003 : la configuration d'exécution est écrite au démarrage du conteneur, dans un", "DOCK-003: runtime configuration is written when the container starts, into a small") %>
+# <%= it.t("petit fichier chargé avant le bundle. La même image sert tous les environnements.", "file loaded before the bundle. The same image serves every environment.") %>
+set -eu
+
+cat > /usr/share/nginx/html/runtime-config.js <<CONFIG
+window.__RUNTIME_CONFIG__ = {
+  VITE_API_BASE_URL: "${VITE_API_BASE_URL:-/api/v1}",
+<% it.env.forEach(function (variable) { -%>
+  <%= variable.name %>: "\${<%= variable.name %>:-<%= variable.example %>}",
+<% }) -%>
+};
+CONFIG

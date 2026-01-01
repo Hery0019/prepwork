@@ -1,0 +1,32 @@
+{
+  "nav": {
+    "main": "Main navigation",
+    "newNote": "New note"
+  },
+  "routes": {
+    "loading": "Loading the screen"
+  },
+  "notes": {
+    "loading": "Loading the notes",
+    "empty": {
+      "title": "No notes yet.",
+      "action": "Create the first one"
+    },
+    "error": {
+      "title": "The notes could not be loaded.",
+      "hint": "Try again in a moment, or tell the team if it persists."
+    },
+    "list": {
+      "open": "Open"
+    },
+    "detail": {
+      "error": "This note cannot be found."
+    },
+    "form": {
+      "title": "Title",
+      "body": "Body",
+      "submit": "Create the note",
+      "error": "The note could not be created."
+    }
+  }
+}

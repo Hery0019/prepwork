@@ -1,0 +1,7 @@
+# <%= it.d('Glossaire métier', 'Business glossary') %>
+
+<%= it.d("Un concept, un mot. Les termes définis ici sont réutilisés tels quels dans les identifiants du code, sous leur forme anglaise (CORE-083). Ce fichier appartient à l'équipe.", 'One concept, one word. The terms defined here are reused verbatim in code identifiers, in their English form (CORE-083). This file belongs to the team.') %>
+
+| <%= it.d('Terme', 'Term') %> | <%= it.d('Identifiant', 'Identifier') %> | <%= it.d('Définition', 'Definition') %> |
+|---|---|---|
+| <%= it.d('Note', 'Note') %> | `Note` | <%= it.d("Exemple de référence livré avec le squelette ; à remplacer par le premier vrai concept du domaine.", 'Reference example shipped with the skeleton; replace it with the first real concept of the domain.') %> |

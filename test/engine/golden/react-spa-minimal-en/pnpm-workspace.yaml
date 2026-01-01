@@ -1,0 +1,7 @@
+# Build scripts allowed (pnpm refuses the others by default): esbuild compiles its binary,
+# MSW installs its browser worker. Any other dependency asking to run code at install time
+# is refused until the team knowingly adds it here.
+allowBuilds:
+  esbuild: true
+  msw: true
+  unrs-resolver: true

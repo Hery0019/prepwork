@@ -1,0 +1,13 @@
+# ADR 0005 — <%= it.d("Livraison", "Delivery") %>
+
+<%= it.d('Date', 'Date') %> : <%= it.today %> · <%= it.d('Statut', 'Status') %> : <%= it.d('accepté', 'accepted') %>
+
+## <%= it.d('Décision', 'Decision') %>
+
+- Docker : <%= it.options.docker ? it.d('oui, image multi-étapes servie par nginx', 'yes, multi-stage image served by nginx') : it.d('non', 'no') %>
+- <%= it.d('Intégration continue', 'Continuous integration') %> : `<%= it.options.ci %>`
+- <%= it.d('Tests de bout en bout', 'End-to-end tests') %> : <%= it.options.e2e ? 'Playwright' : it.d('non', 'no') %>
+
+## <%= it.d('Conséquences', 'Consequences') %>
+
+<%= it.d("La configuration d'exécution est injectée au démarrage du conteneur, jamais figée dans le bundle : la même image passe de la recette à la production.", "Runtime configuration is injected when the container starts, never baked into the bundle: the same image goes from staging to production.") %>

@@ -1,0 +1,4 @@
+<%= it.t("// CORE-062 : le HTTP est simulé à la frontière réseau, jamais en remplaçant `fetch`.", "// CORE-062: HTTP is stubbed at the network boundary, never by replacing `fetch`.") %>
+import { setupServer } from 'msw/node';
+
+export const server = setupServer();

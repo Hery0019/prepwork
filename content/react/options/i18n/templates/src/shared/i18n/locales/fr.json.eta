@@ -1,0 +1,32 @@
+{
+  "nav": {
+    "main": "Navigation principale",
+    "newNote": "Nouvelle note"
+  },
+  "routes": {
+    "loading": "Chargement de l'écran"
+  },
+  "notes": {
+    "loading": "Chargement des notes",
+    "empty": {
+      "title": "Aucune note pour le moment.",
+      "action": "Créer la première"
+    },
+    "error": {
+      "title": "Les notes n'ont pas pu être chargées.",
+      "hint": "Réessayer dans un instant, ou prévenir l'équipe si cela persiste."
+    },
+    "list": {
+      "open": "Ouvrir"
+    },
+    "detail": {
+      "error": "Cette note est introuvable."
+    },
+    "form": {
+      "title": "Titre",
+      "body": "Contenu",
+      "submit": "Créer la note",
+      "error": "La note n'a pas pu être créée."
+    }
+  }
+}

@@ -33,19 +33,7 @@
           "default": "react",
           "type": "string",
           "const": "react"
-        }
-      },
-      "additionalProperties": false
-    },
-    "profile": {
-      "type": "string",
-      "enum": [
-        "spa-feature"
-      ]
-    },
-    "options": {
-      "type": "object",
-      "properties": {
+        },
         "data": {
           "type": "string",
           "enum": [
@@ -59,7 +47,23 @@
             "rhf",
             "none"
           ]
-        },
+        }
+      },
+      "required": [
+        "data",
+        "forms"
+      ],
+      "additionalProperties": false
+    },
+    "profile": {
+      "type": "string",
+      "enum": [
+        "spa-feature"
+      ]
+    },
+    "options": {
+      "type": "object",
+      "properties": {
         "state": {
           "type": "string",
           "enum": [
@@ -94,8 +98,6 @@
         }
       },
       "required": [
-        "data",
-        "forms",
         "state",
         "security",
         "i18n",

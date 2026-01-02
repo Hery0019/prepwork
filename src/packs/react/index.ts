@@ -1,10 +1,10 @@
-// Le pack `react` : SPA Vite, profil `spa-feature` (ADR 0007). Le questionnaire arrive à
-// l'étape 11 ; d'ici là, `prepwork init --scaffold` est le seul chemin d'entrée.
+// Le pack `react` : SPA Vite, profil `spa-feature` (ADR 0007).
 import { createCatalogSchemas, FilesSchema } from '../../catalog/schema.js';
 import type { StackPack } from '../types.js';
 import { CATALOG_SPEC, npmOf, TEST_BACKED_ENFORCERS } from './catalog.js';
 import { buildReactContext } from './context.js';
 import { reactPresentation } from './presentation.js';
+import { runQuestionnaire } from './questionnaire.js';
 import { resolveOptionIds, ScaffoldSchema, STACK_TARGET } from './scaffold.js';
 
 const schemas = createCatalogSchemas(CATALOG_SPEC);
@@ -37,6 +37,7 @@ export const reactPack: StackPack = {
   postProcess: (_path, content) => content,
 
   presentation: reactPresentation,
+  runQuestionnaire,
 
   jsonSchemas: () => ({
     scaffold: { schema: ScaffoldSchema, title: 'prepwork scaffold.yaml (react)' },

@@ -36,12 +36,12 @@ rules:
 npm:
   dependencies:
     - name: i18next
-      version: ^25.1.0
+      version: 25.10.10
       purpose:
         en: Loading of the translation files and interpolation.
         fr: Chargement des fichiers de traduction et interpolation.
     - name: react-i18next
-      version: ^15.5.0
+      version: 15.7.4
       purpose:
         en: Translation hook and provider for the components.
         fr: Hook et provider de traduction pour les composants.

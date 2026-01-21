@@ -11,8 +11,8 @@ export default {
   },
   overrides: [
     {
-      // CORE-027 : le fichier de tokens est le seul endroit où une valeur concrète est écrite.
-      files: ['src/shared/styles/tokens.css'],
+      // CORE-027 : les fichiers de tokens sont les seuls endroits où une valeur concrète est écrite.
+      files: ['src/shared/styles/tokens.css', 'src/shared/styles/tokens.override.css'],
       rules: { 'color-no-hex': null },
     },
   ],

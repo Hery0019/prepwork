@@ -29,7 +29,7 @@ rules:
 npm:
   dependencies:
     - name: zustand
-      version: ^5.0.0
+      version: 5.0.15
       purpose:
         en: Small stores for client state, without a provider.
         fr: Petits stores pour l'état client, sans provider.

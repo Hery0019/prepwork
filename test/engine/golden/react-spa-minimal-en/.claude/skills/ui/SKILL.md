@@ -66,6 +66,8 @@ Vite single-page application, one directory per use case, imports flowing strict
 
 ### Visual contract
 
+These values come from the preset and are generated into `src/shared/styles/tokens.css`. To adapt the brand, redeclare the token in `src/shared/styles/tokens.override.css`, which belongs to the team (CORE-027).
+
 | Token | Value |
 |---|---|
 | Typography | system-ui, sans-serif · system-ui, sans-serif · ui-monospace, monospace |

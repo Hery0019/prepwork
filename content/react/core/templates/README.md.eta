@@ -24,6 +24,8 @@ pnpm install
 pnpm dev
 ```
 
+<%= it.d("Commiter `pnpm-lock.yaml` juste après la première installation : les versions sont épinglées dans `package.json`, et la CI installe en mode figé (`--frozen-lockfile`).", 'Commit `pnpm-lock.yaml` right after the first install: the versions are pinned in `package.json`, and CI installs in frozen mode (`--frozen-lockfile`).') %>
+
 ## <%= it.d('Commandes', 'Commands') %>
 
 | <%= it.d('Commande', 'Command') %> | <%= it.d('Ce qu\'elle fait', 'What it does') %> |
@@ -39,7 +41,8 @@ pnpm dev
 <% it.layers.forEach(function (layer) { -%>
 | `<%= layer.path %>` | <%= it.d('couche `' + layer.id + '` — ', 'layer `' + layer.id + '` — ') %><%= layer.mayDependOn.length > 0 ? it.d('dépend de ', 'depends on ') + layer.mayDependOn.join(', ') : it.d('ne dépend de rien', 'depends on nothing') %> |
 <% }) -%>
-| `src/shared/styles/tokens.css` | <%= it.d("Contrat visuel — appartient à l'équipe", 'Visual contract — team-owned') %> |
+| `src/shared/styles/tokens.css` | <%= it.d('Contrat visuel, généré depuis le preset', 'Visual contract, generated from the preset') %> |
+| `src/shared/styles/tokens.override.css` | <%= it.d("Surcharges de la marque — appartient à l'équipe", 'Brand overrides — team-owned') %> |
 | `src/shared/ui/` | <%= it.d("Kit d'interface copié dans le dépôt — appartient à l'équipe", 'Interface kit copied into the repository — team-owned') %> |
 | `docs/adr/` | <%= it.d("Décisions d'architecture — appartient à l'équipe", 'Architecture decision records — team-owned') %> |
 | `.scaffold/manifest.json` | <%= it.d('Fichiers générés et leurs empreintes', 'Generated files and their hashes') %> |

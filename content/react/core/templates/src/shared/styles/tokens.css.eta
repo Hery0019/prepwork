@@ -1,5 +1,5 @@
 /* <%= it.d("Contrat visuel du projet — preset `" + it.design.preset.id + "`.", "Visual contract of the project — `" + it.design.preset.id + "` preset.") %> */
-/* <%= it.d("Ce fichier appartient à l'équipe : c'est ici que vit la marque. prepwork ne le réécrit jamais.", "This file belongs to the team: this is where the brand lives. prepwork never rewrites it.") %> */
+/* <%= it.d("Fichier généré depuis `scaffold.yaml` : ne pas éditer. Les surcharges de l'équipe vivent dans `tokens.override.css`, importé après celui-ci.", "Generated from `scaffold.yaml`: do not edit. Team overrides live in `tokens.override.css`, imported after this file.") %> */
 /* <%= it.d("Les tokens sont déclarés dans les espaces de noms de Tailwind : chacun devient une classe", "The tokens are declared in Tailwind namespaces: each one becomes a utility class") %> */
 /* <%= it.d("utilitaire (`bg-primary`, `text-lg`, `rounded-md`), ce qui rend inutile toute valeur écrite à la main (CORE-020, CORE-021).", "(`bg-primary`, `text-lg`, `rounded-md`), which makes any hand-written value unnecessary (CORE-020, CORE-021).") %> */
 @theme {

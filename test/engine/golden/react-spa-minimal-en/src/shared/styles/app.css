@@ -1,6 +1,8 @@
 /* Application stylesheet: Tailwind, the project tokens, then the base layer. */
 @import 'tailwindcss';
 @import './tokens.css';
+/* Team overrides come after the preset: a redeclared token wins. */
+@import './tokens.override.css';
 
 @layer base {
   html {

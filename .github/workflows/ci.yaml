@@ -78,6 +78,8 @@ jobs:
         working-directory: out
         run: |
           cp .env.example .env
+          # Un projet fraîchement généré n'a pas encore de lockfile : la première
+          # installation le crée. Les versions, elles, sont exactes dans package.json.
           pnpm install --no-frozen-lockfile
           pnpm typecheck
           pnpm lint

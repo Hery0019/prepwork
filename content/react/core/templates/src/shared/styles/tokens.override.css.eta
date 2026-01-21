@@ -1,0 +1,15 @@
+/* <%= it.d("Surcharges d'équipe du contrat visuel. Ce fichier appartient à l'équipe : prepwork ne le", "Team overrides of the visual contract. This file belongs to the team: prepwork never rewrites") %> */
+/* <%= it.d("réécrit jamais. C'est ici que vit la marque.", "it. This is where the brand lives.") %> */
+/* */
+/* <%= it.d("`tokens.css` porte le preset `" + it.design.preset.id + "` et se régénère quand `scaffold.yaml` change.", "`tokens.css` carries the `" + it.design.preset.id + "` preset and is regenerated when `scaffold.yaml` changes.") %> */
+/* <%= it.d("Redéclarer ici un token du même nom l'emporte : les utilitaires Tailwind suivent (CORE-027).", "Redeclaring a token of the same name here wins: the Tailwind utilities follow (CORE-027).") %> */
+/* */
+/* <%= it.d("Exemple — adopter la couleur primaire de la marque, dans les deux thèmes :", "Example — adopt the brand primary colour, in both themes:") %> */
+/* */
+/*   @theme {                                                                      */
+/*     --color-primary: #123456;                                                   */
+/*   }                                                                             */
+/*                                                                                 */
+/*   :root[data-theme='dark'] {                                                    */
+/*     --color-primary: #8fa6f5;                                                   */
+/*   }                                                                             */

@@ -206,3 +206,19 @@ remonte dans `content/common/`, consommé par les deux packs.
   `runtime-config.js` à côté du bundle et le socle le fait primer sur les valeurs du build, sinon
   DOCK-003 était une promesse vide. La CI copie `.env.example` en `.env` : un dépôt fraîchement
   cloné n'a pas de `.env`, et l'application refuse de démarrer sans configuration valide.
+
+**2026-09-03, après un cycle `init → check → sync` sur un projet React réel.**
+
+- **Le fichier de tokens se scinde en deux, et §6 change sur ce point.** `tokens.css` devient
+  **généré** depuis le preset, et un `tokens.override.css` **d'équipe** est importé juste après :
+  redéclarer un token y gagne, les utilitaires Tailwind suivent. Le motif « tout le fichier
+  appartient à l'équipe » avait un défaut silencieux : changer `design.preset` dans `scaffold.yaml`
+  mettait à jour `CLAUDE.md` et le skill `ui`, mais pas les tokens — la documentation annonçait un
+  preset que le projet n'avait pas. Vérifié dans les deux sens : le changement de preset se propage
+  désormais, et une surcharge d'équipe survit au `sync` comme au build.
+- **Le message de fin de `init` vient du pack** (`presentation.initialCommands`), comme la
+  description de la CLI. Un projet React se voyait conseiller `./mvnw verify`.
+- **Les 35 dépendances du pack `react` sont épinglées à la version résolue**, comme le pack
+  `spring-boot` le fait depuis le début ; l'outil ne peut pas prétendre épingler et livrer des
+  plages. Le projet généré n'a pas de lockfile à la première génération : son README dit de le
+  commiter après la première installation, et la matrice front l'installe sans `--frozen-lockfile`.

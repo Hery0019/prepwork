@@ -66,6 +66,8 @@ Application monopage Vite, un dossier par cas d'usage, imports circulant stricte
 
 ### Contrat visuel
 
+Ces valeurs viennent du preset et sont générées dans `src/shared/styles/tokens.css`. Pour adapter la marque, redéclarer le token dans `src/shared/styles/tokens.override.css`, qui appartient à l’équipe (CORE-027).
+
 | Token | Valeur |
 |---|---|
 | Typographie | 'Inter', system-ui, sans-serif · 'Inter', system-ui, sans-serif · 'JetBrains Mono', ui-monospace, monospace |

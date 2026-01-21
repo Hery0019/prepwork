@@ -1,6 +1,8 @@
 /* Feuille de style de l'application : Tailwind, les tokens du projet, puis la couche de base. */
 @import 'tailwindcss';
 @import './tokens.css';
+/* Les surcharges d'équipe passent après le preset : un token redéclaré l'emporte. */
+@import './tokens.override.css';
 
 @layer base {
   html {

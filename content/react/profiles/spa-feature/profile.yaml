@@ -250,163 +250,163 @@ skills:
 npm:
   dependencies:
     - name: react
-      version: ^19.1.0
+      version: 19.2.8
       purpose:
         en: The user interface library.
         fr: La bibliothèque d'interface.
     - name: react-dom
-      version: ^19.1.0
+      version: 19.2.8
       purpose:
         en: Rendering React into the browser DOM.
         fr: Rendu de React dans le DOM du navigateur.
     - name: react-router
-      version: ^7.6.0
+      version: 7.18.3
       purpose:
         en: Routing of the screens declared in `app/`.
         fr: Routage des écrans déclarés dans `app/`.
     - name: zod
-      version: ^3.25.0
+      version: 3.25.76
       purpose:
         en: Validation at the boundaries and inference of the resulting types.
         fr: Validation aux frontières et inférence des types qui en découlent.
     - name: class-variance-authority
-      version: ^0.7.1
+      version: 0.7.1
       purpose:
         en: Component variants built on the design tokens.
         fr: Variantes de composants construites sur les tokens du design.
     - name: clsx
-      version: ^2.1.1
+      version: 2.1.1
       purpose:
         en: Conditional composition of class names.
         fr: Composition conditionnelle des noms de classes.
     - name: '@eslint/js'
-      version: ^9.28.0
+      version: 9.39.5
       scope: dev
       purpose:
         en: Base ESLint configuration.
         fr: Configuration ESLint de base.
     - name: '@tailwindcss/vite'
-      version: ^4.1.0
+      version: 4.3.3
       scope: dev
       purpose:
         en: Tailwind 4 wired into Vite; the configuration is the token file.
         fr: Tailwind 4 branché sur Vite ; la configuration est le fichier de tokens.
     - name: '@testing-library/jest-dom'
-      version: ^6.6.0
+      version: 6.10.0
       scope: dev
       purpose:
         en: Readable DOM assertions for component tests.
         fr: Assertions DOM lisibles pour les tests de composants.
     - name: '@testing-library/react'
-      version: ^16.3.0
+      version: 16.3.3
       scope: dev
       purpose:
         en: Component rendering and selection by role.
         fr: Rendu de composants et sélection par rôle.
     - name: '@types/react'
-      version: ^19.1.0
+      version: 19.2.18
       scope: dev
       purpose:
         en: React types.
         fr: Types de React.
     - name: '@types/react-dom'
-      version: ^19.1.0
+      version: 19.2.5
       scope: dev
       purpose:
         en: DOM rendering types.
         fr: Types du rendu DOM.
     - name: '@vitejs/plugin-react'
-      version: ^4.4.0
+      version: 4.7.0
       scope: dev
       purpose:
         en: JSX transform and fast refresh.
         fr: Transformation JSX et rafraîchissement rapide.
     - name: 'dependency-cruiser'
-      version: ^16.10.0
+      version: 16.10.4
       scope: dev
       purpose:
         en: 'SPA-008: no cycle and no orphan module.'
         fr: 'SPA-008 : ni cycle ni module orphelin.'
     - name: 'eslint'
-      version: ^9.28.0
+      version: 9.39.5
       scope: dev
       purpose:
         en: Linting of the code and the boundaries.
         fr: Lint du code et des frontières.
     - name: 'eslint-import-resolver-typescript'
-      version: ^4.4.0
+      version: 4.4.5
       scope: dev
       purpose:
         en: Resolution of TypeScript imports and aliases for the boundary rules.
         fr: Résolution des imports et alias TypeScript pour les règles de frontières.
     - name: 'eslint-plugin-boundaries'
-      version: ^5.0.0
+      version: 5.4.0
       scope: dev
       purpose:
         en: 'SPA-001 to SPA-012: the boundaries between layers.'
         fr: 'SPA-001 à SPA-012 : les frontières entre couches.'
     - name: 'eslint-plugin-jsx-a11y'
-      version: ^6.10.0
+      version: 6.10.2
       scope: dev
       purpose:
         en: 'CORE-030 to CORE-035: markup accessibility.'
         fr: 'CORE-030 à CORE-035 : accessibilité du balisage.'
     - name: 'eslint-plugin-react-hooks'
-      version: ^5.2.0
+      version: 5.2.0
       scope: dev
       purpose:
         en: React hooks rules.
         fr: Règles des hooks React.
     - name: 'globals'
-      version: ^16.2.0
+      version: 16.5.0
       scope: dev
       purpose:
         en: Global variables known to ESLint.
         fr: Variables globales connues par ESLint.
     - name: 'jsdom'
-      version: ^26.1.0
+      version: 26.1.0
       scope: dev
       purpose:
         en: DOM environment for component tests.
         fr: Environnement DOM des tests de composants.
     - name: 'msw'
-      version: ^2.7.0
+      version: 2.15.0
       scope: dev
       purpose:
         en: 'CORE-062: HTTP stubbed at the network boundary.'
         fr: 'CORE-062 : le HTTP est simulé à la frontière réseau.'
     - name: 'prettier'
-      version: ^3.5.0
+      version: 3.9.6
       scope: dev
       purpose:
         en: One single formatting for the project.
         fr: Formatage unique du projet.
     - name: 'stylelint'
-      version: ^16.19.0
+      version: 16.26.1
       scope: dev
       purpose:
         en: 'CORE-020 and CORE-026: the style rules checkable in CSS.'
         fr: 'CORE-020 et CORE-026 : les règles de style vérifiables dans le CSS.'
     - name: 'typescript'
-      version: ^5.8.0
+      version: 5.9.3
       scope: dev
       purpose:
         en: Strict types, without `any`.
         fr: Types stricts, sans `any`.
     - name: 'typescript-eslint'
-      version: ^8.33.0
+      version: 8.69.0
       scope: dev
       purpose:
         en: Type-aware linting of TypeScript.
         fr: Lint typé du TypeScript.
     - name: 'vite'
-      version: ^6.3.0
+      version: 6.4.3
       scope: dev
       purpose:
         en: Development server and production build.
         fr: Serveur de développement et build de production.
     - name: 'vitest'
-      version: ^3.2.0
+      version: 3.2.7
       scope: dev
       purpose:
         en: Runner for unit and component tests.

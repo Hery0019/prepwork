@@ -99,10 +99,11 @@ export function catalogFiles(fixture: CatalogFixture = {}): Record<string, strin
 
 /** Scaffold de référence (exemple de CLAUDE.md §5). */
 export const SAMPLE_SCAFFOLD: Scaffold = {
-  scaffold_version: '1.1.0',
+  scaffold_version: '1.2.0',
   project: { name: 'pay-flow', base_package: 'mg.solumada.payflow', description: 'Payment flows' },
   stack: { target: 'spring-boot', java: 21, database: 'postgresql', migrations: 'flyway' },
   profile: 'layered',
+  renderer: 'claude-code',
   options: { security: 'none', docker: true, ci: 'github' },
   git: { author: { name: 'Hery', email: 'hery@example.com' }, agent_trailer: true },
   language: { comments: 'fr', docs: 'fr' },

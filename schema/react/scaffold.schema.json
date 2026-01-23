@@ -61,6 +61,14 @@
         "spa-feature"
       ]
     },
+    "renderer": {
+      "default": "claude-code",
+      "type": "string",
+      "enum": [
+        "claude-code",
+        "agents-md"
+      ]
+    },
     "options": {
       "type": "object",
       "properties": {

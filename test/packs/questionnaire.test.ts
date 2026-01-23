@@ -33,7 +33,7 @@ describe('questionnaire', () => {
     const prompter = createScriptedPrompter(DEFAULT_ANSWERS);
     const result = await runQuestionnaire(prompter, { profiles: PROFILES });
     expect(result.scaffold).toEqual({
-      scaffold_version: '1.1.0',
+      scaffold_version: '1.2.0',
       project: {
         name: 'pay-flow',
         base_package: 'mg.solumada.payflow',
@@ -41,6 +41,7 @@ describe('questionnaire', () => {
       },
       stack: { target: 'spring-boot', java: 21, database: 'postgresql', migrations: 'flyway' },
       profile: 'layered',
+      renderer: 'claude-code',
       options: { security: 'none', docker: true, ci: 'github' },
       git: { author: { name: 'Hery', email: 'hery@example.com' }, agent_trailer: true },
       language: { comments: 'fr', docs: 'fr' },

@@ -37,10 +37,11 @@ describe('react questionnaire', () => {
     const result = await runQuestionnaire(prompter, { profiles: PROFILES });
 
     expect(result.scaffold).toEqual({
-      scaffold_version: '1.1.0',
+      scaffold_version: '1.2.0',
       project: { name: 'note-book', description: 'Interface de gestion de notes' },
       stack: { target: 'react', data: 'tanstack-query', forms: 'rhf' },
       profile: 'spa-feature',
+      renderer: 'claude-code',
       options: {
         state: 'zustand',
         security: 'none',

@@ -3,11 +3,18 @@
 // fragments et ajoute les siens (`stack`, `options`, et pour Spring `project.base_package`).
 import { z } from 'zod';
 
-/** Version du format. 1.1.0 : ajout de `stack.target` (ADR 0007). */
-export const SCAFFOLD_VERSION = '1.1.0';
+/** Version du format. 1.1.0 : `stack.target` (ADR 0007). 1.2.0 : `renderer` (ADR 0008). */
+export const SCAFFOLD_VERSION = '1.2.0';
 
 /** Valeur de `stack.target` supposée quand le champ est absent (scaffold écrit par la v1). */
 export const DEFAULT_STACK_TARGET = 'spring-boot';
+
+/** Renderer supposé quand le champ est absent (scaffold écrit avant l'ADR 0008). */
+export const DEFAULT_RENDERER = 'claude-code';
+
+/** Cibles d'agent connues ; le champ est commun à tous les packs. */
+export const RendererIdSchema = z.enum(['claude-code', 'agents-md']).default(DEFAULT_RENDERER);
+export type RendererId = z.infer<typeof RendererIdSchema>;
 
 export const PROJECT_NAME_PATTERN = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
 export const SEMVER_PATTERN = /^\d+\.\d+\.\d+$/;
@@ -43,6 +50,8 @@ export interface BaseScaffold {
   project: { name: string; description: string };
   stack: { target: string };
   profile: string;
+  /** Cible d'agent pour laquelle les spécifications sont rendues. */
+  renderer: string;
   git: { author: { name: string; email: string }; agent_trailer: boolean };
   language: { comments: Language; docs: Language };
 }

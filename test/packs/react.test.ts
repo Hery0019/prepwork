@@ -8,10 +8,11 @@ import { reactPack } from '../../src/packs/react/index.js';
 import { resolveOptionIds, ScaffoldSchema } from '../../src/packs/react/scaffold.js';
 
 const SCAFFOLD = {
-  scaffold_version: '1.1.0',
+  scaffold_version: '1.2.0',
   project: { name: 'note-book', description: 'Notes management interface' },
   stack: { target: 'react', data: 'tanstack-query', forms: 'rhf' },
   profile: 'spa-feature',
+  renderer: 'claude-code',
   options: {
     state: 'zustand',
     security: 'oidc-bff',

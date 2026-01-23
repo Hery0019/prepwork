@@ -37,8 +37,6 @@ export interface EngineDeps {
   /** Pack de la stack du projet, cohérent avec le catalogue chargé. */
   pack: StackPack;
   toolVersion: string;
-  /** Renderer cible ; `claude-code` en v1. */
-  rendererId?: string | undefined;
   /** Date injectable pour des rendus déterministes (tests). */
   today?: string | undefined;
 }
@@ -71,7 +69,7 @@ async function renderAndPlan(
     extras,
     today: deps.today,
   });
-  const files = renderProject(composition, getRenderer(deps.rendererId ?? 'claude-code'));
+  const files = renderProject(composition, getRenderer(scaffold.renderer));
   const previous = await readManifest(deps.fs, projectDir);
   const plan = await buildPlan(deps.fs, projectDir, files, previous, {
     scaffoldVersion: scaffold.scaffold_version,

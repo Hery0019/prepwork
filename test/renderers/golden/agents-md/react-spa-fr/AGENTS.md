@@ -446,14 +446,26 @@ Un workflow GitHub Actions lance les vérifications sur chaque pull request.
 
 ### Option `git`
 
-Commits conventionnels, aucun secret commité, commandes interdites à l'agent.
+Commits conventionnels, auteur déclaré, trailer d'agent optionnel, hooks pour les messages de commit et les secrets.
 
-- **GIT-001** · `commitlint` — Un message de commit suit le format Conventional Commits ; le hook `commit-msg` refuse tout le reste.
-  Pourquoi : Un historique lisible est la documentation la moins chère qu'une équipe écrive jamais.
-- **GIT-002** · `gitleaks` — Le hook `pre-commit` lance gitleaks et refuse le commit quand un secret est détecté.
+- **GIT-001** · `commitlint` — Les messages de commit suivent Conventional Commits (`type(scope): subject`, sujet de 72 caractères au plus), vérifiés par le hook `commit-msg`.
+  Pourquoi : L'historique devient un changelog lisible par les machines et les humains.
+- **GIT-002** · guidance — Les commits sont signés avec l'identité déclarée dans `scaffold.yaml` (`git.author`), jamais avec une valeur par défaut de la machine.
+  Pourquoi : L'auteur est une décision d'équipe enregistrée une fois, pas un accident local.
+- **GIT-003** · guidance — Quand `git.agent_trailer` est activé dans `scaffold.yaml`, chaque commit écrit par l'agent se termine par le trailer `Co-Authored-By: Claude <noreply@anthropic.com>`.
+  Pourquoi : L'équipe distingue dans l'historique les commits écrits par l'agent.
+- **GIT-004** · guidance — Les hooks de `.githooks/` sont actifs sur chaque clone (`git config core.hooksPath .githooks`) ; un commit qui les a contournés est refusé en revue.
+  Pourquoi : Les hooks ne protègent le dépôt que si tout le monde les exécute.
+- **GIT-005** · guidance — Les sorties de build, fichiers d'IDE et `.env` sont ignorés via `.gitignore` ; rien de produit par le build n'est jamais commité.
+  Pourquoi : Le dépôt contient des sources et des décisions, rien qui puisse être régénéré.
+- **GIT-006** · `gitleaks` — Le hook `pre-commit` lance gitleaks et refuse le commit quand un secret est indexé.
   Pourquoi : Un secret poussé une fois doit être considéré comme compromis, quoi qu'il arrive ensuite.
-- **GIT-003** · guidance — L'agent ne lance jamais `git push`, `git reset --hard` ni `git clean`.
-  Pourquoi : Ces trois commandes détruisent un travail que seule l'équipe peut décider de perdre.
+
+**Anti-patterns**
+
+- **GIT-AP-001** · guidance — `git commit --no-verify` pour passer outre un hook qui échoue.
+  Pourquoi : Le hook a échoué pour une raison, un message mal formé ou un secret dans le diff.
+  À la place : Corriger le message ou retirer le secret, puis commiter à nouveau.
 
 ## Sécurité
 

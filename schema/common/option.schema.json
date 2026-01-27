@@ -1,0 +1,366 @@
+{
+  "title": "prepwork option.yaml (common)",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "meta": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "rule_prefix": {
+          "type": "string",
+          "pattern": "^[A-Z]{2,5}$"
+        },
+        "group": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "summary": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[^\\n]+$"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "en": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "^[^\\n]+$"
+                },
+                "fr": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "^[^\\n]+$"
+                }
+              },
+              "required": [
+                "en",
+                "fr"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "rule_prefix",
+        "summary"
+      ],
+      "additionalProperties": false
+    },
+    "skill": {
+      "type": "string",
+      "enum": [
+        "architecture",
+        "db",
+        "api",
+        "testing",
+        "workflow",
+        "security",
+        "ui",
+        "a11y",
+        "data"
+      ]
+    },
+    "rules": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Z]{2,5}-\\d{3}$"
+          },
+          "statement": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[^\\n]+$"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "en": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\n]+$"
+                  },
+                  "fr": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\n]+$"
+                  }
+                },
+                "required": [
+                  "en",
+                  "fr"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "rationale": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[^\\n]+$"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "en": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\n]+$"
+                  },
+                  "fr": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\n]+$"
+                  }
+                },
+                "required": [
+                  "en",
+                  "fr"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "enforced_by": {
+            "type": "string",
+            "enum": [
+              "archunit",
+              "spotless",
+              "commitlint",
+              "gitleaks",
+              "modulith",
+              "flyway",
+              "liquibase",
+              "dependency-check",
+              "none",
+              "eslint-boundaries",
+              "dependency-cruiser",
+              "typescript",
+              "eslint",
+              "jsx-a11y",
+              "stylelint",
+              "prettier",
+              "vitest",
+              "playwright"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "statement",
+          "rationale",
+          "enforced_by"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "anti_patterns": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Z]{2,5}-AP-\\d{3}$"
+          },
+          "statement": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[^\\n]+$"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "en": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\n]+$"
+                  },
+                  "fr": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\n]+$"
+                  }
+                },
+                "required": [
+                  "en",
+                  "fr"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "rationale": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[^\\n]+$"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "en": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\n]+$"
+                  },
+                  "fr": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\n]+$"
+                  }
+                },
+                "required": [
+                  "en",
+                  "fr"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "enforced_by": {
+            "type": "string",
+            "enum": [
+              "archunit",
+              "spotless",
+              "commitlint",
+              "gitleaks",
+              "modulith",
+              "flyway",
+              "liquibase",
+              "dependency-check",
+              "none",
+              "eslint-boundaries",
+              "dependency-cruiser",
+              "typescript",
+              "eslint",
+              "jsx-a11y",
+              "stylelint",
+              "prettier",
+              "vitest",
+              "playwright"
+            ]
+          },
+          "instead": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[^\\n]+$"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "en": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\n]+$"
+                  },
+                  "fr": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\n]+$"
+                  }
+                },
+                "required": [
+                  "en",
+                  "fr"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "statement",
+          "rationale",
+          "enforced_by",
+          "instead"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "env": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]*$"
+          },
+          "example": {
+            "type": "string"
+          },
+          "comment": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[^\\n]+$"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "en": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\n]+$"
+                  },
+                  "fr": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\n]+$"
+                  }
+                },
+                "required": [
+                  "en",
+                  "fr"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "example",
+          "comment"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "meta",
+    "skill"
+  ],
+  "additionalProperties": false
+}

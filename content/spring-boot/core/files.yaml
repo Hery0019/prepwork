@@ -42,6 +42,10 @@ files:
   - source: README.md.eta
     target: README.md
     owner: team
+  - source: .gitignore.eta
+    target: .gitignore
+  - source: .gitattributes.eta
+    target: .gitattributes
   - source: .env.example.eta
     target: .env.example
     owner: team

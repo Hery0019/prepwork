@@ -1,0 +1,8 @@
+# yaml-language-server: $schema=../../../../schema/common/files.schema.json
+# Les hooks sont les mêmes pour toute stack ; `.gitignore` et `.gitattributes`, non : ils
+# nomment les répertoires de build de la technologie, et restent donc au socle de chaque pack.
+files:
+  - source: .githooks/commit-msg.eta
+    target: .githooks/commit-msg
+  - source: .githooks/pre-commit.eta
+    target: .githooks/pre-commit

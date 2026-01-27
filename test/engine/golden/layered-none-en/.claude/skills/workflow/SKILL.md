@@ -73,6 +73,8 @@ Conventional commits, declared author, optional agent trailer, hooks for commit 
   Why: Hooks only protect the repository when everyone runs them.
 - **GIT-005** · guidance — Build outputs, IDE files and `.env` are ignored through `.gitignore`; nothing produced by the build is ever committed.
   Why: The repository contains sources and decisions, nothing that can be regenerated.
+- **GIT-006** · `gitleaks` — The `pre-commit` hook runs gitleaks and refuses the commit when a secret is staged.
+  Why: A secret pushed once must be considered compromised, whatever happens next.
 
 ### Anti-patterns
 

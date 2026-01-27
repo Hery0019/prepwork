@@ -107,6 +107,8 @@ Commits conventionnels, auteur déclaré, trailer d'agent optionnel, hooks pour 
   Pourquoi : Les hooks ne protègent le dépôt que si tout le monde les exécute.
 - **GIT-005** · guidance — Les sorties de build, fichiers d'IDE et `.env` sont ignorés via `.gitignore` ; rien de produit par le build n'est jamais commité.
   Pourquoi : Le dépôt contient des sources et des décisions, rien qui puisse être régénéré.
+- **GIT-006** · `gitleaks` — Le hook `pre-commit` lance gitleaks et refuse le commit quand un secret est indexé.
+  Pourquoi : Un secret poussé une fois doit être considéré comme compromis, quoi qu'il arrive ensuite.
 
 ### Anti-patterns
 

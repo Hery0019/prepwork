@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../../../../schema/spring-boot/option.schema.json
+# yaml-language-server: $schema=../../../../schema/common/option.schema.json
 # Conventions Git : toujours présente (commits conventionnels, auteur, hooks, .gitignore).
 meta:
   id: git
@@ -49,6 +49,14 @@ rules:
       en: The repository contains sources and decisions, nothing that can be regenerated.
       fr: Le dépôt contient des sources et des décisions, rien qui puisse être régénéré.
     enforced_by: none
+  - id: GIT-006
+    statement:
+      en: The `pre-commit` hook runs gitleaks and refuses the commit when a secret is staged.
+      fr: Le hook `pre-commit` lance gitleaks et refuse le commit quand un secret est indexé.
+    rationale:
+      en: A secret pushed once must be considered compromised, whatever happens next.
+      fr: Un secret poussé une fois doit être considéré comme compromis, quoi qu'il arrive ensuite.
+    enforced_by: gitleaks
 anti_patterns:
   - id: GIT-AP-001
     statement:

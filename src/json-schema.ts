@@ -3,7 +3,7 @@
 // Jamais écrits à la main : `pnpm schemas` régénère `schema/<pack>/*.schema.json` et un test
 // vérifie que les fichiers commités sont à jour.
 import { z, type ZodType } from 'zod';
-import { createCatalogSchemas } from './catalog/schema.js';
+import { createCatalogSchemas, FilesSchema } from './catalog/schema.js';
 import { PACKS } from './packs/index.js';
 
 function toJson(schema: ZodType, title: string): string {
@@ -15,7 +15,7 @@ function toJson(schema: ZodType, title: string): string {
  * Schéma des ensembles de règles de `content/common`, valable pour tous les packs : il accepte
  * l'union de leurs valeurs de `enforced_by` et de leurs noms de skills.
  */
-function commonCoreSchema(): string {
+function commonSchemas(): Record<string, string> {
   const enforcedBy = new Set<string>();
   const skills = new Set<string>();
   for (const pack of PACKS) {
@@ -27,12 +27,16 @@ function commonCoreSchema(): string {
     skills: [...skills] as [string, ...string[]],
     layerTarget: z.string(),
   });
-  return toJson(schemas.CoreRuleSetSchema, 'prepwork core rule set (common)');
+  return {
+    'common/core': toJson(schemas.CoreRuleSetSchema, 'prepwork core rule set (common)'),
+    'common/option': toJson(schemas.OptionSchema, 'prepwork option.yaml (common)'),
+    'common/files': toJson(FilesSchema, 'prepwork files.yaml'),
+  };
 }
 
 /** Chemin relatif dans `schema/` → texte JSON (indenté, terminé par un retour à la ligne). */
 export function generateJsonSchemas(): Record<string, string> {
-  const result: Record<string, string> = { 'common/core': commonCoreSchema() };
+  const result: Record<string, string> = { ...commonSchemas() };
   for (const pack of PACKS) {
     for (const [name, { schema, title }] of Object.entries(pack.jsonSchemas())) {
       result[`${pack.id}/${name}`] = toJson(schema, title);

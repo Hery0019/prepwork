@@ -1,0 +1,4 @@
+<%= it.t("// Remplaçant de `server-only` dans les tests. Le vrai module lève dès qu'il est chargé hors", "// Stand-in for `server-only` in tests. The real module throws as soon as it is loaded outside") %>
+<%= it.t("// d'un contexte serveur, ce qui rendrait tout test d'un module serveur impossible ; ici il ne", "// a server context, which would make testing any server module impossible; here it does") %>
+<%= it.t("// fait rien. La garantie reste entière dans le build, qui utilise le vrai.", "// nothing. The guarantee stays whole in the build, which uses the real one.") %>
+export {};

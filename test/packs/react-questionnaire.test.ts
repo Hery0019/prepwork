@@ -5,13 +5,16 @@ import { createScriptedPrompter, type ScriptedAnswer } from '../../src/questionn
 
 const PROFILES: ProfileChoice[] = [
   { id: 'spa-feature', summary: 'Vite single-page application', whenToUse: ['one HTTP API'] },
+  { id: 'next-app', summary: 'Next.js App Router', whenToUse: ['server rendering'] },
 ];
+
+const ONE_PROFILE: ProfileChoice[] = PROFILES.filter((profile) => profile.id === 'spa-feature');
 
 /** Réponses dans l'ordre du questionnaire (ADR 0007 §7) pour le chemin par défaut. */
 const DEFAULT_ANSWERS: ScriptedAnswer[] = [
   'note-book', // 1 nom
   'Interface de gestion de notes', // 2 description
-  // 3 profil : une seule réponse possible, la question n'est pas posée
+  'spa-feature', // 3 profil
   'tanstack-query', // 4 données
   'rhf', // 5 formulaires
   'zustand', // 6 état client
@@ -58,18 +61,28 @@ describe('react questionnaire', () => {
   });
 
   it('announces the only profile instead of asking for it', async () => {
-    const prompter = createScriptedPrompter(DEFAULT_ANSWERS);
+    const answers = DEFAULT_ANSWERS.filter((answer) => answer !== 'spa-feature');
+    const prompter = createScriptedPrompter(answers);
 
-    await runQuestionnaire(prompter, { profiles: PROFILES });
+    await runQuestionnaire(prompter, { profiles: ONE_PROFILE });
 
     expect(prompter.asked.some((message) => message.includes("Profil d'architecture"))).toBe(false);
     expect(prompter.notes.join('\n')).toContain('Vite single-page application');
   });
 
+  it('asks for the profile as soon as the catalogue offers several', async () => {
+    const prompter = createScriptedPrompter(DEFAULT_ANSWERS);
+
+    const result = await runQuestionnaire(prompter, { profiles: PROFILES });
+
+    expect(prompter.asked.some((message) => message.includes("Profil d'architecture"))).toBe(true);
+    expect(result.scaffold.profile).toBe('spa-feature');
+  });
+
   it('asks for the login path only for the backend-for-frontend, and keeps it out of the scaffold', async () => {
     const answers = [...DEFAULT_ANSWERS];
-    answers[5] = 'oidc-bff';
-    answers.splice(6, 0, '/auth/login');
+    answers[6] = 'oidc-bff';
+    answers.splice(7, 0, '/auth/login');
     const prompter = createScriptedPrompter(answers);
 
     const result = await runQuestionnaire(prompter, { profiles: PROFILES });

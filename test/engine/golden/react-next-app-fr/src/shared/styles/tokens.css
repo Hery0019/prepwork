@@ -1,0 +1,67 @@
+/* Contrat visuel du projet — preset `app-sober`. */
+/* Fichier généré depuis `scaffold.yaml` : ne pas éditer. Les surcharges de l'équipe vivent dans `tokens.override.css`, importé après celui-ci. */
+/* Les tokens sont déclarés dans les espaces de noms de Tailwind : chacun devient une classe */
+/* utilitaire (`bg-primary`, `text-lg`, `rounded-md`), ce qui rend inutile toute valeur écrite à la main (CORE-020, CORE-021). */
+@theme {
+  --font-heading: 'Inter', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --leading-body: 1.5;
+  --leading-heading: 1.2;
+
+  /* Longueur de ligne du corps de texte : `max-w-measure`. */
+  --container-measure: 70ch;
+
+  --text-xs: 0.694rem;
+  --text-sm: 0.833rem;
+  --text-base: 1rem;
+  --text-lg: 1.2rem;
+  --text-xl: 1.44rem;
+  --text-2xl: 1.728rem;
+  --text-3xl: 2.074rem;
+
+  /* Pas d'espacement : `p-4` vaut quatre fois cette valeur. */
+  --spacing: 4px;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  --color-background: #ffffff;
+  --color-surface: #f6f7f9;
+  --color-text: #101828;
+  --color-muted: #5a6472;
+  --color-border: #d6dae0;
+  --color-primary: #3a5bd9;
+  --color-primary-foreground: #ffffff;
+  --color-destructive: #b3261e;
+  --color-success: #1c6b3f;
+}
+
+/* CORE-023 : le thème sombre redéfinit les mêmes tokens, il n'ajoute aucune couleur. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --color-background: #101319;
+    --color-surface: #181c24;
+    --color-text: #e8eaee;
+    --color-muted: #a2abb8;
+    --color-border: #2b323d;
+    --color-primary: #8fa6f5;
+    --color-primary-foreground: #101319;
+    --color-destructive: #f2a49e;
+    --color-success: #7fd0a3;
+  }
+}
+
+:root[data-theme='dark'] {
+  --color-background: #101319;
+  --color-surface: #181c24;
+  --color-text: #e8eaee;
+  --color-muted: #a2abb8;
+  --color-border: #2b323d;
+  --color-primary: #8fa6f5;
+  --color-primary-foreground: #101319;
+  --color-destructive: #f2a49e;
+  --color-success: #7fd0a3;
+}

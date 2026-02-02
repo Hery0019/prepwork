@@ -60,10 +60,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        profile: [spa-feature, next-app]
         data: [tanstack-query, none]
         forms: [rhf, none]
         security: [none, oidc-bff, session]
-    name: react ${{ matrix.data }} / ${{ matrix.forms }} / ${{ matrix.security }}
+        exclude:
+          # Le profil next-app lit sur le serveur et écrit par action serveur : les bibliothèques
+          # de données et de formulaires du client n'y changent rien, une combinaison suffit.
+          - profile: next-app
+            data: tanstack-query
+          - profile: next-app
+            forms: rhf
+    name: react ${{ matrix.profile }} / ${{ matrix.data }} / ${{ matrix.forms }} / ${{ matrix.security }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -73,7 +81,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Generate
-        run: pnpm matrix react out ${{ matrix.data }} ${{ matrix.forms }} ${{ matrix.security }}
+        run: pnpm matrix react out ${{ matrix.profile }} ${{ matrix.data }} ${{ matrix.forms }} ${{ matrix.security }}
       - name: Verify the generated project
         working-directory: out
         run: |

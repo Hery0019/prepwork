@@ -1,0 +1,54 @@
+<%= it.t("// Un projet Next vit dans deux mondes, donc les tests aussi : les composants clients dans jsdom,", "// A Next project lives in two worlds, so do its tests: client components in jsdom,") %>
+<%= it.t("// les modules serveur dans Node avec la condition `react-server` — celle qui décide si", "// server modules in Node with the `react-server` condition — the one that decides whether") %>
+<%= it.t("// `server-only` laisse passer l'import ou le refuse.", "// `server-only` lets the import through or refuses it.") %>
+import { fileURLToPath, URL } from 'node:url';
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vitest/config';
+
+const resolvePath = (path: string): string => fileURLToPath(new URL(path, import.meta.url));
+
+const alias = {
+<% it.layers.forEach(function (layer) { -%>
+  '@<%= layer.id %>': resolvePath('./<%= layer.path.replace('/*', '') %>'),
+<% }) -%>
+};
+
+const env = {
+  API_BASE_URL: 'http://localhost:8080/api/v1',
+  NEXT_PUBLIC_APP_NAME: '<%= it.project.name %>',
+<% if (it.options.security === 'oidc-bff') { -%>
+  NEXT_PUBLIC_AUTH_LOGIN_PATH: '/bff/login',
+<% } -%>
+};
+
+export default defineConfig({
+  test: {
+    projects: [
+      {
+        plugins: [react()],
+        resolve: { alias },
+        test: {
+          name: 'client',
+          environment: 'jsdom',
+          globals: true,
+          setupFiles: ['./vitest.setup.ts'],
+          include: ['src/**/*.test.tsx'],
+          env,
+        },
+      },
+      {
+        resolve: {
+          alias: { ...alias, 'server-only': resolvePath('./src/shared/test/server-only.ts') },
+        },
+        test: {
+          name: 'server',
+          environment: 'node',
+          globals: true,
+          setupFiles: ['./vitest.setup.server.ts'],
+          include: ['src/**/*.test.ts'],
+          env,
+        },
+      },
+    ],
+  },
+});

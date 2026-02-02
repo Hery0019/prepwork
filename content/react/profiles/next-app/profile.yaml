@@ -1,0 +1,454 @@
+# yaml-language-server: $schema=../../../../schema/react/profile.schema.json
+# Profil `next-app` : Next.js App Router. La frontière serveur/client remplace la frontière
+# réseau du profil SPA — c'est elle que les règles protègent.
+meta:
+  id: next-app
+  version: 1.0.0
+  rule_prefix: NEXT
+  summary:
+    en: Next.js App Router, rendering on the server by default, one directory per use case.
+    fr: Next.js App Router, rendu sur le serveur par défaut, un dossier par cas d'usage.
+  when_to_use:
+    - en: The first paint or the referencing matters, so the HTML must arrive complete.
+      fr: Le premier affichage ou le référencement comptent, donc le HTML doit arriver complet.
+    - en: The interface needs a server of its own to hold secrets and talk to the API.
+      fr: L'interface a besoin d'un serveur à elle pour tenir des secrets et parler à l'API.
+    - en: The team accepts running and deploying a Node server alongside the static assets.
+      fr: L'équipe accepte d'exécuter et de déployer un serveur Node à côté des fichiers statiques.
+  when_not_to_use:
+    - en: The application is served as static files behind a CDN with no server of its own.
+      fr: L'application est servie en fichiers statiques derrière un CDN, sans serveur à elle.
+    - en: The interface lives inside an existing shell that already handles routing.
+      fr: L'interface vit dans une coquille existante qui gère déjà le routage.
+    - en: The team wants one mental model only, without the server/client boundary.
+      fr: L'équipe veut un seul modèle mental, sans la frontière serveur/client.
+
+architecture:
+  layers:
+    - id: app
+      target: src/app
+      may_depend_on: [features, entities, shared]
+    - id: features
+      target: src/features/*
+      may_depend_on: [entities, shared]
+    - id: entities
+      target: src/entities/*
+      may_depend_on: [shared]
+    - id: shared
+      target: src/shared
+      may_depend_on: []
+
+rules:
+  - id: NEXT-001
+    statement:
+      en: A component is a server component by default; `'use client'` is added only for state, effects, event handlers or browser APIs.
+      fr: Un composant est un composant serveur par défaut ; `'use client'` n'est ajouté que pour un état, un effet, un gestionnaire d'événement ou une API du navigateur.
+    rationale:
+      en: Every client component ships JavaScript to the browser; the default must be the cheap one.
+      fr: Chaque composant client envoie du JavaScript au navigateur ; le défaut doit être le moins cher.
+    enforced_by: none
+  - id: NEXT-002
+    statement:
+      en: A route is a directory under `src/app/` holding `page.tsx`, and the page delegates to a feature instead of holding logic.
+      fr: Une route est un dossier sous `src/app/` qui porte `page.tsx`, et la page délègue à une feature au lieu de porter de la logique.
+    rationale:
+      en: The routing map stays readable, and a use case can be read without walking the URL tree.
+      fr: La carte des routes reste lisible, et un cas d'usage se lit sans parcourir l'arbre des URL.
+    enforced_by: eslint-boundaries
+  - id: NEXT-003
+    statement:
+      en: Reads happen in a server component through the feature's `api/` module; the data is then passed down as props.
+      fr: Les lectures se font dans un composant serveur via le module `api/` de la feature ; la donnée descend ensuite en props.
+    rationale:
+      en: The HTML arrives complete, and the client keeps no copy of what the server already knows.
+      fr: Le HTML arrive complet, et le client ne garde aucune copie de ce que le serveur sait déjà.
+    enforced_by: none
+  - id: NEXT-004
+    statement:
+      en: Writes go through a server action exported by the feature; a client component never calls the API directly.
+      fr: Les écritures passent par une action serveur exportée par la feature ; un composant client n'appelle jamais l'API directement.
+    rationale:
+      en: The credentials and the base URL of the API never leave the server.
+      fr: Les identifiants et l'URL de base de l'API ne quittent jamais le serveur.
+    enforced_by: none
+  - id: NEXT-005
+    statement:
+      en: A server action revalidates the paths or tags it invalidates, and never reloads by hand.
+      fr: Une action serveur revalide les chemins ou les étiquettes qu'elle invalide, et ne recharge jamais à la main.
+    rationale:
+      en: Revalidation is the cache contract of the framework; anything else drifts silently.
+      fr: La revalidation est le contrat de cache du framework ; tout le reste dérive en silence.
+    enforced_by: none
+  - id: NEXT-006
+    statement:
+      en: A feature never imports another feature; two features are composed in a page of `src/app`.
+      fr: Une feature n'importe jamais une autre feature ; deux features se composent dans une page de `src/app`.
+    rationale:
+      en: Cross-imports between features are how a modular interface silently becomes one block.
+      fr: Les imports croisés entre features sont la façon dont une interface modulaire devient un bloc en silence.
+    enforced_by: eslint-boundaries
+  - id: NEXT-007
+    statement:
+      en: Only the public index of a feature or an entity is imported, never one of its internal files.
+      fr: Seul l'index public d'une feature ou d'une entité est importé, jamais un de ses fichiers internes.
+    rationale:
+      en: Without a public surface, every internal rename becomes a breaking change for the whole app.
+      fr: Sans surface publique, chaque renommage interne devient un changement cassant pour toute l'application.
+    enforced_by: eslint-boundaries
+  - id: NEXT-008
+    statement:
+      en: '`shared/` contains nothing that names the business domain, and never imports a feature.'
+      fr: "`shared/` ne contient rien qui nomme le domaine métier, et n'importe jamais une feature."
+    rationale:
+      en: The day business vocabulary enters `shared/`, everything depends on everything again.
+      fr: Le jour où le vocabulaire métier entre dans `shared/`, tout dépend de nouveau de tout.
+    enforced_by: eslint-boundaries
+  - id: NEXT-009
+    statement:
+      en: The dependency graph has no cycle and no orphan module.
+      fr: Le graphe de dépendances n'a ni cycle ni module orphelin.
+    rationale:
+      en: A cycle breaks code splitting; an orphan is dead code nobody dares delete.
+      fr: Un cycle casse la découpe du bundle ; un orphelin est du code mort que personne n'ose supprimer.
+    enforced_by: dependency-cruiser
+  - id: NEXT-010
+    statement:
+      en: A server-only value is read through the server configuration helper, never through a `NEXT_PUBLIC_` variable.
+      fr: Une valeur réservée au serveur est lue par l'aide de configuration serveur, jamais par une variable `NEXT_PUBLIC_`.
+    rationale:
+      en: A `NEXT_PUBLIC_` value is inlined in the bundle and readable by anyone.
+      fr: Une valeur `NEXT_PUBLIC_` est inlinée dans le bundle et lisible par n'importe qui.
+    enforced_by: none
+  - id: NEXT-011
+    statement:
+      en: A page declares its loading and error states with `loading.tsx` and `error.tsx` next to it.
+      fr: Une page déclare ses états de chargement et d'erreur avec `loading.tsx` et `error.tsx` à côté d'elle.
+    rationale:
+      en: The framework already streams both; writing them by hand inside the page loses that.
+      fr: Le framework diffuse déjà les deux ; les écrire à la main dans la page perd ce bénéfice.
+    enforced_by: none
+  - id: NEXT-013
+    statement:
+      en: A page that reads live data declares its caching intent — dynamic rendering or a revalidation window — because the framework renders statically by default.
+      fr: Une page qui lit des données vivantes déclare son intention de cache — rendu dynamique ou fenêtre de revalidation — parce que le framework rend statiquement par défaut.
+    rationale:
+      en: Otherwise the build tries to prerender the page and fails, or ships data frozen at build time.
+      fr: Sinon le build tente de prérendre la page et échoue, ou livre une donnée figée au moment de la construction.
+    enforced_by: none
+  - id: NEXT-012
+    statement:
+      en: Tests live next to the code they cover, inside the feature, never in a global test directory.
+      fr: Les tests vivent à côté du code qu'ils couvrent, dans la feature, jamais dans un dossier de tests global.
+    rationale:
+      en: Deleting a feature must delete its tests with it.
+      fr: Supprimer une feature doit supprimer ses tests avec elle.
+    enforced_by: none
+
+anti_patterns:
+  - id: NEXT-AP-001
+    statement:
+      en: Adding `'use client'` at the top of a page to make an error go away.
+      fr: Ajouter `'use client'` en haut d'une page pour faire disparaître une erreur.
+    rationale:
+      en: The whole subtree becomes client code, and the server rendering is lost without anyone noticing.
+      fr: Tout le sous-arbre devient du code client, et le rendu serveur est perdu sans que personne le voie.
+    instead:
+      en: Push the boundary down to the smallest component that really needs the browser.
+      fr: Descendre la frontière jusqu'au plus petit composant qui a réellement besoin du navigateur.
+    enforced_by: none
+  - id: NEXT-AP-002
+    statement:
+      en: Calling the API from a client component with `fetch`, because the server action felt heavier.
+      fr: Appeler l'API depuis un composant client avec `fetch`, parce que l'action serveur paraissait plus lourde.
+    rationale:
+      en: The API base URL and its credentials end up in the browser bundle.
+      fr: L'URL de base de l'API et ses identifiants finissent dans le bundle du navigateur.
+    instead:
+      en: Export a server action from the feature and call it from the form.
+      fr: Exporter une action serveur depuis la feature et l'appeler depuis le formulaire.
+    enforced_by: eslint-boundaries
+
+dependencies:
+  allowed:
+    - artifact: next
+      purpose:
+        en: Router, server components, server actions and the production server.
+        fr: Routeur, composants serveur, actions serveur et serveur de production.
+    - artifact: zod
+      purpose:
+        en: Validation of everything that enters the application, and inference of the matching types.
+        fr: Validation de tout ce qui entre dans l'application, et inférence des types correspondants.
+    - artifact: class-variance-authority
+      purpose:
+        en: Component variants declared next to the component, on top of the tokens.
+        fr: Variantes d'un composant déclarées à côté de lui, au-dessus des tokens.
+  forbidden:
+    - artifact: react-router
+      rationale:
+        en: The framework owns the routing; a second router would fight it.
+        fr: Le framework possède le routage ; un second routeur entrerait en conflit avec lui.
+    - artifact: axios
+      rationale:
+        en: '`fetch` is extended by the framework with caching and revalidation.'
+        fr: '`fetch` est étendu par le framework avec le cache et la revalidation.'
+    - artifact: moment
+      rationale:
+        en: Unmaintained and heavy; `Intl` and the native date API cover the need.
+        fr: Non maintenu et lourd ; `Intl` et l'API de dates native couvrent le besoin.
+  add_procedure:
+    - en: Check that neither the framework nor an already allowed dependency covers the need.
+      fr: Vérifier que ni le framework ni une dépendance déjà autorisée ne couvre le besoin.
+    - en: Say whether the dependency runs on the server, in the browser, or both; a browser dependency is weighed in the bundle.
+      fr: Dire si la dépendance tourne sur le serveur, dans le navigateur, ou les deux ; une dépendance navigateur se pèse dans le bundle.
+    - en: Add it in its own commit (`build(deps)`) touching only `package.json` and the lockfile.
+      fr: L'ajouter dans un commit dédié (`build(deps)`) qui ne touche que `package.json` et le fichier de verrouillage.
+
+reference_example:
+  feature:
+    en: 'The `notes` feature: a server-rendered list with its loading and error states, a form driven by a server action, and a detail page.'
+    fr: "La feature `notes` : une liste rendue sur le serveur avec ses états de chargement et d'erreur, un formulaire piloté par une action serveur, et une page de détail."
+  files:
+    - src/entities/note/model/note.ts
+    - src/entities/note/ui/NoteCard.tsx
+    - src/features/notes/api/notesApi.ts
+    - src/features/notes/api/actions.ts
+    - src/features/notes/ui/NoteList.tsx
+    - src/features/notes/ui/NoteForm.tsx
+    - src/features/notes/index.ts
+    - src/app/notes/page.tsx
+    - src/app/notes/loading.tsx
+    - src/app/notes/error.tsx
+  routes:
+    - /notes
+    - /notes/new
+    - /notes/:id
+  demonstrates:
+    - NEXT-002
+    - NEXT-003
+    - NEXT-004
+    - NEXT-011
+    - CORE-010
+    - CORE-041
+    - CORE-050
+
+skills:
+  architecture:
+    - NEXT-002
+    - NEXT-006
+    - NEXT-007
+    - NEXT-008
+    - NEXT-009
+    - NEXT-012
+    - NEXT-AP-001
+  ui:
+    - NEXT-001
+    - NEXT-011
+  data:
+    - NEXT-003
+    - NEXT-004
+    - NEXT-005
+    - NEXT-013
+    - NEXT-AP-002
+  security:
+    - NEXT-010
+
+npm:
+  dependencies:
+    - name: next
+      version: 16.3.4
+      purpose:
+        en: Router, server components, server actions and the production server.
+        fr: Routeur, composants serveur, actions serveur et serveur de production.
+    - name: react
+      version: 19.2.8
+      purpose:
+        en: The user interface library.
+        fr: La bibliothèque d'interface.
+    - name: react-dom
+      version: 19.2.8
+      purpose:
+        en: Rendering React into the browser DOM.
+        fr: Rendu de React dans le DOM du navigateur.
+    - name: zod
+      version: 3.25.76
+      purpose:
+        en: Validation at the boundaries and inference of the resulting types.
+        fr: Validation aux frontières et inférence des types qui en découlent.
+    - name: class-variance-authority
+      version: 0.7.1
+      purpose:
+        en: Component variants built on the design tokens.
+        fr: Variantes de composants construites sur les tokens du design.
+    - name: clsx
+      version: 2.1.1
+      purpose:
+        en: Conditional composition of class names.
+        fr: Composition conditionnelle des noms de classes.
+    - name: server-only
+      version: 0.0.1
+      purpose:
+        en: 'NEXT-010: importing a server module from a client component fails at build time.'
+        fr: 'NEXT-010 : importer un module serveur depuis un composant client échoue à la compilation.'
+    - name: '@eslint/js'
+      version: 9.39.5
+      scope: dev
+      purpose:
+        en: Base ESLint configuration.
+        fr: Configuration ESLint de base.
+    - name: '@tailwindcss/postcss'
+      version: 4.3.3
+      scope: dev
+      purpose:
+        en: Tailwind 4 through PostCSS, as Next expects it.
+        fr: Tailwind 4 via PostCSS, comme Next l'attend.
+    - name: tailwindcss
+      version: 4.3.3
+      scope: dev
+      purpose:
+        en: The utility engine driven by the project tokens.
+        fr: Le moteur d'utilitaires piloté par les tokens du projet.
+    - name: '@testing-library/jest-dom'
+      version: 6.10.0
+      scope: dev
+      purpose:
+        en: Readable DOM assertions for component tests.
+        fr: Assertions DOM lisibles pour les tests de composants.
+    - name: '@testing-library/react'
+      version: 16.3.3
+      scope: dev
+      purpose:
+        en: Component rendering and selection by role.
+        fr: Rendu de composants et sélection par rôle.
+    - name: '@types/react'
+      version: 19.2.18
+      scope: dev
+      purpose:
+        en: React types.
+        fr: Types de React.
+    - name: '@types/react-dom'
+      version: 19.2.5
+      scope: dev
+      purpose:
+        en: DOM rendering types.
+        fr: Types du rendu DOM.
+    - name: '@types/node'
+      version: 26.4.1
+      scope: dev
+      purpose:
+        en: Types of the Node APIs used on the server side.
+        fr: Types des API Node utilisées côté serveur.
+    - name: '@vitejs/plugin-react'
+      version: 4.7.0
+      scope: dev
+      purpose:
+        en: JSX transform for the component tests.
+        fr: Transformation JSX pour les tests de composants.
+    - name: dependency-cruiser
+      version: 16.10.4
+      scope: dev
+      purpose:
+        en: 'NEXT-009: no cycle and no orphan module.'
+        fr: 'NEXT-009 : ni cycle ni module orphelin.'
+    - name: eslint
+      version: 9.39.5
+      scope: dev
+      purpose:
+        en: Linting of the code and the boundaries.
+        fr: Lint du code et des frontières.
+    - name: eslint-import-resolver-typescript
+      version: 4.4.5
+      scope: dev
+      purpose:
+        en: Resolution of TypeScript imports and aliases for the boundary rules.
+        fr: Résolution des imports et alias TypeScript pour les règles de frontières.
+    - name: eslint-plugin-boundaries
+      version: 5.4.0
+      scope: dev
+      purpose:
+        en: 'NEXT-002 to NEXT-008: the boundaries between layers.'
+        fr: 'NEXT-002 à NEXT-008 : les frontières entre couches.'
+    - name: eslint-plugin-jsx-a11y
+      version: 6.10.2
+      scope: dev
+      purpose:
+        en: 'CORE-030 to CORE-035: markup accessibility.'
+        fr: 'CORE-030 à CORE-035 : accessibilité du balisage.'
+    - name: eslint-plugin-react-hooks
+      version: 5.2.0
+      scope: dev
+      purpose:
+        en: React hooks rules.
+        fr: Règles des hooks React.
+    - name: globals
+      version: 16.5.0
+      scope: dev
+      purpose:
+        en: Global variables known to ESLint.
+        fr: Variables globales connues par ESLint.
+    - name: jsdom
+      version: 26.1.0
+      scope: dev
+      purpose:
+        en: DOM environment for component tests.
+        fr: Environnement DOM des tests de composants.
+    - name: msw
+      version: 2.15.0
+      scope: dev
+      purpose:
+        en: 'CORE-062: HTTP stubbed at the network boundary.'
+        fr: 'CORE-062 : le HTTP est simulé à la frontière réseau.'
+    - name: prettier
+      version: 3.9.6
+      scope: dev
+      purpose:
+        en: One single formatting for the project.
+        fr: Formatage unique du projet.
+    - name: stylelint
+      version: 16.26.1
+      scope: dev
+      purpose:
+        en: 'CORE-020 and CORE-026: the style rules checkable in CSS.'
+        fr: 'CORE-020 et CORE-026 : les règles de style vérifiables dans le CSS.'
+    - name: typescript
+      version: 5.9.3
+      scope: dev
+      purpose:
+        en: Strict types, without `any`.
+        fr: Types stricts, sans `any`.
+    - name: typescript-eslint
+      version: 8.69.0
+      scope: dev
+      purpose:
+        en: Type-aware linting of TypeScript.
+        fr: Lint typé du TypeScript.
+    - name: vitest
+      version: 3.2.7
+      scope: dev
+      purpose:
+        en: Runner for unit and component tests.
+        fr: Exécuteur des tests unitaires et de composants.
+  scripts:
+    dev: next dev
+    build: tsc --noEmit && next build
+    preview: next start
+    typecheck: tsc --noEmit
+    lint: eslint . && stylelint "src/**/*.css" && depcruise src
+    format: prettier --write .
+    test: vitest run
+config:
+  eslint:
+    boundaries:
+      elements:
+        - type: app
+          pattern: src/app
+        - type: features
+          pattern: src/features/*
+        - type: entities
+          pattern: src/entities/*
+        - type: shared
+          pattern: src/shared
+  build:
+    # Lu par l'option `docker` : elle sait servir une sortie statique ou un serveur Node sans
+    # rien savoir du profil qui la produit.
+    kind: node
+    outputDir: .next

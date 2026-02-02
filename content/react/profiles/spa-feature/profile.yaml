@@ -431,3 +431,7 @@ config:
           pattern: src/entities/*
         - type: shared
           pattern: src/shared
+  build:
+    # Lu par l'option `docker` : sortie statique servie par un serveur web.
+    kind: static
+    outputDir: dist

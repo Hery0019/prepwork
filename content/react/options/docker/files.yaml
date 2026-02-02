@@ -1,13 +1,22 @@
 # yaml-language-server: $schema=../../../../schema/react/files.schema.json
+# L'option sert ce que le profil produit : elle lit `config.build.kind`, déclaré par le profil,
+# sans jamais nommer le profil (l'axe option ne connaît pas l'axe profil).
 files:
   - source: Dockerfile.eta
     target: Dockerfile
+    when: config.build.kind == 'static'
+  - source: Dockerfile.node.eta
+    target: Dockerfile
+    when: config.build.kind == 'node'
   - source: nginx.conf.eta
     target: nginx.conf
+    when: config.build.kind == 'static'
   - source: docker-entrypoint.sh.eta
     target: docker-entrypoint.sh
+    when: config.build.kind == 'static'
   - source: public/runtime-config.js.eta
     target: public/runtime-config.js
+    when: config.build.kind == 'static'
   - source: .dockerignore.eta
     target: .dockerignore
   - source: compose.yaml.eta

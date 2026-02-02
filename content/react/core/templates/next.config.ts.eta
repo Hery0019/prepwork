@@ -1,0 +1,10 @@
+<%= it.t("// Configuration Next. La sortie autonome sert l'image Docker sans embarquer node_modules.", "// Next configuration. The standalone output serves the Docker image without node_modules.") %>
+import type { NextConfig } from 'next';
+
+const config: NextConfig = {
+  output: <% if (it.options.docker) { %>'standalone'<% } else { %>undefined<% } %>,
+  // <%= it.t("Le lint tourne dans son propre script (`pnpm lint`), avec les frontières entre couches.", 'Linting runs in its own script (`pnpm lint`), with the layer boundaries.') %>
+  reactStrictMode: true,
+};
+
+export default config;

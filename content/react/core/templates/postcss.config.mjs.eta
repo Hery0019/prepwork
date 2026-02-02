@@ -1,0 +1,6 @@
+// <%= it.t("Tailwind 4 passe par PostCSS avec Next ; les tokens restent la configuration.", "Tailwind 4 goes through PostCSS with Next; the tokens remain the configuration.") %>
+const config = {
+  plugins: { '@tailwindcss/postcss': {} },
+};
+
+export default config;

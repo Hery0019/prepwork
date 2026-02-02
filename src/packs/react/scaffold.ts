@@ -14,7 +14,7 @@ import { DESIGN_PRESET_IDS } from './design.js';
 
 export const STACK_TARGET = 'react';
 
-export const ProfileIdSchema = z.enum(['spa-feature']);
+export const ProfileIdSchema = z.enum(['spa-feature', 'next-app']);
 export const DataSchema = z.enum(['tanstack-query', 'none']);
 export const FormsSchema = z.enum(['rhf', 'none']);
 export const StateSchema = z.enum(['zustand', 'context']);

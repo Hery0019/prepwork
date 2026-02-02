@@ -21,7 +21,7 @@ import { claudeCodeRenderer } from '../src/renderers/index.js';
 const USAGE = [
   'usage:',
   '  pnpm matrix spring-boot <outDir> <profile> <security> <migrations|none> [database]',
-  '  pnpm matrix react       <outDir> <data> <forms> <security> [preset]',
+  '  pnpm matrix react       <outDir> <profile> <data> <forms> <security> [preset]',
 ].join('\n');
 
 function springScaffold(args: readonly string[]): BaseScaffold {
@@ -44,16 +44,16 @@ function springScaffold(args: readonly string[]): BaseScaffold {
 }
 
 function reactScaffold(args: readonly string[]): BaseScaffold {
-  const [data, forms, security, preset = 'app-sober'] = args;
-  if (!data || !forms || !security) throw new PrepworkError('SCAFFOLD_INVALID', USAGE);
+  const [profile, data, forms, security, preset = 'app-sober'] = args;
+  if (!profile || !data || !forms || !security) throw new PrepworkError('SCAFFOLD_INVALID', USAGE);
   return ReactScaffoldSchema.parse({
     scaffold_version: '1.1.0',
     project: {
       name: 'matrix-spa',
-      description: `Generation matrix: ${data} / ${forms} / ${security} / ${preset}`,
+      description: `Generation matrix: ${profile} / ${data} / ${forms} / ${security} / ${preset}`,
     },
     stack: { data, forms },
-    profile: 'spa-feature',
+    profile,
     options: { state: 'zustand', security, i18n: true, e2e: true, docker: true, ci: 'github' },
     design: { preset, dark: true },
     git: { author: { name: 'prepwork-ci', email: 'ci@example.com' }, agent_trailer: true },

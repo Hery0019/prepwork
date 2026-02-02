@@ -115,10 +115,11 @@ describe('prepwork CLI', () => {
     expect(dry.lines.some((l) => l.startsWith('I Plan (dry-run)'))).toBe(true);
   });
 
-  it('init --stack react runs the react questionnaire and generates a Vite project', async () => {
+  it('init --stack react asks for the profile and generates the chosen one', async () => {
     const answers: ScriptedAnswer[] = [
       'note-book',
       'Interface de gestion de notes',
+      'spa-feature',
       'tanstack-query',
       'rhf',
       'zustand',

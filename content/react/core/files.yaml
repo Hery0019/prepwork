@@ -9,10 +9,16 @@ files:
     target: pnpm-workspace.yaml
   - source: tsconfig.json.eta
     target: tsconfig.json
+    when: profile == 'spa-feature'
+  - source: tsconfig.next.json.eta
+    target: tsconfig.json
+    when: profile == 'next-app'
   - source: vite.config.ts.eta
     target: vite.config.ts
+    when: profile == 'spa-feature'
   - source: index.html.eta
     target: index.html
+    when: profile == 'spa-feature'
   - source: stylelint.config.js.eta
     target: stylelint.config.js
   - source: .prettierrc.eta
@@ -21,6 +27,21 @@ files:
     target: .prettierignore
   - source: vitest.setup.ts.eta
     target: vitest.setup.ts
+  - source: next.config.ts.eta
+    target: next.config.ts
+    when: profile == 'next-app'
+  - source: postcss.config.mjs.eta
+    target: postcss.config.mjs
+    when: profile == 'next-app'
+  - source: vitest.config.ts.eta
+    target: vitest.config.ts
+    when: profile == 'next-app'
+  - source: vitest.setup.server.ts.eta
+    target: vitest.setup.server.ts
+    when: profile == 'next-app'
+  - source: src/shared/test/server-only.ts.eta
+    target: src/shared/test/server-only.ts
+    when: profile == 'next-app'
   - source: .gitignore.eta
     target: .gitignore
   - source: .gitattributes.eta
@@ -32,10 +53,16 @@ files:
   # --- bootstrap et socle applicatif -----------------------------------------------------
   - source: src/main.tsx.eta
     target: src/main.tsx
+    when: profile == 'spa-feature'
   - source: src/app/providers.tsx.eta
     target: src/app/providers.tsx
+    when: profile == 'spa-feature'
   - source: src/shared/config/env.ts.eta
     target: src/shared/config/env.ts
+    when: profile == 'spa-feature'
+  - source: src/shared/config/env.next.ts.eta
+    target: src/shared/config/env.ts
+    when: profile == 'next-app'
   - source: src/shared/api/errors.ts.eta
     target: src/shared/api/errors.ts
   - source: src/shared/api/httpClient.ts.eta
@@ -48,6 +75,10 @@ files:
     target: src/shared/test/server.ts
   - source: src/shared/test/render.tsx.eta
     target: src/shared/test/render.tsx
+    when: profile == 'spa-feature'
+  - source: src/shared/test/render.next.tsx.eta
+    target: src/shared/test/render.tsx
+    when: profile == 'next-app'
 
   # --- contrat visuel --------------------------------------------------------------------
   - source: src/shared/styles/app.css.eta

@@ -1,0 +1,33 @@
+'use client';
+
+<%= it.t("// NEXT-001 : le formulaire est le seul composant client de la feature, parce qu'il a un état.", "// NEXT-001: the form is the only client component of the feature, because it holds state.") %>
+<%= it.t("// CORE-052 et CORE-053 : message relié au champ, envoi désactivé pendant la soumission.", "// CORE-052 and CORE-053: message linked to the field, submit disabled while pending.") %>
+import { useActionState } from 'react';
+import { t } from '@shared/lib/text';
+import { Alert, Button, Input } from '@shared/ui';
+import { createNoteAction, type NoteFormState } from '../api/actions';
+
+const EMPTY: NoteFormState = {};
+
+export function NoteForm() {
+  const [state, formAction, isPending] = useActionState(createNoteAction, EMPTY);
+
+  return (
+    <form action={formAction} className="flex max-w-measure flex-col gap-4" noValidate>
+      <Input
+        name="title"
+        label={t('notes.form.title', <%= it.t("'Titre'", "'Title'") %>)}
+        error={state.errors?.title}
+      />
+      <Input
+        name="body"
+        label={t('notes.form.body', <%= it.t("'Contenu'", "'Body'") %>)}
+        error={state.errors?.body}
+      />
+      {state.message !== undefined && <Alert tone="error" title={state.message} />}
+      <Button type="submit" disabled={isPending}>
+        {t('notes.form.submit', <%= it.t("'Créer la note'", "'Create the note'") %>)}
+      </Button>
+    </form>
+  );
+}

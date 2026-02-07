@@ -52,6 +52,8 @@ Next.js App Router, rendu sur le serveur par défaut, un dossier par cas d'usage
 
 - **NEXT-010** · guidance — Une valeur réservée au serveur est lue par l'aide de configuration serveur, jamais par une variable `NEXT_PUBLIC_`.
   Pourquoi : Une valeur `NEXT_PUBLIC_` est inlinée dans le bundle et lisible par n'importe qui.
+- **NEXT-014** · guidance — Un module serveur qui appelle l'API pour le compte de l'utilisateur retransmet les cookies d'authentification de la requête entrante ; un fetch serveur ne porte aucune identité par lui-même.
+  Pourquoi : `credentials: include` n'a de sens que dans un navigateur ; sur le serveur il est ignoré en silence et l'appel part anonyme.
 
 ## Option `security-oidc-bff`
 

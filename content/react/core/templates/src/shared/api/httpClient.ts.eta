@@ -1,7 +1,11 @@
 <%= it.t("// CORE-040 : la seule porte d'entrée du réseau. Les modules `api/` des features passent par ici.", "// CORE-040: the single network entry point. The `api/` modules of the features go through it.") %>
 import type { ZodType } from 'zod';
 <% if (it.profile === 'next-app') { -%>
+import 'server-only';
 import { serverEnv } from '@shared/config/env';
+<% if (it.options.security !== 'none') { -%>
+import { authHeaders } from './serverAuth';
+<% } -%>
 <% } else { -%>
 import { env } from '@shared/config/env';
 <% } -%>
@@ -18,14 +22,21 @@ export async function request<T>(path: string, options: RequestOptions<T>): Prom
   const { schema, method = 'GET', body } = options;
 
   const init: RequestInit = { method };
+  const headers: Record<string, string> = {};
   if (body !== undefined) {
-    init.headers = { 'content-type': 'application/json' };
+    headers['content-type'] = 'application/json';
     init.body = JSON.stringify(body);
   }
 <% if (it.options.security !== 'none') { -%>
+<% if (it.profile === 'next-app') { -%>
+  // <%= it.t("NEXT-014 : la session vient de la requête entrante, pas d'un bocal à cookies du serveur.", "NEXT-014: the session comes from the incoming request, not from a server cookie jar.") %>
+  Object.assign(headers, await authHeaders());
+<% } else { -%>
   // <%= it.t("SECS-001 / SECO-001 : le navigateur porte le cookie de session, jamais un jeton.", "SECS-001 / SECO-001: the browser carries the session cookie, never a token.") %>
   init.credentials = 'include';
 <% } -%>
+<% } -%>
+  if (Object.keys(headers).length > 0) init.headers = headers;
 
   let response: Response;
   try {

@@ -67,10 +67,16 @@ files:
     target: src/shared/api/errors.ts
   - source: src/shared/api/httpClient.ts.eta
     target: src/shared/api/httpClient.ts
+  - source: src/shared/api/serverAuth.ts.eta
+    target: src/shared/api/serverAuth.ts
+    when: profile == 'next-app' && options.security != 'none'
   - source: src/shared/lib/cn.ts.eta
     target: src/shared/lib/cn.ts
   - source: src/shared/lib/text.ts.eta
     target: src/shared/lib/text.ts
+  - source: src/shared/i18n/config.ts.eta
+    target: src/shared/i18n/config.ts
+    when: options.i18n
   - source: src/shared/test/server.ts.eta
     target: src/shared/test/server.ts
   - source: src/shared/test/render.tsx.eta

@@ -127,6 +127,14 @@ rules:
       en: The framework already streams both; writing them by hand inside the page loses that.
       fr: Le framework diffuse déjà les deux ; les écrire à la main dans la page perd ce bénéfice.
     enforced_by: none
+  - id: NEXT-014
+    statement:
+      en: A server module calling the API on behalf of the user forwards the authentication cookies of the incoming request; a server fetch carries no identity by itself.
+      fr: Un module serveur qui appelle l'API pour le compte de l'utilisateur retransmet les cookies d'authentification de la requête entrante ; un fetch serveur ne porte aucune identité par lui-même.
+    rationale:
+      en: '`credentials: include` only means something in a browser; on the server it is silently ignored and the call goes out anonymous.'
+      fr: "`credentials: include` n'a de sens que dans un navigateur ; sur le serveur il est ignoré en silence et l'appel part anonyme."
+    enforced_by: none
   - id: NEXT-013
     statement:
       en: A page that reads live data declares its caching intent — dynamic rendering or a revalidation window — because the framework renders statically by default.
@@ -251,6 +259,7 @@ skills:
     - NEXT-AP-002
   security:
     - NEXT-010
+    - NEXT-014
 
 npm:
   dependencies:

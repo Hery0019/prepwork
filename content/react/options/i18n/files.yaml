@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=../../../../schema/react/files.schema.json
+# Les traductions sont des données : elles ne dépendent pas du profil. Leur chargement, si :
+# la configuration vit dans le socle, qui sait si le rendu serveur autorise la liaison React.
 files:
-  - source: src/shared/i18n/config.ts.eta
-    target: src/shared/i18n/config.ts
   - source: src/shared/i18n/locales/fr.json.eta
     target: src/shared/i18n/locales/fr.json
   - source: src/shared/i18n/locales/en.json.eta

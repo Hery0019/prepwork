@@ -1,0 +1,32 @@
+<%= it.t("// INTL-002 : les clés sont écrites en entier, préfixées par leur feature. Ce fichier est le", "// INTL-002: keys are written in full, prefixed by their feature. This file is the only") %>
+<%= it.t("// seul endroit qui charge les traductions.", "// place that loads the translations.") %>
+<% if (it.profile === 'next-app') { -%>
+<%= it.t("// Aucune liaison React ici : `react-i18next` s'appuie sur `createContext`, absent du rendu", "// No React binding here: `react-i18next` relies on `createContext`, which the server") %>
+<%= it.t("// serveur. Un composant client qui a besoin du hook installe son propre provider.", "// rendering does not have. A client component needing the hook installs its own provider.") %>
+import i18next from 'i18next';
+import en from './locales/en.json';
+import fr from './locales/fr.json';
+
+export const i18n = i18next.createInstance();
+
+void i18n.init({
+  resources: { en: { translation: en }, fr: { translation: fr } },
+  lng: '<%= it.language.docs %>',
+  fallbackLng: 'en',
+  interpolation: { escapeValue: false },
+});
+<% } else { -%>
+import i18next from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import en from './locales/en.json';
+import fr from './locales/fr.json';
+
+export const i18n = i18next.createInstance();
+
+void i18n.use(initReactI18next).init({
+  resources: { en: { translation: en }, fr: { translation: fr } },
+  lng: '<%= it.language.docs %>',
+  fallbackLng: 'en',
+  interpolation: { escapeValue: false },
+});
+<% } -%>

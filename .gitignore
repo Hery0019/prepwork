@@ -1,4 +1,6 @@
 /CLAUDE.md
+# Projet généré par `pnpm matrix` ou `pnpm render` pour une vérification locale.
+/out/
 node_modules/
 dist/
 coverage/

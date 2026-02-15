@@ -7,6 +7,8 @@ import {
   PropertyTreeSchema,
   type CatalogSchemaSpec,
 } from '../../catalog/schema.js';
+// L'import local est nécessaire : `export … from` ne lie pas le nom dans ce module.
+import { TableSchema } from '../sql.js';
 
 /** Placeholder textuel unique autorisé dans les données du catalogue (voir CLAUDE.md §3). */
 export const BASE_PACKAGE_PLACEHOLDER = '{{basePackage}}';
@@ -80,42 +82,16 @@ export const PropertiesContributionSchema = z.record(
 );
 export type PropertiesContribution = z.infer<typeof PropertiesContributionSchema>;
 
-export const ColumnTypeSchema = z.enum([
-  'identity',
-  'string',
-  'text',
-  'integer',
-  'bigint',
-  'boolean',
-  'timestamp',
-  'date',
-  'decimal',
-]);
-export type ColumnType = z.infer<typeof ColumnTypeSchema>;
-
-export const ColumnSchema = z
-  .object({
-    name: z.string().regex(/^[a-z][a-z0-9_]*$/),
-    type: ColumnTypeSchema,
-    length: z.number().int().positive().optional(),
-    nullable: z.boolean().default(false),
-  })
-  .strict()
-  .refine((c) => c.length === undefined || c.type === 'string', {
-    message: "`length` ne s'applique qu'au type `string`",
-  });
-export type Column = z.infer<typeof ColumnSchema>;
-
-export const TableSchema = z
-  .object({
-    name: z.string().regex(/^[a-z][a-z0-9_]*$/),
-    columns: z.array(ColumnSchema).min(1),
-  })
-  .strict()
-  .refine((t) => t.columns.filter((c) => c.type === 'identity').length === 1, {
-    message: 'chaque table a exactement une colonne `identity`',
-  });
-export type Table = z.infer<typeof TableSchema>;
+/** La description des tables est commune aux packs à base relationnelle (`packs/sql.ts`). */
+export {
+  ColumnSchema,
+  ColumnTypeSchema,
+  TableSchema,
+  tablesOf,
+  type Column,
+  type ColumnType,
+  type Table,
+} from '../sql.js';
 
 /** Cible d'une couche : un package Java exprimé à partir du placeholder. */
 export const LayerTargetSchema = z.string().regex(/^\{\{basePackage\}\}(\.[a-z][a-z0-9]*)*$/);
@@ -143,8 +119,4 @@ export function mavenOf(source: Record<string, unknown>): MavenContribution | un
 
 export function propertiesOf(source: Record<string, unknown>): PropertiesContribution | undefined {
   return source.application_properties as PropertiesContribution | undefined;
-}
-
-export function tablesOf(referenceExample: Record<string, unknown>): Table[] {
-  return (referenceExample.tables as Table[] | undefined) ?? [];
 }

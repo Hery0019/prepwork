@@ -1,0 +1,61 @@
+<%
+const host = it.projectFor('host');
+const kernel = it.projectFor('kernel');
+-%>
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
+using <%= kernel.namespace %>.Common;
+
+namespace <%= host.namespace %>.Common;
+
+<%= it.t("// CORE-011 : le point de traduction unique des exceptions en réponses. Les erreurs de", "// CORE-011: the single point that translates exceptions into responses. Validation") %>
+<%= it.t("// validation n'y passent pas : `[ApiController]` répond 400 avant d'atteindre le pipeline.", "// errors never reach it: `[ApiController]` answers 400 before the pipeline runs.") %>
+internal sealed partial class GlobalExceptionHandler(
+    IProblemDetailsService problemDetailsService,
+    ILogger<GlobalExceptionHandler> logger
+) : IExceptionHandler
+{
+    <%= it.t("// Journalisation générée à la compilation : pas de boxing, pas de formatage inutile", "// Logging generated at compile time: no boxing, no formatting wasted when the level is") %>
+    <%= it.t("// quand le niveau est désactivé. C'est ce qu'exige l'analyseur CA1848.", "// disabled. This is what the CA1848 analyzer asks for.") %>
+    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Unhandled exception on {Path}")]
+    private static partial void LogUnhandled(ILogger logger, string path, Exception exception);
+
+    public async ValueTask<bool> TryHandleAsync(
+        HttpContext httpContext,
+        Exception exception,
+        CancellationToken cancellationToken
+    )
+    {
+        ArgumentNullException.ThrowIfNull(httpContext);
+
+        var (status, title) = exception switch
+        {
+            NotFoundException => (StatusCodes.Status404NotFound, "Resource not found"),
+            ConflictException => (StatusCodes.Status409Conflict, "Conflicting state"),
+            _ => (StatusCodes.Status500InternalServerError, "Unexpected error"),
+        };
+
+        if (status == StatusCodes.Status500InternalServerError)
+        {
+            <%= it.t("// Seul le 500 est journalisé : un 404 est un cas nominal, pas un incident.", "// Only the 500 is logged: a 404 is a nominal case, not an incident.") %>
+            LogUnhandled(logger, httpContext.Request.Path.ToString(), exception);
+        }
+
+        httpContext.Response.StatusCode = status;
+        return await problemDetailsService.TryWriteAsync(
+            new ProblemDetailsContext
+            {
+                HttpContext = httpContext,
+                Exception = exception,
+                ProblemDetails = new ProblemDetails
+                {
+                    Status = status,
+                    Title = title,
+                    <%= it.t("// CORE-036 : jamais de message interne ni de stack trace dans un 500.", "// CORE-036: never an internal message nor a stack trace in a 500.") %>
+                    Detail =
+                        status == StatusCodes.Status500InternalServerError ? null : exception.Message,
+                },
+            }
+        );
+    }
+}

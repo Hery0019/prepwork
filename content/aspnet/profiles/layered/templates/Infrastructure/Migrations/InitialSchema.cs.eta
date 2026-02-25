@@ -1,0 +1,54 @@
+<%
+const infrastructure = it.projects.find((candidate) => candidate.id === 'infrastructure');
+const table = it.tables[0];
+const identity = table.columns.find((column) => column.type === 'identity');
+const postgres = it.stack.database === 'postgresql';
+-%>
+using System;
+using Microsoft.EntityFrameworkCore.Migrations;
+<% if (postgres) { -%>
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+<% } -%>
+
+#nullable disable
+
+namespace <%= infrastructure.namespace %>.Migrations
+{
+    /// <inheritdoc />
+    public partial class InitialSchema : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.CreateTable(
+                name: "<%= table.name %>",
+                columns: table => new
+                {
+<% table.columns.forEach((column, index) => { -%>
+<% const last = index === table.columns.length - 1; -%>
+<% if (column.type === 'identity') { -%>
+                    <%= column.name %> = table.Column<<%= it.clrType(column) %>>(type: "<%= it.efColumnType(column) %>", nullable: <%= column.nullable %>)
+<% if (postgres) { -%>
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn)<%= last ? '' : ',' %>
+<% } else { -%>
+                        .Annotation("SqlServer:Identity", "1, 1")<%= last ? '' : ',' %>
+<% } -%>
+<% } else { -%>
+                    <%= column.name %> = table.Column<<%= it.clrType(column) %>>(type: "<%= it.efColumnType(column) %>", nullable: <%= column.nullable %>)<%= last ? '' : ',' %>
+<% } -%>
+<% }); -%>
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_<%= table.name %>", x => x.<%= identity.name %>);
+                });
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropTable(
+                name: "<%= table.name %>");
+        }
+    }
+}

@@ -1,0 +1,60 @@
+<%
+const infrastructure = it.projects.find((candidate) => candidate.id === 'infrastructure');
+const application = it.projects.find((candidate) => candidate.id === 'application');
+const domain = it.projects.find((candidate) => candidate.id === 'domain');
+-%>
+using <%= application.namespace %>.Notes;
+using <%= domain.namespace %>.Notes;
+
+namespace <%= infrastructure.namespace %>.Notes;
+
+<%= it.t("// Dépôt en mémoire, le temps qu'une base existe. Il tient le même contrat que la version", "// In-memory repository, until a database exists. It honours the same contract as the") %>
+<%= it.t("// persistante : le remplacer ne touche ni la couche applicative ni l'API (NET-007).", "// persistent one: replacing it touches neither the application layer nor the API (NET-007).") %>
+internal sealed class InMemoryNoteRepository : INoteRepository
+{
+    private readonly Lock _gate = new();
+    private readonly List<Note> _notes = [];
+    private long _sequence;
+
+    public Task<Note> AddAsync(Note note, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(note);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        lock (_gate)
+        {
+            note.AssignIdentity(++_sequence);
+            _notes.Add(note);
+        }
+
+        return Task.FromResult(note);
+    }
+
+    public Task<Note?> FindAsync(long id, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        lock (_gate)
+        {
+            return Task.FromResult(_notes.Find(note => note.Id == id));
+        }
+    }
+
+    public Task<(IReadOnlyList<Note> Items, long Total)> ListAsync(
+        int page,
+        int size,
+        CancellationToken cancellationToken
+    )
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        lock (_gate)
+        {
+            IReadOnlyList<Note> items =
+            [
+                .. _notes.OrderByDescending(note => note.CreatedAt).Skip(page * size).Take(size),
+            ];
+            return Task.FromResult((items, (long)_notes.Count));
+        }
+    }
+}

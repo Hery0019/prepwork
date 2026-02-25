@@ -1,0 +1,17 @@
+<% const host = it.projectFor('host'); -%>
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace <%= host.namespace %>.Security;
+
+<%= it.t("// SECN-001 : aucune authentification. Les deux méthodes existent quand même pour que", "// SECN-001: no authentication. Both methods exist anyway so that `Program` does not") %>
+<%= it.t("// `Program` ne change pas le jour où l'option change — elles ne font rien.", "// change the day the option changes — they simply do nothing.") %>
+public static class ApiSecurity
+{
+    public static IServiceCollection AddApiSecurity(
+        this IServiceCollection services,
+        IConfiguration configuration
+    ) => services;
+
+    public static WebApplication UseApiSecurity(this WebApplication app) => app;
+}

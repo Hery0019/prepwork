@@ -1,0 +1,19 @@
+# ADR 0005 — Docker
+
+<%= it.d('Date', 'Date') %> : <%= it.today %> · <%= it.d('Statut', 'Status') %> : <%= it.d('acceptée', 'accepted') %>
+
+## <%= it.d('Contexte', 'Context') %>
+
+<%= it.d("Choix fait au questionnaire prepwork : livrer ou non une image Docker et un `compose.yaml` pour l'environnement local.", 'Choice made in the prepwork questionnaire: whether to ship a Docker image and a `compose.yaml` for the local environment.') %>
+
+## <%= it.d('Décision', 'Decision') %>
+
+<% if (it.options.docker) { -%>
+<%= it.d("**Oui** : `Dockerfile` multi-étapes (build SDK, image runtime minimale, utilisateur non root) et `compose.yaml` avec la base de données choisie.", '**Yes**: multi-stage `Dockerfile` (SDK build, minimal runtime image, non-root user) and `compose.yaml` with the chosen database.') %>
+<% } else { -%>
+<%= it.d("**Non** pour l'instant. L'option peut être activée dans `scaffold.yaml` puis `prepwork sync`.", '**No** for now. The option can be enabled in `scaffold.yaml` then `prepwork sync`.') %>
+<% } -%>
+
+## <%= it.d('Conséquences', 'Consequences') %>
+
+<%= it.d("Les tests d'intégration exigent Docker de toute façon (Testcontainers) ; cette décision ne concerne que le packaging.", 'Integration tests require Docker anyway (Testcontainers); this decision only concerns packaging.') %>

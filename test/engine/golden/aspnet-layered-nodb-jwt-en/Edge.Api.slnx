@@ -1,0 +1,8 @@
+<!-- Solution in the slnx format: no GUID to maintain, one project per line. -->
+<Solution>
+  <Project Path="src/Edge.Api.Domain/Edge.Api.Domain.csproj" />
+  <Project Path="src/Edge.Api.Application/Edge.Api.Application.csproj" />
+  <Project Path="src/Edge.Api.Infrastructure/Edge.Api.Infrastructure.csproj" />
+  <Project Path="src/Edge.Api.Api/Edge.Api.Api.csproj" />
+  <Project Path="tests/Edge.Api.Tests/Edge.Api.Tests.csproj" />
+</Solution>

@@ -1,0 +1,27 @@
+# Généré par prepwork (GIT-005). Sorties de build, IDE, secrets.
+
+# Sorties de build .NET
+bin/
+obj/
+artifacts/
+TestResults/
+*.user
+*.suo
+
+# Secrets et environnement local (CORE-030)
+.env
+.env.*
+!.env.example
+
+# IDE
+.vs/
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

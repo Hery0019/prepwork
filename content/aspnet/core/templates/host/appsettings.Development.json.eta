@@ -1,0 +1,8 @@
+<%
+const base = {
+  Logging: { LogLevel: { Default: 'Debug', 'Microsoft.AspNetCore': 'Information' } },
+  Cors: { Origins: ['http://localhost:3000'] },
+};
+const contribution = it.appSettings.environments.development || {};
+-%>
+<%= JSON.stringify(it.merge(base, contribution), null, 2) %>

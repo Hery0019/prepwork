@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=../../../../schema/aspnet/option.schema.json
+# Pipeline GitLab CI. Exclusive avec ci-github.
+meta:
+  id: ci-gitlab
+  version: 1.0.0
+  rule_prefix: CIGL
+  group: ci
+  summary:
+    en: GitLab CI pipeline running the build, the three test levels and the migration check.
+    fr: Pipeline GitLab CI qui exécute le build, les trois niveaux de test et le contrôle des migrations.
+skill: workflow
+rules:
+  - id: CIGL-001
+    statement:
+      en: The pipeline runs `dotnet format --verify-no-changes`, `dotnet build` and `dotnet test` on every push and merge request.
+      fr: Le pipeline exécute `dotnet format --verify-no-changes`, `dotnet build` et `dotnet test` à chaque push et merge request.
+    rationale:
+      en: CI must run exactly what a developer can run locally, no more and no less.
+      fr: La CI doit exécuter exactement ce qu'un développeur peut lancer localement, ni plus ni moins.
+    enforced_by: format
+  - id: CIGL-002
+    statement:
+      en: The integration tests need a Docker daemon; the job declares the `docker:dind` service rather than skipping them.
+      fr: Les tests d'intégration ont besoin d'un démon Docker ; le job déclare le service `docker:dind` plutôt que de les ignorer.
+    rationale:
+      en: Skipping the level that touches the real database removes the only test that proves the SQL.
+      fr: Ignorer le niveau qui touche la vraie base supprime le seul test qui prouve le SQL.
+    enforced_by: none
+  - id: CIGL-003
+    statement:
+      en: A red pipeline blocks the merge; nothing is merged with a failing job.
+      fr: Un pipeline rouge bloque la fusion ; rien n'est fusionné avec un job en échec.
+    rationale:
+      en: A check that can be ignored stops being a check.
+      fr: Une vérification qu'on peut ignorer cesse d'être une vérification.
+    enforced_by: none

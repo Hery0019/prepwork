@@ -1,0 +1,8 @@
+<!-- Solution au format slnx : aucun GUID à maintenir, un projet par ligne. -->
+<Solution>
+  <Project Path="src/Solumada.PayFlow.Domain/Solumada.PayFlow.Domain.csproj" />
+  <Project Path="src/Solumada.PayFlow.Application/Solumada.PayFlow.Application.csproj" />
+  <Project Path="src/Solumada.PayFlow.Infrastructure/Solumada.PayFlow.Infrastructure.csproj" />
+  <Project Path="src/Solumada.PayFlow.Api/Solumada.PayFlow.Api.csproj" />
+  <Project Path="tests/Solumada.PayFlow.Tests/Solumada.PayFlow.Tests.csproj" />
+</Solution>

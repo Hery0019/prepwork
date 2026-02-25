@@ -1,0 +1,98 @@
+# yaml-language-server: $schema=../../../schema/aspnet/core.schema.json
+# API et erreurs (CLAUDE.md §4).
+id: api
+skill: api
+title:
+  en: API and errors
+  fr: API et erreurs
+rules:
+  - id: CORE-010
+    statement:
+      en: Every error response uses the RFC 9457 format through `ProblemDetails`.
+      fr: Toute réponse d'erreur utilise le format RFC 9457 via `ProblemDetails`.
+    rationale:
+      en: Clients parse one error shape; no ad-hoc error bodies to document.
+      fr: Les clients analysent une seule forme d'erreur ; aucun corps d'erreur ad hoc à documenter.
+    enforced_by: none
+  - id: CORE-011
+    statement:
+      en: Exactly one `IExceptionHandler` translates exceptions to responses (400 validation, 404 not found, 409 conflict, 500 without stack trace).
+      fr: Exactement un `IExceptionHandler` traduit les exceptions en réponses (400 validation, 404 introuvable, 409 conflit, 500 sans stack trace).
+    rationale:
+      en: A single translation point keeps status codes consistent across controllers.
+      fr: Un point de traduction unique garde des codes de statut cohérents entre contrôleurs.
+    enforced_by: arch-test
+  - id: CORE-012
+    statement:
+      en: Controllers accept and return DTOs; a domain entity never appears in a controller signature.
+      fr: Les contrôleurs reçoivent et renvoient des DTO ; une entité du domaine n'apparaît jamais dans la signature d'un contrôleur.
+    rationale:
+      en: The API contract must not change because a column was added.
+      fr: Le contrat de l'API ne doit pas changer parce qu'une colonne a été ajoutée.
+    enforced_by: arch-test
+  - id: CORE-013
+    statement:
+      en: Validation attributes are declared on input DTOs, not in services.
+      fr: Les attributs de validation sont déclarés sur les DTO d'entrée, pas dans les services.
+    rationale:
+      en: Validation errors become 400 responses automatically and stay visible in the API contract.
+      fr: Les erreurs de validation deviennent automatiquement des réponses 400 et restent visibles dans le contrat de l'API.
+    enforced_by: none
+  - id: CORE-014
+    statement:
+      en: List endpoints take `page` and `size` and return `content`, `page`, `size` and `totalElements`.
+      fr: Les endpoints de liste prennent `page` et `size` et renvoient `content`, `page`, `size` et `totalElements`.
+    rationale:
+      en: Unbounded lists do not survive production data volumes.
+      fr: Une liste non bornée ne survit pas aux volumes de production.
+    enforced_by: none
+  - id: CORE-015
+    statement:
+      en: Every controller is mapped under `/api/v1/` from day one.
+      fr: Chaque contrôleur est exposé sous `/api/v1/` dès le premier jour.
+    rationale:
+      en: Versioning is cheap on day one and painful once clients exist.
+      fr: Versionner coûte peu le premier jour et beaucoup une fois les clients en place.
+    enforced_by: arch-test
+  - id: CORE-016
+    statement:
+      en: Logs are JSON in the `Production` environment and human-readable elsewhere, and never contain personal data.
+      fr: Les logs sont en JSON dans l'environnement `Production`, lisibles ailleurs, et ne contiennent jamais de donnée personnelle.
+    rationale:
+      en: Machines read production logs; humans read local ones; regulators read both.
+      fr: Les machines lisent les logs de production, les humains les logs locaux, les régulateurs les deux.
+    enforced_by: none
+anti_patterns:
+  - id: CORE-AP-010
+    statement:
+      en: Returning a `Dictionary<string, object>` or a home-made error record from a controller.
+      fr: Renvoyer un `Dictionary<string, object>` ou un record d'erreur maison depuis un contrôleur.
+    rationale:
+      en: Each endpoint invents its own error shape and clients must special-case them.
+      fr: Chaque endpoint invente sa forme d'erreur et les clients doivent les traiter au cas par cas.
+    enforced_by: none
+    instead:
+      en: Throw a domain exception and let the single handler produce a `ProblemDetails`.
+      fr: Lever une exception du domaine et laisser le handler unique produire un `ProblemDetails`.
+  - id: CORE-AP-011
+    statement:
+      en: Catching exceptions inside a controller to build an error response.
+      fr: Attraper les exceptions dans un contrôleur pour construire une réponse d'erreur.
+    rationale:
+      en: The translation logic is duplicated and drifts from the handler.
+      fr: La logique de traduction est dupliquée et dérive de celle du handler.
+    enforced_by: none
+    instead:
+      en: Let the exception propagate to the `IExceptionHandler`.
+      fr: Laisser l'exception remonter jusqu'à l'`IExceptionHandler`.
+  - id: CORE-AP-012
+    statement:
+      en: Hiding entity fields with `[JsonIgnore]` instead of writing a response DTO.
+      fr: Masquer des champs d'entité avec `[JsonIgnore]` au lieu d'écrire un DTO de réponse.
+    rationale:
+      en: The entity is still the API contract; every new field leaks by default.
+      fr: L'entité reste le contrat de l'API ; chaque nouveau champ fuit par défaut.
+    enforced_by: none
+    instead:
+      en: A response record that lists exactly the exposed fields.
+      fr: Un record de réponse qui liste exactement les champs exposés.

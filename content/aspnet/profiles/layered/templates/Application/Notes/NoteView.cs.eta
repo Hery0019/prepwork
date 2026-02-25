@@ -1,0 +1,18 @@
+<%
+const application = it.projects.find((candidate) => candidate.id === 'application');
+const domain = it.projects.find((candidate) => candidate.id === 'domain');
+-%>
+using <%= domain.namespace %>.Notes;
+
+namespace <%= application.namespace %>.Notes;
+
+<%= it.t("// CORE-012 et NET-AP-003 : ce que l'API expose. L'entité `Note` ne franchit jamais cette", "// CORE-012 and NET-AP-003: what the API exposes. The `Note` entity never crosses this") %>
+<%= it.t("// frontière, donc un champ ajouté à l'entité n'est pas publié par accident.", "// boundary, so a field added to the entity is not published by accident.") %>
+public sealed record NoteView(long Id, string Title, string Body, DateTimeOffset CreatedAt)
+{
+    public static NoteView From(Note note)
+    {
+        ArgumentNullException.ThrowIfNull(note);
+        return new NoteView(note.Id, note.Title, note.Body, note.CreatedAt);
+    }
+}

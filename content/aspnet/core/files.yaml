@@ -1,0 +1,79 @@
+# yaml-language-server: $schema=../../../schema/aspnet/files.schema.json
+# Fichiers générés par le socle, quel que soit le profil. Les cibles passent par les rôles
+# (`host`, `kernel`, `tests`) : le socle ne connaît pas les couches du profil, seulement ses rôles.
+files:
+  # --- Solution et outillage -----------------------------------------------------------
+  - source: global.json.eta
+    target: global.json
+  - source: Directory.Build.props.eta
+    target: Directory.Build.props
+  - source: .editorconfig.eta
+    target: .editorconfig
+  - source: solution.slnx.eta
+    target: <%= it.project.rootNamespace %>.slnx
+
+  # --- Hôte ----------------------------------------------------------------------------
+  - source: host/appsettings.json.eta
+    target: <%= it.projectFor('host').dir %>/appsettings.json
+  - source: host/appsettings.Development.json.eta
+    target: <%= it.projectFor('host').dir %>/appsettings.Development.json
+  - source: host/Properties/launchSettings.json.eta
+    target: <%= it.projectFor('host').dir %>/Properties/launchSettings.json
+    owner: team
+  - source: host/Common/GlobalExceptionHandler.cs.eta
+    target: <%= it.projectFor('host').dir %>/Common/GlobalExceptionHandler.cs
+  - source: host/Common/SecurityHeadersMiddleware.cs.eta
+    target: <%= it.projectFor('host').dir %>/Common/SecurityHeadersMiddleware.cs
+
+  # --- Noyau ---------------------------------------------------------------------------
+  - source: kernel/Common/PagedResult.cs.eta
+    target: <%= it.projectFor('kernel').dir %>/Common/PagedResult.cs
+  - source: kernel/Common/NotFoundException.cs.eta
+    target: <%= it.projectFor('kernel').dir %>/Common/NotFoundException.cs
+  - source: kernel/Common/ConflictException.cs.eta
+    target: <%= it.projectFor('kernel').dir %>/Common/ConflictException.cs
+
+  # --- Tests ---------------------------------------------------------------------------
+  - source: tests/Support/ApiFactory.cs.eta
+    target: <%= it.projectFor('tests').dir %>/Support/ApiFactory.cs
+  - source: tests/Architecture/CoreArchitectureTest.cs.eta
+    target: <%= it.projectFor('tests').dir %>/Architecture/CoreArchitectureTest.cs
+
+  # --- Documentation et fichiers d'équipe ----------------------------------------------
+  - source: README.md.eta
+    target: README.md
+    owner: team
+  - source: .gitignore.eta
+    target: .gitignore
+  - source: .gitattributes.eta
+    target: .gitattributes
+  - source: .env.example.eta
+    target: .env.example
+    owner: team
+  - source: docs/glossary.md.eta
+    target: docs/glossary.md
+    owner: team
+  - source: docs/adr/README.md.eta
+    target: docs/adr/README.md
+    owner: team
+  - source: docs/adr/0001-architecture-profile.md.eta
+    target: docs/adr/0001-architecture-profile.md
+    owner: team
+  - source: docs/adr/0002-dotnet-version.md.eta
+    target: docs/adr/0002-dotnet-version.md
+    owner: team
+  - source: docs/adr/0003-database.md.eta
+    target: docs/adr/0003-database.md
+    owner: team
+  - source: docs/adr/0004-security.md.eta
+    target: docs/adr/0004-security.md
+    owner: team
+  - source: docs/adr/0005-docker.md.eta
+    target: docs/adr/0005-docker.md
+    owner: team
+  - source: docs/adr/0006-ci.md.eta
+    target: docs/adr/0006-ci.md
+    owner: team
+  - source: docs/adr/0007-languages.md.eta
+    target: docs/adr/0007-languages.md
+    owner: team

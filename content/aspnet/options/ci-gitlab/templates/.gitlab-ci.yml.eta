@@ -1,0 +1,52 @@
+<%
+const host = it.projectFor('host');
+const withDatabase = it.stack.database !== 'none';
+const persistence = withDatabase ? it.projectFor('persistence') : null;
+const version = it.versions.targetFramework.replace('net', '');
+-%>
+# <%= it.d("CIGL-001 : la CI ne fait rien de plus que ce qu'une machine de développement peut faire.", "CIGL-001: CI does nothing more than a development machine can do.") %>
+image: mcr.microsoft.com/dotnet/sdk:<%= version %>
+
+stages:
+  - verify
+
+variables:
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_NOLOGO: "1"
+  NUGET_PACKAGES: "$CI_PROJECT_DIR/.nuget"
+<% if (withDatabase) { -%>
+  # <%= it.d("CIGL-002 : Testcontainers a besoin d'un démon Docker joignable.", "CIGL-002: Testcontainers needs a reachable Docker daemon.") %>
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_TLS_CERTDIR: ""
+  TESTCONTAINERS_HOST_OVERRIDE: docker
+<% } -%>
+
+cache:
+  key:
+    files:
+      - "**/*.csproj"
+  paths:
+    - .nuget/
+
+verify:
+  stage: verify
+<% if (withDatabase) { -%>
+  services:
+    - name: docker:27-dind
+      alias: docker
+<% } -%>
+  script:
+    - dotnet restore
+    - dotnet format --verify-no-changes --no-restore
+    - dotnet build --configuration Release --no-restore
+    - dotnet test --configuration Release --no-build
+<% if (withDatabase) { -%>
+    # <%= it.d("PERS-001 : un modèle modifié sans migration fait échouer la CI.", "PERS-001: a model changed without its migration fails CI.") %>
+    - dotnet tool install --global dotnet-ef --version 10.0.11
+    - export PATH="$PATH:$HOME/.dotnet/tools"
+    - >
+      dotnet ef migrations has-pending-model-changes
+      --project <%= persistence.csproj %>
+      --startup-project <%= host.csproj %>
+      --no-build --configuration Release
+<% } -%>

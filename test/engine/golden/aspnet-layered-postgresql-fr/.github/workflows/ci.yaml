@@ -1,0 +1,39 @@
+# CIGH-001 : la CI ne fait rien de plus que ce qu'une machine de développement peut faire.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # CIGH-002 : la version vient de global.json, jamais du workflow.
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - name: restore
+        run: dotnet restore
+
+      - name: format
+        run: dotnet format --verify-no-changes --no-restore
+
+      - name: build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: test
+        run: dotnet test --configuration Release --no-build
+
+      # PERS-001 : un modèle modifié sans migration fait échouer la CI.
+      - name: pending model changes
+        run: |
+          dotnet tool install --global dotnet-ef --version 10.0.11
+          dotnet ef migrations has-pending-model-changes \
+            --project src/Solumada.PayFlow.Infrastructure/Solumada.PayFlow.Infrastructure.csproj \
+            --startup-project src/Solumada.PayFlow.Api/Solumada.PayFlow.Api.csproj \
+            --no-build --configuration Release

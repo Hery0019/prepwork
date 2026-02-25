@@ -1,0 +1,6 @@
+# yaml-language-server: $schema=../../../../schema/aspnet/files.schema.json
+files:
+  - source: host/Security/ApiSecurity.cs.eta
+    target: <%= it.projectFor('host').dir %>/Security/ApiSecurity.cs
+  - source: tests/Security/JwtSecurityTest.cs.eta
+    target: <%= it.projectFor('tests').dir %>/Security/JwtSecurityTest.cs

@@ -1,0 +1,62 @@
+using System.Net;
+using System.Net.Http.Json;
+using Solumada.PayFlow.Application.Notes;
+using Solumada.PayFlow.Tests.Support;
+
+namespace Solumada.PayFlow.Tests.Integration;
+
+// Niveau intégration (CORE-020, CORE-021) : le vrai moteur de base dans un conteneur, le
+// schéma posé par les migrations, aucune doublure. Exige Docker.
+[Trait("Category", "Integration")]
+[Collection(DatabaseCollectionDefinition.Name)]
+public sealed class NotesApiTest(DatabaseFixture database)
+{
+    [Fact]
+    public async Task Create_ThenGetById_ReturnsTheStoredNote()
+    {
+        using var factory = new ApiFactory().WithDatabase(database.ConnectionString);
+        using var client = factory.CreateClient();
+
+        var created = await client.PostAsJsonAsync(
+            "/api/v1/notes",
+            new { title = "Première note", body = "Écrite par le test d'intégration" }
+        );
+        Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+
+        var note = await created.Content.ReadFromJsonAsync<NoteView>();
+        Assert.NotNull(note);
+        Assert.True(note.Id > 0);
+
+        var reread = await client.GetFromJsonAsync<NoteView>(
+            new Uri($"/api/v1/notes/{note.Id}", UriKind.Relative)
+        );
+
+        Assert.NotNull(reread);
+        Assert.Equal(note.Id, reread.Id);
+        Assert.Equal("Première note", reread.Title);
+    }
+
+    [Fact]
+    public async Task List_AfterOneCreate_ReturnsAPageWithATotal()
+    {
+        using var factory = new ApiFactory().WithDatabase(database.ConnectionString);
+        using var client = factory.CreateClient();
+
+        await client.PostAsJsonAsync("/api/v1/notes", new { title = "Listée", body = "" });
+
+        var page = await client.GetFromJsonAsync<PageResponse>(
+            new Uri("/api/v1/notes?page=0&size=10", UriKind.Relative)
+        );
+
+        Assert.NotNull(page);
+        Assert.NotEmpty(page.Content);
+        Assert.True(page.TotalElements >= 1);
+    }
+
+    private sealed record PageResponse(
+        IReadOnlyList<NoteView> Content,
+        int Page,
+        int Size,
+        long TotalElements
+    );
+}

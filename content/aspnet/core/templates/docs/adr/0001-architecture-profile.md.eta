@@ -1,0 +1,27 @@
+# ADR 0001 — <%= it.d("Profil d'architecture", 'Architecture profile') %>
+
+<%= it.d('Date', 'Date') %> : <%= it.today %> · <%= it.d('Statut', 'Status') %> : <%= it.d('acceptée', 'accepted') %>
+
+## <%= it.d('Contexte', 'Context') %>
+
+<%= it.d("Choix fait au questionnaire prepwork, avant la première ligne de code métier. Le profil dicte le squelette, les règles d'architecture, les anti-patterns et l'exemple de référence.", 'Choice made in the prepwork questionnaire, before the first line of business code. The profile dictates the skeleton, the architecture rules, the anti-patterns and the reference example.') %>
+
+## <%= it.d('Décision', 'Decision') %>
+
+<%= it.d('Profil', 'Profile') %> **`<%= it.profileInfo.id %>`** (<%= it.d('version', 'version') %> <%= it.profileInfo.version %>) : <%= it.profileInfo.summary %>
+
+<%= it.d('Ce profil convient quand :', 'This profile fits when:') %>
+
+<% for (const reason of it.profileInfo.whenToUse) { -%>
+- <%= reason %>
+<% } -%>
+
+<%= it.d('Il ne convient pas quand :', 'It does not fit when:') %>
+
+<% for (const reason of it.profileInfo.whenNotToUse) { -%>
+- <%= reason %>
+<% } -%>
+
+## <%= it.d('Conséquences', 'Consequences') %>
+
+<%= it.d("Les règles du profil sont exécutables (`dotnet test`) ; changer de profil est une migration, pas un réglage. Le détail est dans `.claude/skills/architecture/SKILL.md`.", 'The profile rules are executable (`dotnet test`); switching profile is a migration, not a setting. Details live in `.claude/skills/architecture/SKILL.md`.') %>

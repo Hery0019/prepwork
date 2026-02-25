@@ -1,0 +1,20 @@
+<%
+const tests = it.projectFor('tests');
+const persistence = it.projectFor('persistence');
+-%>
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using <%= persistence.namespace %>.Persistence;
+
+namespace <%= tests.namespace %>.Support;
+
+<%= it.t("// PERS-005 : l'application n'applique jamais les migrations elle-même. Les tests, si —", "// PERS-005: the application never applies migrations itself. Tests do — the container") %>
+<%= it.t("// le conteneur démarre vide, et le schéma doit venir de l'historique des migrations.", "// starts empty, and the schema must come from the migration history.") %>
+internal static class DatabaseMigrator
+{
+    public static void Migrate(IServiceProvider services)
+    {
+        using var scope = services.CreateScope();
+        scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.Migrate();
+    }
+}

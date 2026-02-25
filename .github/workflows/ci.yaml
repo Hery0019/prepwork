@@ -1,6 +1,7 @@
 # CI de prepwork (CLAUDE.md §8) : vérifications de l'outil sur chaque commit, puis une matrice de
 # génération par pack sur les pull requests. Chaque projet généré est vérifié par son propre
-# outillage : `mvn verify` côté spring-boot, `lint` + `test` + `build` côté react.
+# outillage : `mvn verify` côté spring-boot, `lint` + `test` + `build` côté react,
+# `format` + `test` + contrôle des migrations côté aspnet.
 name: CI
 
 on:
@@ -93,3 +94,46 @@ jobs:
           pnpm lint
           pnpm test
           pnpm build
+
+  aspnet-matrix:
+    if: github.event_name == 'pull_request'
+    needs: check
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [layered]
+        security: [none, cookie, jwt-bearer]
+        database: [postgresql, sqlserver, none]
+    name: aspnet ${{ matrix.profile }} / ${{ matrix.security }} / ${{ matrix.database }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Generate
+        run: pnpm matrix aspnet out ${{ matrix.profile }} ${{ matrix.security }} ${{ matrix.database }}
+      # Le SDK vient du `global.json` que le projet généré porte lui-même : la CI de prepwork
+      # vérifie donc aussi que ce fichier désigne une version installable.
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: out/global.json
+      - name: Verify the generated project
+        working-directory: out
+        run: |
+          dotnet restore
+          dotnet format --verify-no-changes --no-restore
+          dotnet build --configuration Release --no-restore
+          dotnet test --configuration Release --no-build
+      - name: Check that the shipped migration matches the model
+        if: matrix.database != 'none'
+        working-directory: out
+        run: |
+          dotnet tool install --global dotnet-ef --version 10.0.11
+          dotnet ef migrations has-pending-model-changes \
+            --project src/Matrix.Generated.Infrastructure \
+            --startup-project src/Matrix.Generated.Api \
+            --no-build --configuration Release

@@ -1,0 +1,16 @@
+# ADR 0007 — <%= it.d('Langues', 'Languages') %>
+
+<%= it.d('Date', 'Date') %> : <%= it.today %> · <%= it.d('Statut', 'Status') %> : <%= it.d('acceptée', 'accepted') %>
+
+## <%= it.d('Contexte', 'Context') %>
+
+<%= it.d("Les identifiants du code sont toujours en anglais (CORE-040, non négociable). Seules les langues des commentaires et de la documentation sont un choix d'équipe.", 'Code identifiers are always in English (CORE-040, non-negotiable). Only the languages of comments and documentation are a team choice.') %>
+
+## <%= it.d('Décision', 'Decision') %>
+
+- <%= it.d('Commentaires', 'Comments') %> : **<%= it.language.comments === 'fr' ? it.d('français', 'French') : it.d('anglais', 'English') %>**
+- <%= it.d('Documentation', 'Documentation') %> : **<%= it.language.docs === 'fr' ? it.d('français', 'French') : it.d('anglais', 'English') %>**
+
+## <%= it.d('Conséquences', 'Consequences') %>
+
+<%= it.d('Les termes métier sont définis dans `docs/glossary.md` sous leur forme anglaise utilisée dans le code (CORE-042).', 'Business terms are defined in `docs/glossary.md` in the English form used in the code (CORE-042).') %>

@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=../../../../schema/aspnet/files.schema.json
+# Les cibles passent par les rôles : l'option ne connaît pas les couches du profil.
+files:
+  - source: Persistence/AppDbContext.cs.eta
+    target: <%= it.projectFor('persistence').dir %>/Persistence/AppDbContext.cs
+  - source: Persistence/PersistenceServices.cs.eta
+    target: <%= it.projectFor('persistence').dir %>/Persistence/PersistenceServices.cs
+  - source: Persistence/DesignTimeDbContextFactory.cs.eta
+    target: <%= it.projectFor('persistence').dir %>/Persistence/DesignTimeDbContextFactory.cs
+  - source: tests/Support/DatabaseFixture.cs.eta
+    target: <%= it.projectFor('tests').dir %>/Support/DatabaseFixture.cs
+  - source: tests/Support/DatabaseMigrator.cs.eta
+    target: <%= it.projectFor('tests').dir %>/Support/DatabaseMigrator.cs

@@ -4,15 +4,18 @@ A TypeScript CLI that prepares the ground for a project before the first line of
 ready-to-use skeleton, a reference example, tooled architecture rules, and the specifications
 (`CLAUDE.md` + skills) for the AI agent that will code inside that skeleton.
 
-Two stacks are shipped, each as a content pack on a stack-agnostic core (ADR 0007):
-**Spring Boot** (Maven, ArchUnit, Testcontainers) and **React** (Vite, Tailwind tokens, ESLint
-boundaries, Testing Library, Playwright).
+Three stacks are shipped, each as a content pack on a stack-agnostic core (ADR 0007):
+**Spring Boot** (Maven, ArchUnit, Testcontainers), **React** (Vite or Next.js, Tailwind tokens,
+ESLint boundaries, Testing Library, Playwright) and **ASP.NET Core** (one project per layer, EF Core
+migrations, NetArchTest, Testcontainers).
 
 ## Prerequisites
 
 - Node 22 LTS (or newer) and `pnpm` (via `corepack enable pnpm`)
 - To verify a generated Spring Boot project: JDK 21 (or 17) and Docker (Testcontainers)
 - To verify a generated React project: nothing more than Node and pnpm
+- To verify a generated ASP.NET Core project: the .NET SDK named by its `global.json` (10.0.400 or
+  newer in the same band) and Docker for the integration level
 
 ## Development
 
@@ -61,16 +64,27 @@ Once built (`pnpm build`), the executable is `node dist/cli/index.js` (or `prepw
 
 | Axis          | v1 values                                                                            |
 | ------------- | ------------------------------------------------------------------------------------ |
-| Profile       | `spa-feature` — Vite SPA, one directory per use case                                 |
+| Profile       | `spa-feature` — Vite SPA · `next-app` — Next.js App Router                           |
 | Stack         | data: `tanstack-query` (default) / `none` · forms: `rhf` (default) / `none`          |
 | Visual        | presets `app-sober` (default), `editorial`, `dense`, plus an optional dark theme     |
 | Security      | `security-none` (default), `security-oidc-bff`, `security-session`                   |
 | Other options | `state-zustand` / `state-context`, `i18n`, `e2e-playwright`, `docker`, `ci-*`, `git` |
 
+**`aspnet` pack**
+
+| Axis          | v1 values                                                                        |
+| ------------- | -------------------------------------------------------------------------------- |
+| Profile       | `layered` — one project per layer, boundaries held by the reference graph        |
+| Stack         | database: `postgresql` (default) / `sqlserver` / `none` — migrations are EF Core |
+| Security      | `security-none` (default), `security-cookie`, `security-jwt-bearer`              |
+| Other options | `persistence-ef` (with a database), `docker`, `ci-github` / `ci-gitlab`, `git`   |
+
 Versions are pinned by the tool, never asked: Spring Boot 4.1.1 (`src/packs/spring-boot/context.ts`),
-React 19 with Vite and Tailwind 4 (`src/packs/react/context.ts`). On pull requests, the CI of this
-repository generates every combination of each pack and runs the generated project's own toolchain:
-`mvn verify` for Spring Boot, `typecheck` + `lint` + `test` + `build` for React.
+React 19 with Vite and Tailwind 4 (`src/packs/react/context.ts`), .NET 10 LTS
+(`src/packs/aspnet/context.ts`). On pull requests, the CI of this repository generates every
+combination of each pack and runs the generated project's own toolchain: `mvn verify` for Spring
+Boot, `typecheck` + `lint` + `test` + `build` for React, and `format` + `build` + `test` plus
+`dotnet ef migrations has-pending-model-changes` for ASP.NET Core.
 
 ## Layout
 
@@ -83,7 +97,7 @@ src/
   engine/         composition → plan → execution; manifest
   packs/          one directory per stack: schemas, contributions, context, renderer strings
   renderers/      claude-code: YAML → CLAUDE.md + .claude/skills/
-content/          data only: common/, spring-boot/, react/ — never code
+content/          data only: common/, spring-boot/, react/, aspnet/ — never code
 schema/           JSON Schema generated from Zod (IDE completion), never hand-written
 docs/adr/         decisions taken while implementing the tool itself
 ```

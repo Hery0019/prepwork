@@ -1,0 +1,37 @@
+<%
+const infrastructure = it.projects.find((candidate) => candidate.id === 'infrastructure');
+const application = it.projects.find((candidate) => candidate.id === 'application');
+const withDatabase = it.stack.database !== 'none';
+-%>
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using <%= application.namespace %>.Notes;
+using <%= infrastructure.namespace %>.Notes;
+<% if (withDatabase) { -%>
+using <%= infrastructure.namespace %>.Persistence;
+<% } -%>
+
+namespace <%= infrastructure.namespace %>;
+
+<%= it.t("// NET-010 : l'unique point d'enregistrement de la couche, appelé par `Program`.", "// NET-010: the single registration point of the layer, called by `Program`.") %>
+public static class InfrastructureServices
+{
+    public static IServiceCollection AddInfrastructure(
+        this IServiceCollection services,
+        IConfiguration configuration
+    )
+    {
+        ArgumentNullException.ThrowIfNull(services);
+<% if (withDatabase) { -%>
+
+        services.AddPersistence(configuration);
+        services.AddScoped<INoteRepository, NoteRepository>();
+<% } else { -%>
+
+        <%= it.t("// Sans base de données, le dépôt vit en mémoire : à remplacer dès qu'une base existe.", "// With no database the repository lives in memory: replace it as soon as a database exists.") %>
+        services.AddSingleton<INoteRepository, InMemoryNoteRepository>();
+<% } -%>
+
+        return services;
+    }
+}

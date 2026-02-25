@@ -1,0 +1,36 @@
+<%
+const tests = it.projectFor('tests');
+const host = it.projectFor('host');
+-%>
+using System.Reflection;
+using NetArchTest.Rules;
+
+namespace <%= tests.namespace %>.Architecture;
+
+<%= it.t("// SECN-003 : une authentification écrite à la main, à moitié, est pire qu'une absence", "// SECN-003: a half-written, hand-made authentication is worse than an explicit absence.") %>
+<%= it.t("// explicite. Ce test rend l'absence vérifiable.", "// This test makes that absence verifiable.") %>
+[Trait("Category", "Unit")]
+public sealed class SecurityNoneArchitectureTest
+{
+    [Fact]
+    public void SECN_003_no_type_wires_authentication_by_hand()
+    {
+        <%= it.t("// `Program` est exclu : sans espace de noms, il sort de cette sélection. C'est lui qui", "// `Program` is excluded: having no namespace, it falls outside this selection. It is the") %>
+        <%= it.t("// déclare `/health` public, et c'est la seule autorisation légitime ici.", "// one that declares `/health` public, the only legitimate authorization call here.") %>
+        var result = Types
+            .InAssembly(Assembly.Load("<%= host.name %>"))
+            .That()
+            .ResideInNamespaceStartingWith("<%= host.namespace %>")
+            .ShouldNot()
+            .HaveDependencyOnAny(
+                "Microsoft.AspNetCore.Authentication",
+                "Microsoft.AspNetCore.Authorization"
+            )
+            .GetResult();
+
+        Assert.True(
+            result.IsSuccessful,
+            result.FailingTypeNames is null ? string.Empty : string.Join(", ", result.FailingTypeNames)
+        );
+    }
+}

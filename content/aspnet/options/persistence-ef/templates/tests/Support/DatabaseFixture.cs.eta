@@ -1,0 +1,35 @@
+<%
+const tests = it.projectFor('tests');
+const postgres = it.stack.database === 'postgresql';
+const image = postgres ? 'postgres:17-alpine' : 'mcr.microsoft.com/mssql/server:2022-latest';
+-%>
+using Testcontainers.<%= postgres ? 'PostgreSql' : 'MsSql' %>;
+
+namespace <%= tests.namespace %>.Support;
+
+<%= it.t("// CORE-021 : le vrai moteur, dans un conteneur, démarré une fois pour toute la collection.", "// CORE-021: the real engine, in a container, started once for the whole collection.") %>
+<%= it.t("// L'image est épinglée : un test qui change de version de base sans le dire n'existe pas.", "// The image is pinned: a test that silently changes database version does not exist.") %>
+public sealed class DatabaseFixture : IAsyncLifetime
+{
+<% if (postgres) { -%>
+    private readonly PostgreSqlContainer _container = new PostgreSqlBuilder(
+        "<%= image %>"
+    ).Build();
+<% } else { -%>
+    private readonly MsSqlContainer _container = new MsSqlBuilder("<%= image %>").Build();
+<% } -%>
+
+    public string ConnectionString => _container.GetConnectionString();
+
+    public Task InitializeAsync() => _container.StartAsync();
+
+    public Task DisposeAsync() => _container.DisposeAsync().AsTask();
+}
+
+<%= it.t("// Une seule base pour tous les tests d'intégration : la démarrer par classe coûterait", "// A single database for every integration test: starting one per class would cost") %>
+<%= it.t("// plusieurs dizaines de secondes.", "// tens of seconds each time.") %>
+[CollectionDefinition(DatabaseCollectionDefinition.Name)]
+public sealed class DatabaseCollectionDefinition : ICollectionFixture<DatabaseFixture>
+{
+    public const string Name = "database";
+}

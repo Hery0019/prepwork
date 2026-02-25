@@ -1,0 +1,15 @@
+<% const persistence = it.projectFor('persistence'); -%>
+using Microsoft.EntityFrameworkCore;
+
+namespace <%= persistence.namespace %>.Persistence;
+
+<%= it.t("// PERS-002 : aucun `DbSet`. Les entités entrent dans le modèle par leur configuration,", "// PERS-002: no `DbSet`. Entities enter the model through their configuration, so adding") %>
+<%= it.t("// donc ajouter une entité ne touche pas ce fichier.", "// an entity does not touch this file.") %>
+public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
+{
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        ArgumentNullException.ThrowIfNull(modelBuilder);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+    }
+}

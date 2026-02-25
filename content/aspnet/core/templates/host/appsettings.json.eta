@@ -1,0 +1,10 @@
+<%
+// Base commune ; les options y ajoutent leurs sections via `app_settings.main`.
+const base = {
+  Logging: { LogLevel: { Default: 'Information', 'Microsoft.AspNetCore': 'Warning' } },
+  AllowedHosts: '*',
+  // CORE-033 : liste explicite, alimentée par CORS_ORIGINS hors développement.
+  Cors: { Origins: [] },
+};
+-%>
+<%= JSON.stringify(it.merge(base, it.appSettings.main), null, 2) %>

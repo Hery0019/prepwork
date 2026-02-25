@@ -1,0 +1,38 @@
+<%
+const tests = it.projectFor('tests');
+-%>
+using System.Net;
+using <%= tests.namespace %>.Support;
+
+namespace <%= tests.namespace %>.Security;
+
+<%= it.t("// SECC-005 : les tests métier tournent sans authentification ; celui-ci la rallume pour", "// SECC-005: business tests run without authentication; this one switches it back on to") %>
+<%= it.t("// vérifier qu'elle ferme bien, et que `/health` reste public.", "// check that it really closes, and that `/health` stays public.") %>
+[Trait("Category", "Slice")]
+public sealed class CookieSecurityTest
+{
+    private static ApiFactory SecuredFactory() =>
+        new ApiFactory().WithSetting("Security:Enabled", "true");
+
+    [Fact]
+    public async Task SECC_005_AnonymousRequest_OnABusinessEndpoint_Returns401()
+    {
+        using var factory = SecuredFactory();
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync(new Uri("/api/v1/notes", UriKind.Relative));
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task SECC_005_Health_StaysPublic_WhenAuthenticationIsOn()
+    {
+        using var factory = SecuredFactory();
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync(new Uri("/health", UriKind.Relative));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+}

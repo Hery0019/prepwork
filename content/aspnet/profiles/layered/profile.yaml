@@ -1,0 +1,318 @@
+# yaml-language-server: $schema=../../../../schema/aspnet/profile.schema.json
+# Monolithe en couches : quatre projets, un projet de tests. Les frontières descendantes sont
+# tenues par le graphe de références (ADR 0010 §1) ; NetArchTest tient le reste.
+meta:
+  id: layered
+  version: 1.0.0
+  rule_prefix: NET
+  summary:
+    en: Layered monolith — Api, Application, Infrastructure, Domain, one project each.
+    fr: Monolithe en couches — Api, Application, Infrastructure, Domain, un projet chacun.
+  when_to_use:
+    - en: A single team, a single deployable, a domain that is not yet split.
+      fr: Une seule équipe, un seul déployable, un domaine qui n'est pas encore découpé.
+    - en: The team wants the layer boundaries held by the build rather than by review.
+      fr: L'équipe veut des frontières de couches tenues par le build plutôt que par la revue.
+    - en: CRUD-heavy applications whose business rules fit in application services.
+      fr: Des applications surtout CRUD dont les règles métier tiennent dans des services applicatifs.
+  when_not_to_use:
+    - en: Several business domains that already have their own lifecycle.
+      fr: Plusieurs domaines métier qui ont déjà leur propre cycle de vie.
+    - en: A team that wants one folder per feature rather than one project per layer.
+      fr: Une équipe qui veut un dossier par fonctionnalité plutôt qu'un projet par couche.
+
+architecture:
+  root_namespace: '{{rootNamespace}}'
+  layers:
+    - id: domain
+      target: '{{rootNamespace}}.Domain'
+      may_depend_on: []
+    - id: application
+      target: '{{rootNamespace}}.Application'
+      may_depend_on: [domain]
+    - id: infrastructure
+      target: '{{rootNamespace}}.Infrastructure'
+      may_depend_on: [application, domain]
+    - id: api
+      target: '{{rootNamespace}}.Api'
+      may_depend_on: [application, domain, infrastructure]
+
+rules:
+  - id: NET-001
+    statement:
+      en: The `Domain` project references no other project and no infrastructure package.
+      fr: Le projet `Domain` ne référence aucun autre projet ni aucun paquet d'infrastructure.
+    rationale:
+      en: A domain that compiles alone can be read, tested and moved without dragging a framework along.
+      fr: Un domaine qui compile seul se lit, se teste et se déplace sans traîner un framework.
+    enforced_by: compiler
+  - id: NET-002
+    statement:
+      en: The `Application` project references neither `Infrastructure` nor EF Core; it declares the ports that infrastructure implements.
+      fr: Le projet `Application` ne référence ni `Infrastructure` ni EF Core ; il déclare les ports que l'infrastructure implémente.
+    rationale:
+      en: Use cases must be expressible without naming a database; the absent reference makes it impossible to cheat.
+      fr: Les cas d'usage doivent s'exprimer sans nommer une base ; la référence absente rend la triche impossible.
+    enforced_by: compiler
+  - id: NET-003
+    statement:
+      en: Only the composition root names an `Infrastructure` type — `Program` and the `Add*` extension methods.
+      fr: Seule la racine de composition nomme un type d'`Infrastructure` — `Program` et les méthodes d'extension `Add*`.
+    rationale:
+      en: '`Api` must reference `Infrastructure` to register it; everything beyond that registration is a bypassed layer.'
+      fr: L'`Api` doit référencer l'`Infrastructure` pour l'enregistrer ; tout ce qui dépasse cet enregistrement est une couche court-circuitée.
+    enforced_by: arch-test
+  - id: NET-004
+    statement:
+      en: A controller depends on an application service, never on a `DbContext` or a repository.
+      fr: Un contrôleur dépend d'un service applicatif, jamais d'un `DbContext` ni d'un dépôt.
+    rationale:
+      en: A query written in a controller is invisible to tests and duplicated at the next endpoint.
+      fr: Une requête écrite dans un contrôleur est invisible aux tests et dupliquée au prochain endpoint.
+    enforced_by: arch-test
+  - id: NET-005
+    statement:
+      en: A domain entity carries no persistence or serialisation attribute.
+      fr: Une entité du domaine ne porte aucun attribut de persistance ni de sérialisation.
+    rationale:
+      en: An attribute is a reference to a framework the domain is not allowed to know.
+      fr: Un attribut est une référence à un framework que le domaine n'a pas le droit de connaître.
+    enforced_by: arch-test
+  - id: NET-006
+    statement:
+      en: The relational mapping is declared in an `IEntityTypeConfiguration<T>` of the `Infrastructure` project.
+      fr: Le mapping relationnel est déclaré dans une `IEntityTypeConfiguration<T>` du projet `Infrastructure`.
+    rationale:
+      en: One file per entity, next to the migrations, instead of a `DbContext` that grows without bound.
+      fr: Un fichier par entité, à côté des migrations, plutôt qu'un `DbContext` qui grossit sans fin.
+    enforced_by: none
+  - id: NET-007
+    statement:
+      en: A repository implementation is `internal`; the rest of the application sees only its interface.
+      fr: Une implémentation de dépôt est `internal` ; le reste de l'application ne voit que son interface.
+    rationale:
+      en: A public implementation gets injected directly the day someone is in a hurry.
+      fr: Une implémentation publique finit injectée directement le jour où quelqu'un est pressé.
+    enforced_by: arch-test
+  - id: NET-008
+    statement:
+      en: A controller is `sealed` and its name ends with `Controller`.
+      fr: Un contrôleur est `sealed` et son nom se termine par `Controller`.
+    rationale:
+      en: Inheriting from a controller to share code produces routes nobody expects.
+      fr: Hériter d'un contrôleur pour partager du code produit des routes que personne n'attend.
+    enforced_by: arch-test
+  - id: NET-009
+    statement:
+      en: Each layer lives in the `<Root>.<Layer>` project; no other project exists under `src/`.
+      fr: Chaque couche vit dans le projet `<Racine>.<Couche>` ; aucun autre projet n'existe sous `src/`.
+    rationale:
+      en: A fifth project is an architecture decision, so it goes through an ADR.
+      fr: Un cinquième projet est une décision d'architecture, donc il passe par un ADR.
+    enforced_by: none
+  - id: NET-010
+    statement:
+      en: Each project registers its own services in a single `Add<Layer>` extension method called by `Program`.
+      fr: Chaque projet enregistre ses propres services dans une unique méthode d'extension `Add<Couche>` appelée par `Program`.
+    rationale:
+      en: The composition root stays readable and each layer owns its lifetimes.
+      fr: La racine de composition reste lisible et chaque couche possède ses durées de vie.
+    enforced_by: none
+anti_patterns:
+  - id: NET-AP-001
+    statement:
+      en: Adding a `ProjectReference` to "just get at that one class".
+      fr: Ajouter une `ProjectReference` pour « juste accéder à cette classe ».
+    rationale:
+      en: The reference graph is the architecture; widening it silently removes the only boundary the compiler was holding.
+      fr: Le graphe de références est l'architecture ; l'élargir en silence supprime la seule frontière que le compilateur tenait.
+    enforced_by: none
+    instead:
+      en: Move the type down to a layer both projects already reference, or declare a port.
+      fr: Descendre le type dans une couche que les deux projets référencent déjà, ou déclarer un port.
+  - id: NET-AP-002
+    statement:
+      en: Injecting the `DbContext` into a controller to "avoid a useless layer".
+      fr: Injecter le `DbContext` dans un contrôleur pour « éviter une couche inutile ».
+    rationale:
+      en: The use case becomes untestable without a database and invisible to the next reader.
+      fr: Le cas d'usage devient intestable sans base et invisible pour le lecteur suivant.
+    enforced_by: none
+    instead:
+      en: An application service that the controller calls and a unit test that covers it.
+      fr: Un service applicatif que le contrôleur appelle et un test unitaire qui le couvre.
+  - id: NET-AP-003
+    statement:
+      en: An application service that returns the domain entity straight to the controller.
+      fr: Un service applicatif qui renvoie l'entité du domaine directement au contrôleur.
+    rationale:
+      en: Every field added to the entity is published by the API on the same day.
+      fr: Chaque champ ajouté à l'entité est publié par l'API le jour même.
+    enforced_by: none
+    instead:
+      en: A response DTO built by the controller, or an application type returned by the service.
+      fr: Un DTO de réponse construit par le contrôleur, ou un type applicatif renvoyé par le service.
+
+dependencies:
+  allowed:
+    - artifact: Microsoft.Extensions.*
+      purpose:
+        en: Dependency injection, configuration and logging, already in the framework.
+        fr: Injection de dépendances, configuration et journalisation, déjà dans le framework.
+    - artifact: System.Text.Json
+      purpose:
+        en: The serialiser of the platform; no other one is needed.
+        fr: Le sérialiseur de la plateforme ; aucun autre n'est nécessaire.
+  forbidden:
+    - artifact: Microsoft.EntityFrameworkCore.InMemory
+      rationale:
+        en: It is not a relational database; a test that passes on it proves nothing (CORE-021).
+        fr: Ce n'est pas une base relationnelle ; un test qui y passe ne prouve rien (CORE-021).
+    - artifact: Microsoft.AspNetCore.Mvc.NewtonsoftJson
+      rationale:
+        en: A second serialiser with different defaults, for a need `System.Text.Json` already covers.
+        fr: Un second sérialiseur aux réglages différents, pour un besoin que `System.Text.Json` couvre déjà.
+  add_procedure:
+    - en: Check the `allowed` and `forbidden` lists above; a forbidden package is never added.
+      fr: Vérifier les listes `allowed` et `forbidden` ci-dessus ; un paquet interdit n'est jamais ajouté.
+    - en: State which layer needs it and why the framework does not already cover the need, then wait for confirmation.
+      fr: Dire quelle couche en a besoin et pourquoi le framework ne couvre pas déjà ce besoin, puis attendre confirmation.
+    - en: Add it to the single project that uses it, with an explicit version, never to `Directory.Build.props`.
+      fr: L'ajouter au seul projet qui l'utilise, avec une version explicite, jamais dans `Directory.Build.props`.
+    - en: Commit the addition on its own (`build(deps)`), separately from the code that uses it.
+      fr: Commiter l'ajout seul (`build(deps)`), séparément du code qui l'utilise.
+
+reference_example:
+  feature:
+    en: Notes — create, read one, list with pagination.
+    fr: Notes — créer, lire une note, lister avec pagination.
+  files:
+    - 'src/{{rootNamespace}}.Domain/Notes/Note.cs'
+    - 'src/{{rootNamespace}}.Application/Notes/INoteRepository.cs'
+    - 'src/{{rootNamespace}}.Application/Notes/NoteView.cs'
+    - 'src/{{rootNamespace}}.Application/Notes/NoteService.cs'
+    - 'src/{{rootNamespace}}.Infrastructure/Notes/NoteRepository.cs'
+    - 'src/{{rootNamespace}}.Api/Notes/NotesController.cs'
+    - 'src/{{rootNamespace}}.Api/Notes/CreateNoteRequest.cs'
+    - 'tests/{{rootNamespace}}.Tests/Unit/NoteServiceTest.cs'
+    - 'tests/{{rootNamespace}}.Tests/Slice/NotesControllerTest.cs'
+    - 'tests/{{rootNamespace}}.Tests/Integration/NotesApiTest.cs'
+  demonstrates:
+    - NET-001
+    - NET-004
+    - NET-005
+    - NET-007
+    - NET-008
+    - CORE-012
+    - CORE-014
+    - CORE-015
+  tables:
+    - name: note
+      columns:
+        - name: id
+          type: identity
+        - name: title
+          type: string
+          length: 200
+        - name: body
+          type: text
+        - name: created_at
+          type: timestamp
+
+skills:
+  architecture: [NET-001, NET-002, NET-003, NET-009, NET-010, NET-AP-001]
+  db: [NET-005, NET-006, NET-007]
+  api: [NET-004, NET-008, NET-AP-002, NET-AP-003]
+  testing: []
+  workflow: []
+  security: []
+
+dotnet:
+  projects:
+    - id: domain
+      suffix: Domain
+      kind: library
+      references: []
+      roles: [kernel]
+    - id: application
+      suffix: Application
+      kind: library
+      references: [domain]
+    - id: infrastructure
+      suffix: Infrastructure
+      kind: library
+      references: [application, domain]
+      roles: [persistence]
+    - id: api
+      suffix: Api
+      kind: web
+      references: [application, domain, infrastructure]
+      roles: [host]
+    - id: tests
+      suffix: Tests
+      kind: test
+      references: [api, application, domain, infrastructure]
+      roles: [tests]
+  packages:
+    - id: Microsoft.AspNetCore.OpenApi
+      version: 10.0.11
+      project: api
+      purpose:
+        en: Serves the OpenAPI document of the API.
+        fr: Sert le document OpenAPI de l'API.
+    # Une bibliothèque de classes ne voit aucun `Microsoft.Extensions.*` sans le déclarer :
+    # chaque couche prend les abstractions dont elle a besoin, et rien de plus.
+    - id: Microsoft.Extensions.DependencyInjection.Abstractions
+      version: 10.0.11
+      project: application
+      purpose:
+        en: Lets the layer register its own services (NET-010) without knowing the host.
+        fr: Permet à la couche d'enregistrer ses propres services (NET-010) sans connaître l'hôte.
+    - id: Microsoft.Extensions.DependencyInjection.Abstractions
+      version: 10.0.11
+      project: infrastructure
+      purpose:
+        en: Lets the layer register its own services (NET-010) without knowing the host.
+        fr: Permet à la couche d'enregistrer ses propres services (NET-010) sans connaître l'hôte.
+    - id: Microsoft.Extensions.Configuration.Abstractions
+      version: 10.0.11
+      project: infrastructure
+      purpose:
+        en: Reads the connection string from configuration, never from the environment directly.
+        fr: Lit la chaîne de connexion depuis la configuration, jamais depuis l'environnement directement.
+    - id: Microsoft.NET.Test.Sdk
+      version: 17.14.1
+      project: tests
+      purpose:
+        en: Test host used by `dotnet test`.
+        fr: Hôte de test utilisé par `dotnet test`.
+    - id: xunit
+      version: 2.9.3
+      project: tests
+      purpose:
+        en: Test framework.
+        fr: Framework de test.
+    - id: xunit.runner.visualstudio
+      version: 3.1.4
+      project: tests
+      purpose:
+        en: Adapter that exposes xUnit tests to the test host.
+        fr: Adaptateur qui expose les tests xUnit à l'hôte de test.
+    - id: Microsoft.AspNetCore.Mvc.Testing
+      version: 10.0.11
+      project: tests
+      purpose:
+        en: Runs the application in memory for slice and integration tests.
+        fr: Lance l'application en mémoire pour les tests slice et d'intégration.
+    - id: NetArchTest.Rules
+      version: 1.3.2
+      project: tests
+      purpose:
+        en: Expresses the architecture rules that the reference graph cannot hold.
+        fr: Exprime les règles d'architecture que le graphe de références ne peut pas tenir.
+    - id: NSubstitute
+      version: 6.2.0
+      project: tests
+      purpose:
+        en: Test doubles for the ports of the application layer.
+        fr: Doublures de test pour les ports de la couche applicative.

@@ -1,0 +1,500 @@
+{
+  "title": "prepwork option.yaml (aspnet)",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "meta": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "rule_prefix": {
+          "type": "string",
+          "pattern": "^[A-Z]{2,5}$"
+        },
+        "group": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "summary": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[^\\n]+$"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "en": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "^[^\\n]+$"
+                },
+                "fr": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "^[^\\n]+$"
+                }
+              },
+              "required": [
+                "en",
+                "fr"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "rule_prefix",
+        "summary"
+      ],
+      "additionalProperties": false
+    },
+    "skill": {
+      "type": "string",
+      "enum": [
+        "architecture",
+        "db",
+        "api",
+        "testing",
+        "workflow",
+        "security"
+      ]
+    },
+    "rules": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Z]{2,5}-\\d{3}$"
+          },
+          "statement": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[^\\n]+$"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "en": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\n]+$"
+                  },
+                  "fr": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\n]+$"
+                  }
+                },
+                "required": [
+                  "en",
+                  "fr"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "rationale": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[^\\n]+$"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "en": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\n]+$"
+                  },
+                  "fr": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\n]+$"
+                  }
+                },
+                "required": [
+                  "en",
+                  "fr"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "enforced_by": {
+            "type": "string",
+            "enum": [
+              "compiler",
+              "arch-test",
+              "analyzer",
+              "format",
+              "ef-migrations",
+              "nuget-audit",
+              "commitlint",
+              "gitleaks",
+              "none"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "statement",
+          "rationale",
+          "enforced_by"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "anti_patterns": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Z]{2,5}-AP-\\d{3}$"
+          },
+          "statement": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[^\\n]+$"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "en": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\n]+$"
+                  },
+                  "fr": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\n]+$"
+                  }
+                },
+                "required": [
+                  "en",
+                  "fr"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "rationale": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[^\\n]+$"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "en": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\n]+$"
+                  },
+                  "fr": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\n]+$"
+                  }
+                },
+                "required": [
+                  "en",
+                  "fr"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "enforced_by": {
+            "type": "string",
+            "enum": [
+              "compiler",
+              "arch-test",
+              "analyzer",
+              "format",
+              "ef-migrations",
+              "nuget-audit",
+              "commitlint",
+              "gitleaks",
+              "none"
+            ]
+          },
+          "instead": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[^\\n]+$"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "en": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\n]+$"
+                  },
+                  "fr": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\n]+$"
+                  }
+                },
+                "required": [
+                  "en",
+                  "fr"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "statement",
+          "rationale",
+          "enforced_by",
+          "instead"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "env": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]*$"
+          },
+          "example": {
+            "type": "string"
+          },
+          "comment": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[^\\n]+$"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "en": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\n]+$"
+                  },
+                  "fr": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\n]+$"
+                  }
+                },
+                "required": [
+                  "en",
+                  "fr"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "example",
+          "comment"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "dotnet": {
+      "type": "object",
+      "properties": {
+        "projects": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]*$"
+              },
+              "suffix": {
+                "type": "string",
+                "pattern": "^[A-Z][A-Za-z0-9]*$"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "web",
+                  "library",
+                  "test"
+                ]
+              },
+              "references": {
+                "default": [],
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9-]*$"
+                }
+              },
+              "roles": {
+                "default": [],
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "kernel",
+                    "host",
+                    "persistence",
+                    "tests"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "id",
+              "suffix",
+              "kind"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "packages": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "version": {
+                "type": "string",
+                "minLength": 1
+              },
+              "project": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]*$"
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "kernel",
+                  "host",
+                  "persistence",
+                  "tests"
+                ]
+              },
+              "private_assets": {
+                "default": false,
+                "type": "boolean"
+              },
+              "when": {
+                "type": "string",
+                "minLength": 1
+              },
+              "purpose": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\n]+$"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "en": {
+                        "type": "string",
+                        "minLength": 1,
+                        "pattern": "^[^\\n]+$"
+                      },
+                      "fr": {
+                        "type": "string",
+                        "minLength": 1,
+                        "pattern": "^[^\\n]+$"
+                      }
+                    },
+                    "required": [
+                      "en",
+                      "fr"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "version",
+              "purpose"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "properties": {
+          "default": {},
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "app_settings": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9-]*$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "propertyNames": {
+          "type": "string"
+        },
+        "additionalProperties": {}
+      }
+    }
+  },
+  "required": [
+    "meta",
+    "skill"
+  ],
+  "additionalProperties": false
+}

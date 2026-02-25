@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../../schema/aspnet/core.schema.json
+# Langue (CLAUDE.md §4) : identifiants toujours en anglais, commentaires et docs configurables.
+id: language
+skill: workflow
+title:
+  en: Language
+  fr: Langue
+rules:
+  - id: CORE-040
+    statement:
+      en: Code identifiers (namespaces, classes, methods, variables, columns) are always in English.
+      fr: Les identifiants du code (espaces de noms, classes, méthodes, variables, colonnes) sont toujours en anglais.
+    rationale:
+      en: Frameworks, libraries and documentation are in English; mixing languages produces `GetUtilisateurById`.
+      fr: Frameworks, bibliothèques et documentation sont en anglais ; mélanger les langues produit `GetUtilisateurById`.
+    enforced_by: none
+  - id: CORE-041
+    statement:
+      en: Comments and documentation are written in the project's configured language (see the project settings section).
+      fr: Les commentaires et la documentation sont écrits dans la langue configurée du projet (voir la section réglages du projet).
+    rationale:
+      en: The team reads them; the language is a team choice recorded once in `scaffold.yaml`.
+      fr: C'est l'équipe qui les lit ; la langue est un choix d'équipe enregistré une fois dans `scaffold.yaml`.
+    enforced_by: none
+  - id: CORE-042
+    statement:
+      en: Business terms are defined in `docs/glossary.md` and reused verbatim in identifiers, in their English form.
+      fr: Les termes métier sont définis dans `docs/glossary.md` et réutilisés tels quels dans les identifiants, sous leur forme anglaise.
+    rationale:
+      en: One concept, one word; synonyms in code are bugs waiting to happen.
+      fr: Un concept, un mot ; les synonymes dans le code sont des bugs en attente.
+    enforced_by: none

@@ -1,0 +1,8 @@
+<!-- Solution au format slnx : aucun GUID à maintenir, un projet par ligne. -->
+<Solution>
+  <Project Path="src/BackOffice.Domain/BackOffice.Domain.csproj" />
+  <Project Path="src/BackOffice.Application/BackOffice.Application.csproj" />
+  <Project Path="src/BackOffice.Infrastructure/BackOffice.Infrastructure.csproj" />
+  <Project Path="src/BackOffice.Api/BackOffice.Api.csproj" />
+  <Project Path="tests/BackOffice.Tests/BackOffice.Tests.csproj" />
+</Solution>

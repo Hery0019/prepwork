@@ -1,0 +1,6 @@
+<!-- <%= it.d("Solution au format slnx : aucun GUID à maintenir, un projet par ligne.", "Solution in the slnx format: no GUID to maintain, one project per line.") %> -->
+<Solution>
+<% for (const project of it.projects) { -%>
+  <Project Path="<%= project.csproj %>" />
+<% } -%>
+</Solution>

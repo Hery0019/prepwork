@@ -144,3 +144,19 @@ Microsoft déconseille lui-même — et de SQLite en mémoire pour tester du SQL
   silencieusement ignoré et MVC lève une `InvalidOperationException` au premier appel — le squelette
   le documente à l'endroit exact. Et les projets ne sont pas frères, les tests vivant sous `tests/` :
   une `ProjectReference` en `../` ne résout pas, d'où `relativePath`.
+
+**2026-09-04, en mettant `CLAUDE.md` à jour.**
+
+- **Deux identifiants cités par cet ADR ne sont pas ceux du catalogue.** Ils ont été écrits avant le
+  contenu, et le contenu a tranché autrement :
+  - §2 annonce `NET-002` pour « seule la racine de composition nomme un type d'`Infrastructure` » ;
+    la règle porte **`NET-003`**, `NET-002` étant devenue « `Application` ne référence ni
+    `Infrastructure` ni EF Core ». Le découpage en trois règles de compilateur, et non deux, est
+    venu de l'écriture du profil.
+  - §4 annonce `NET-021` pour l'interdiction du provider `InMemory` ; la règle porte **`CORE-021`**
+    et vit dans `content/aspnet/core/testing.yaml`. Elle vaut pour tout profil du pack, donc elle
+    appartient au socle, et un identifiant de socle garde le préfixe `CORE-`. Le préfixe `NET-` est
+    réservé à ce qu'un profil ajoute.
+
+  Le corps de l'ADR n'est pas réécrit : il dit ce qui a été décidé, cet amendement dit où les règles
+  ont atterri. Le catalogue reste la référence pour un identifiant.

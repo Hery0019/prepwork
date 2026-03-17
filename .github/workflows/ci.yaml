@@ -2,12 +2,17 @@
 # génération par pack sur les pull requests. Chaque projet généré est vérifié par son propre
 # outillage : `mvn verify` côté spring-boot, `lint` + `test` + `build` côté react,
 # `format` + `test` + contrôle des migrations côté aspnet.
+#
+# `workflow_dispatch` existe parce que les matrices sont le seul endroit où tournent les niveaux
+# Testcontainers : un poste sans Docker ne peut pas les exécuter. Sans ce déclencheur, un travail
+# poussé directement sur `main` ne les lance jamais.
 name: CI
 
 on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 jobs:
   check:
@@ -23,7 +28,7 @@ jobs:
       - run: pnpm check
 
   spring-boot-matrix:
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
     needs: check
     runs-on: ubuntu-latest
     strategy:
@@ -55,7 +60,7 @@ jobs:
           ./mvnw -B verify
 
   react-matrix:
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
     needs: check
     runs-on: ubuntu-latest
     strategy:
@@ -96,7 +101,7 @@ jobs:
           pnpm build
 
   aspnet-matrix:
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
     needs: check
     runs-on: ubuntu-latest
     strategy:

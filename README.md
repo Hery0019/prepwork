@@ -17,6 +17,18 @@ migrations, NetArchTest, Testcontainers).
 - To verify a generated ASP.NET Core project: the .NET SDK named by its `global.json` (10.0.400 or
   newer in the same band) and Docker for the integration level
 
+Without Docker, a generated project still builds and runs everything that does not touch a real
+database — but the levels that do are then verified nowhere except in CI, so run the matrices there
+before trusting a change to the templates:
+
+```sh
+./mvnw verify -DskipITs -Dtest='!NoteRepositoryTest,!NoteIT' -DfailIfNoSpecifiedTests=false  # Spring Boot
+dotnet test --filter "Category!=Integration"                                                 # ASP.NET Core
+```
+
+Beware of `-Dtest` on the Spring side: it overrides the surefire includes, so `NoteIT` has to be
+named in the exclusion too, otherwise surefire picks it up instead of failsafe.
+
 ## Development
 
 ```sh
@@ -82,10 +94,12 @@ Once built (`pnpm build`), the executable is `node dist/cli/index.js` (or `prepw
 
 Versions are pinned by the tool, never asked: Spring Boot 4.1.1 (`src/packs/spring-boot/context.ts`),
 React 19 with Vite and Tailwind 4 (`src/packs/react/context.ts`), .NET 10 LTS
-(`src/packs/aspnet/context.ts`). On pull requests, the CI of this repository generates every
-combination of each pack and runs the generated project's own toolchain: `mvn verify` for Spring
-Boot, `typecheck` + `lint` + `test` + `build` for React, and `format` + `build` + `test` plus
-`dotnet ef migrations has-pending-model-changes` for ASP.NET Core.
+(`src/packs/aspnet/context.ts`). On pull requests — and on demand, through the `workflow_dispatch`
+trigger — the CI of this repository generates every combination of each pack and runs the generated
+project's own toolchain: `mvn verify` for Spring Boot, `typecheck` + `lint` + `test` + `build` for
+React, and `format` + `build` + `test` plus `dotnet ef migrations has-pending-model-changes` for
+ASP.NET Core. A push straight to `main` runs `pnpm check` only: the matrices, hence every
+Testcontainers level, need a pull request or a manual run.
 
 ## Layout
 

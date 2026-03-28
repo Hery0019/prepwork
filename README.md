@@ -39,17 +39,9 @@ questionnaire is not pictured: it needs a real terminal, which a script cannot p
 - To verify a generated ASP.NET Core project: the .NET SDK named by its `global.json` (10.0.400 or
   newer in the same band) and Docker for the integration level
 
-Without Docker, a generated project still builds and runs everything that does not touch a real
-database — but the levels that do are then verified nowhere except in CI, so run the matrices there
-before trusting a change to the templates:
-
-```sh
-./mvnw verify -DskipITs -Dtest='!NoteRepositoryTest,!NoteIT' -DfailIfNoSpecifiedTests=false  # Spring Boot
-dotnet test --filter "Category!=Integration"                                                 # ASP.NET Core
-```
-
-Beware of `-Dtest` on the Spring side: it overrides the surefire includes, so `NoteIT` has to be
-named in the exclusion too, otherwise surefire picks it up instead of failsafe.
+Without Docker, a generated project still builds and passes everything that does not touch a real
+database; the Testcontainers levels are then verified nowhere but in CI.
+[CONTRIBUTING.md](CONTRIBUTING.md) gives the exact commands and the traps.
 
 ## Development
 
@@ -58,8 +50,14 @@ pnpm install
 pnpm check          # typecheck + lint + content/ consistency check + tests
 pnpm check:content  # content/ consistency only (ids, prefixes, orthogonality, ArchUnit tests)
 pnpm schemas        # regenerates schema/*.schema.json from the Zod schemas
+pnpm shots          # regenerates the README pictures from real command runs
 pnpm dev --help     # runs the CLI from the sources
 ```
+
+**Changing the engine, a renderer or a pack? Read [CONTRIBUTING.md](CONTRIBUTING.md) first.** It
+describes how to verify a generated project with its own toolchain, the round trip that proves
+`check` and `sync` still protect the team's files, what a workstation cannot check at all, and why
+a change to `content/` goes through a pull request rather than straight to `main`.
 
 ## CLI commands
 

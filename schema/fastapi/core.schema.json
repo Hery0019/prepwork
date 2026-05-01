@@ -1,5 +1,5 @@
 {
-  "title": "prepwork core rule set (common)",
+  "title": "prepwork core rule set (fastapi)",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
@@ -15,10 +15,7 @@
         "api",
         "testing",
         "workflow",
-        "security",
-        "ui",
-        "a11y",
-        "data"
+        "security"
       ]
     },
     "title": {
@@ -121,36 +118,16 @@
           "enforced_by": {
             "type": "string",
             "enum": [
-              "archunit",
-              "spotless",
-              "commitlint",
-              "gitleaks",
-              "modulith",
-              "flyway",
-              "liquibase",
-              "dependency-check",
-              "none",
-              "eslint-boundaries",
-              "dependency-cruiser",
-              "typescript",
-              "eslint",
-              "jsx-a11y",
-              "stylelint",
-              "prettier",
-              "vitest",
-              "playwright",
-              "compiler",
-              "arch-test",
-              "analyzer",
-              "format",
-              "ef-migrations",
-              "nuget-audit",
               "import-linter",
               "mypy",
               "ruff",
+              "format",
               "alembic",
               "pip-audit",
-              "pytest"
+              "pytest",
+              "commitlint",
+              "gitleaks",
+              "none"
             ]
           }
         },
@@ -234,36 +211,16 @@
           "enforced_by": {
             "type": "string",
             "enum": [
-              "archunit",
-              "spotless",
-              "commitlint",
-              "gitleaks",
-              "modulith",
-              "flyway",
-              "liquibase",
-              "dependency-check",
-              "none",
-              "eslint-boundaries",
-              "dependency-cruiser",
-              "typescript",
-              "eslint",
-              "jsx-a11y",
-              "stylelint",
-              "prettier",
-              "vitest",
-              "playwright",
-              "compiler",
-              "arch-test",
-              "analyzer",
-              "format",
-              "ef-migrations",
-              "nuget-audit",
               "import-linter",
               "mypy",
               "ruff",
+              "format",
               "alembic",
               "pip-audit",
-              "pytest"
+              "pytest",
+              "commitlint",
+              "gitleaks",
+              "none"
             ]
           },
           "instead": {

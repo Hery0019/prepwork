@@ -1,0 +1,291 @@
+# yaml-language-server: $schema=../../../../schema/fastapi/profile.schema.json
+# Monolithe en couches : un seul paquet installable, quatre sous-paquets. Python n'ayant pas de
+# compilateur, aucune frontière n'est tenue par le build (ADR 0011 §3) : c'est le contrat
+# `import-linter` de `pyproject.toml` qui les tient, et `lint-imports` qui le vérifie.
+meta:
+  id: layered
+  version: 1.0.0
+  rule_prefix: PY
+  summary:
+    en: Layered monolith — api, service, repository, domain, one sub-package each.
+    fr: Monolithe en couches — api, service, repository, domain, un sous-paquet chacun.
+  when_to_use:
+    - en: A single team, a single deployable, a domain that is not yet split.
+      fr: Une seule équipe, un seul déployable, un domaine qui n'est pas encore découpé.
+    - en: The team accepts that the layer boundaries are held by a pipeline step rather than by a build error.
+      fr: L'équipe accepte que les frontières de couches soient tenues par une étape de pipeline plutôt que par une erreur de build.
+    - en: CRUD-heavy APIs whose business rules fit in application services.
+      fr: Des API surtout CRUD dont les règles métier tiennent dans des services applicatifs.
+  when_not_to_use:
+    - en: Several business domains that already have their own lifecycle.
+      fr: Plusieurs domaines métier qui ont déjà leur propre cycle de vie.
+    - en: A team that wants one package per feature rather than one package per layer.
+      fr: Une équipe qui veut un paquet par fonctionnalité plutôt qu'un paquet par couche.
+
+architecture:
+  package_name: '{{packageName}}'
+  layers:
+    - id: domain
+      target: '{{packageName}}.domain'
+      may_depend_on: []
+    - id: repository
+      target: '{{packageName}}.repository'
+      may_depend_on: [domain]
+    - id: service
+      target: '{{packageName}}.service'
+      may_depend_on: [repository, domain]
+    - id: api
+      target: '{{packageName}}.api'
+      may_depend_on: [service, domain]
+
+rules:
+  - id: PY-001
+    statement:
+      en: The layers are ordered `api` above `service` above `repository` above `domain`, and a lower layer never imports a higher one.
+      fr: Les couches sont ordonnées `api` au-dessus de `service`, au-dessus de `repository`, au-dessus de `domain`, et une couche basse n'importe jamais une couche haute.
+    rationale:
+      en: It is the one rule the whole architecture rests on; every other rule of this profile refines it.
+      fr: C'est la règle sur laquelle repose toute l'architecture ; chaque autre règle de ce profil la précise.
+    enforced_by: import-linter
+  - id: PY-002
+    statement:
+      en: '`api` never imports `repository`; it goes through `service`.'
+      fr: "`api` n'importe jamais `repository` ; il passe par `service`."
+    rationale:
+      en: A router that queries directly bypasses the transaction boundary and the business rules with it.
+      fr: Un routeur qui interroge directement contourne la frontière transactionnelle et, avec elle, les règles métier.
+    enforced_by: import-linter
+  - id: PY-003
+    statement:
+      en: '`domain` imports neither `fastapi` nor `starlette` nor the session module; it may declare its SQLAlchemy mapping.'
+      fr: "`domain` n'importe ni `fastapi`, ni `starlette`, ni le module de session ; il peut déclarer son mapping SQLAlchemy."
+    rationale:
+      en: The entity is the shared vocabulary; it must be readable and testable without starting a web application.
+      fr: L'entité est le vocabulaire commun ; elle doit se lire et se tester sans démarrer une application web.
+    enforced_by: import-linter
+  - id: PY-004
+    statement:
+      en: '`service` imports no `fastapi` symbol, `HTTPException` included.'
+      fr: "`service` n'importe aucun symbole `fastapi`, `HTTPException` compris."
+    rationale:
+      en: A use case must be callable from a worker or a command without answering an HTTP status code.
+      fr: Un cas d'usage doit être appelable depuis un worker ou une commande sans répondre un code de statut HTTP.
+    enforced_by: import-linter
+  - id: PY-005
+    statement:
+      en: '`repository` is the only layer that builds SQLAlchemy statements; `select`, `insert`, `update` and `delete` appear nowhere else.'
+      fr: "`repository` est la seule couche qui construit des instructions SQLAlchemy ; `select`, `insert`, `update` et `delete` n'apparaissent nulle part ailleurs."
+    rationale:
+      en: A query written in a service is a query nobody will find when the schema changes.
+      fr: Une requête écrite dans un service est une requête que personne ne retrouvera quand le schéma changera.
+    enforced_by: import-linter
+  - id: PY-006
+    statement:
+      en: The `AsyncSession` is received as a parameter; no module creates its own engine or session at import time.
+      fr: L'`AsyncSession` est reçue en paramètre ; aucun module ne crée son propre moteur ni sa propre session à l'import.
+    rationale:
+      en: A session built at import time cannot be replaced in a test and lives for the whole process.
+      fr: Une session construite à l'import ne peut pas être remplacée dans un test et vit pour tout le processus.
+    enforced_by: pytest
+  - id: PY-007
+    statement:
+      en: The application is assembled in a single module of `api`, which is the only place that imports every layer.
+      fr: L'application est assemblée dans un seul module de `api`, seul endroit qui importe toutes les couches.
+    rationale:
+      en: 'The composition root is the counterpart of the layer contract: one file to read to know what is wired.'
+      fr: 'La racine de composition est la contrepartie du contrat de couches : un seul fichier à lire pour savoir ce qui est câblé.'
+    enforced_by: pytest
+  - id: PY-008
+    statement:
+      en: A `service` function raises a domain exception; it never returns `None` to mean "not found".
+      fr: Une fonction de `service` lève une exception du domaine ; elle ne renvoie jamais `None` pour dire « introuvable ».
+    rationale:
+      en: A `None` that means an error is a 500 waiting for the first caller who forgets to check it.
+      fr: Un `None` qui signifie une erreur est un 500 qui attend le premier appelant qui oublie de le vérifier.
+    enforced_by: mypy
+
+anti_patterns:
+  - id: PY-AP-001
+    statement:
+      en: Importing a repository from a router "just for a read, it is simpler".
+      fr: Importer un dépôt depuis un routeur « juste pour une lecture, c'est plus simple ».
+    rationale:
+      en: The read grows a filter, then a rule, and the service layer no longer describes the application.
+      fr: La lecture gagne un filtre, puis une règle, et la couche service ne décrit plus l'application.
+    enforced_by: none
+    instead:
+      en: A service function, even a three-line one, that the router calls.
+      fr: Une fonction de service, même de trois lignes, que le routeur appelle.
+  - id: PY-AP-002
+    statement:
+      en: Adding the layer to the `import-linter` contract's `ignore_imports` to unblock a build.
+      fr: Ajouter la couche aux `ignore_imports` du contrat `import-linter` pour débloquer un build.
+    rationale:
+      en: The only thing holding the architecture is that contract; an exception in it is the architecture being deleted quietly.
+      fr: La seule chose qui tient l'architecture est ce contrat ; une exception dedans, c'est l'architecture supprimée en silence.
+    enforced_by: none
+    instead:
+      en: Move the code to the layer it belongs to, or open an ADR to change the layers.
+      fr: Déplacer le code dans la couche à laquelle il appartient, ou ouvrir un ADR pour changer les couches.
+  - id: PY-AP-003
+    statement:
+      en: A `service` returning the ORM entity straight to the router because the fields match today.
+      fr: Un `service` qui renvoie l'entité ORM telle quelle au routeur parce que les champs correspondent aujourd'hui.
+    rationale:
+      en: The response then follows the table, and a lazy relationship serialises the whole graph.
+      fr: La réponse suit alors la table, et une relation paresseuse sérialise le graphe entier.
+    enforced_by: none
+    instead:
+      en: A response schema built from the entity in the router (CORE-013).
+      fr: Un schéma de réponse construit depuis l'entité dans le routeur (CORE-013).
+
+dependencies:
+  allowed:
+    - artifact: fastapi
+      purpose:
+        en: The web framework itself, with Pydantic and Starlette that ship with it.
+        fr: Le framework web lui-même, avec Pydantic et Starlette qui viennent avec.
+    - artifact: sqlalchemy
+      purpose:
+        en: The ORM and the statement builder; nothing else touches the database.
+        fr: L'ORM et le constructeur d'instructions ; rien d'autre ne touche la base.
+    - artifact: pydantic-settings
+      purpose:
+        en: Typed settings read from the environment, failing at startup rather than at the first request.
+        fr: Réglages typés lus depuis l'environnement, qui échouent au démarrage plutôt qu'à la première requête.
+  forbidden:
+    - artifact: requests
+      rationale:
+        en: A synchronous HTTP client blocks the event loop; `httpx` is already there for the tests.
+        fr: Un client HTTP synchrone bloque la boucle d'événements ; `httpx` est déjà là pour les tests.
+    - artifact: aiosqlite
+      rationale:
+        en: It only exists to substitute SQLite for the real engine in tests, which CORE-021 forbids.
+        fr: Il n'existe que pour substituer SQLite au vrai moteur dans les tests, ce que CORE-021 interdit.
+  add_procedure:
+    - en: Check the `allowed` and `forbidden` lists above; a forbidden package is never added.
+      fr: Vérifier les listes `allowed` et `forbidden` ci-dessus ; un paquet interdit n'est jamais ajouté.
+    - en: State which layer needs it and why the standard library does not already cover the need, then wait for confirmation.
+      fr: Dire quelle couche en a besoin et pourquoi la bibliothèque standard ne couvre pas déjà ce besoin, puis attendre confirmation.
+    - en: '`uv add <package>` for a runtime dependency, `uv add --dev <package>` for a tooling one; the lockfile is committed with it.'
+      fr: "`uv add <paquet>` pour une dépendance d'exécution, `uv add --dev <paquet>` pour une dépendance d'outillage ; le lockfile est commité avec."
+    - en: Commit the addition on its own (`build(deps)`), separately from the code that uses it.
+      fr: Commiter l'ajout seul (`build(deps)`), séparément du code qui l'utilise.
+
+reference_example:
+  feature:
+    en: Notes — create, read one, list with pagination.
+    fr: Notes — créer, lire une note, lister avec pagination.
+  files:
+    - 'src/{{packageName}}/domain/note.py'
+    - 'src/{{packageName}}/repository/note_repository.py'
+    - 'src/{{packageName}}/service/note_service.py'
+    - 'src/{{packageName}}/api/notes.py'
+    - 'src/{{packageName}}/api/schemas/note.py'
+    - 'tests/unit/test_note_service.py'
+    - 'tests/slice/test_notes_router.py'
+    - 'tests/integration/test_notes_api.py'
+  demonstrates:
+    - PY-001
+    - PY-002
+    - PY-004
+    - PY-005
+    - PY-006
+    - CORE-013
+    - CORE-015
+    - CORE-016
+  tables:
+    - name: note
+      columns:
+        - name: id
+          type: identity
+        - name: title
+          type: string
+          length: 200
+        - name: body
+          type: text
+        - name: created_at
+          type: timestamp
+
+skills:
+  architecture: [PY-001, PY-002, PY-003, PY-004, PY-007, PY-AP-001, PY-AP-002]
+  db: [PY-005, PY-006]
+  api: [PY-008, PY-AP-003]
+  testing: []
+  workflow: []
+  security: []
+
+python:
+  modules:
+    - id: domain
+      path: domain
+      roles: [kernel]
+    - id: repository
+      path: repository
+      roles: [persistence]
+    - id: service
+      path: service
+    - id: api
+      path: api
+      roles: [host]
+  packages:
+    - id: fastapi
+      version: '0.121.0'
+      group: main
+      purpose:
+        en: The web framework; brings Starlette and Pydantic with it.
+        fr: Le framework web ; amène Starlette et Pydantic avec lui.
+    - id: uvicorn
+      version: '0.41.0'
+      group: main
+      purpose:
+        en: The ASGI server that runs the application.
+        fr: Le serveur ASGI qui exécute l'application.
+    - id: pydantic-settings
+      version: '2.13.0'
+      group: main
+      purpose:
+        en: Reads the settings from the environment into a typed class.
+        fr: Lit les réglages depuis l'environnement dans une classe typée.
+    - id: pytest
+      version: '8.4.2'
+      group: dev
+      purpose:
+        en: The test runner of the three levels.
+        fr: Le lanceur de tests des trois niveaux.
+    - id: pytest-asyncio
+      version: '1.3.0'
+      group: dev
+      purpose:
+        en: Runs the async tests of the slice and integration levels.
+        fr: Exécute les tests asynchrones des niveaux slice et intégration.
+    - id: httpx
+      version: '0.29.0'
+      group: dev
+      purpose:
+        en: Calls the application through `ASGITransport`, without a network socket.
+        fr: Appelle l'application via `ASGITransport`, sans socket réseau.
+    - id: mypy
+      version: '1.19.0'
+      group: dev
+      purpose:
+        en: The compiler substitute of the pack (CORE-050).
+        fr: Le substitut de compilateur du pack (CORE-050).
+    - id: ruff
+      version: '0.15.0'
+      group: dev
+      purpose:
+        en: Lint and format in a single tool.
+        fr: Lint et format dans un seul outil.
+    - id: import-linter
+      version: '2.5'
+      group: dev
+      purpose:
+        en: Verifies the layer contract that holds the architecture (PY-001).
+        fr: Vérifie le contrat de couches qui tient l'architecture (PY-001).
+    - id: pip-audit
+      version: '2.9.0'
+      group: dev
+      purpose:
+        en: Fails the pipeline on a dependency with a known vulnerability (CORE-035).
+        fr: Fait échouer le pipeline sur une dépendance porteuse d'une vulnérabilité connue (CORE-035).

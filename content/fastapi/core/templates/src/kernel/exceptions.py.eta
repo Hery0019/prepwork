@@ -1,0 +1,18 @@
+"""<%= it.t("Exceptions du domaine, traduites en réponses par le gestionnaire unique (CORE-011).", "Domain exceptions, translated into responses by the single handler (CORE-011).") %>"""
+
+
+class DomainError(Exception):
+    """<%= it.t("Racine des erreurs métier. Aucune ne connaît de code de statut HTTP (PY-004).", "Root of the business errors. None of them knows an HTTP status code (PY-004).") %>"""
+
+
+class NotFoundError(DomainError):
+    """<%= it.t("Ressource demandée absente : le gestionnaire répond 404.", "Requested resource is missing: the handler answers 404.") %>"""
+
+    def __init__(self, resource: str, identifier: object) -> None:
+        super().__init__(f"{resource} {identifier!r} not found")
+        self.resource = resource
+        self.identifier = identifier
+
+
+class ConflictError(DomainError):
+    """<%= it.t("État incompatible avec l'opération demandée : le gestionnaire répond 409.", "State incompatible with the requested operation: the handler answers 409.") %>"""

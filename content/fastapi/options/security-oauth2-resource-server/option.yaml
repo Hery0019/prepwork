@@ -88,13 +88,13 @@ env:
 python:
   packages:
     - id: pyjwt
-      version: '2.12.0'
+      version: '2.13.0'
       group: main
       purpose:
         en: Verifies the token signature against the provider's JWKS.
         fr: Vérifie la signature du jeton contre le JWKS du fournisseur.
     - id: httpx
-      version: '0.29.0'
+      version: '0.28.1'
       group: main
       purpose:
         en: Fetches the JWKS document; the same client the tests already use.

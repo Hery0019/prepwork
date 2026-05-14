@@ -49,12 +49,12 @@ rules:
     enforced_by: import-linter
   - id: PY-002
     statement:
-      en: '`api` never imports `repository`; it goes through `service`.'
-      fr: "`api` n'importe jamais `repository` ; il passe par `service`."
+      en: Only the composition root imports `repository`; a router goes through `service`.
+      fr: Seule la racine de composition importe `repository` ; un routeur passe par `service`.
     rationale:
-      en: A router that queries directly bypasses the transaction boundary and the business rules with it.
-      fr: Un routeur qui interroge directement contourne la frontière transactionnelle et, avec elle, les règles métier.
-    enforced_by: import-linter
+      en: The root must name the repository to wire the session, but a router that queries directly bypasses the transaction boundary and the business rules with it.
+      fr: La racine doit nommer le dépôt pour câbler la session, mais un routeur qui interroge directement contourne la frontière transactionnelle et, avec elle, les règles métier.
+    enforced_by: pytest
   - id: PY-003
     statement:
       en: '`domain` imports neither `fastapi` nor `starlette` nor the session module; it may declare its SQLAlchemy mapping.'
@@ -230,61 +230,61 @@ python:
       roles: [host]
   packages:
     - id: fastapi
-      version: '0.121.0'
+      version: '0.141.1'
       group: main
       purpose:
         en: The web framework; brings Starlette and Pydantic with it.
         fr: Le framework web ; amène Starlette et Pydantic avec lui.
     - id: uvicorn
-      version: '0.41.0'
+      version: '0.52.4'
       group: main
       purpose:
         en: The ASGI server that runs the application.
         fr: Le serveur ASGI qui exécute l'application.
     - id: pydantic-settings
-      version: '2.13.0'
+      version: '2.15.0'
       group: main
       purpose:
         en: Reads the settings from the environment into a typed class.
         fr: Lit les réglages depuis l'environnement dans une classe typée.
     - id: pytest
-      version: '8.4.2'
+      version: '9.1.1'
       group: dev
       purpose:
         en: The test runner of the three levels.
         fr: Le lanceur de tests des trois niveaux.
     - id: pytest-asyncio
-      version: '1.3.0'
+      version: '1.4.0'
       group: dev
       purpose:
         en: Runs the async tests of the slice and integration levels.
         fr: Exécute les tests asynchrones des niveaux slice et intégration.
     - id: httpx
-      version: '0.29.0'
+      version: '0.28.1'
       group: dev
       purpose:
         en: Calls the application through `ASGITransport`, without a network socket.
         fr: Appelle l'application via `ASGITransport`, sans socket réseau.
     - id: mypy
-      version: '1.19.0'
+      version: '2.3.1'
       group: dev
       purpose:
         en: The compiler substitute of the pack (CORE-050).
         fr: Le substitut de compilateur du pack (CORE-050).
     - id: ruff
-      version: '0.15.0'
+      version: '0.16.6'
       group: dev
       purpose:
         en: Lint and format in a single tool.
         fr: Lint et format dans un seul outil.
     - id: import-linter
-      version: '2.5'
+      version: '2.15'
       group: dev
       purpose:
         en: Verifies the layer contract that holds the architecture (PY-001).
         fr: Vérifie le contrat de couches qui tient l'architecture (PY-001).
     - id: pip-audit
-      version: '2.9.0'
+      version: '2.10.1'
       group: dev
       purpose:
         en: Fails the pipeline on a dependency with a known vulnerability (CORE-035).

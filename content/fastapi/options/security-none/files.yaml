@@ -1,0 +1,8 @@
+# yaml-language-server: $schema=../../../../schema/fastapi/files.schema.json
+# `configure_security` est fourni par les trois options `security-*`, toujours : la racine de
+# composition l'appelle sans savoir laquelle est active.
+files:
+  - source: src/host/security.py.eta
+    target: src/<%= it.moduleFor('host').dir %>/security.py
+  - source: tests/unit/test_security_none.py.eta
+    target: tests/unit/test_security_none.py

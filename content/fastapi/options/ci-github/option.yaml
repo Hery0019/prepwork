@@ -25,7 +25,7 @@ rules:
     rationale:
       en: It is the only thing holding the architecture; a failure must name the layer contract, not "lint failed".
       fr: C'est la seule chose qui tient l'architecture ; un échec doit nommer le contrat de couches, pas « lint failed ».
-    enforced_by: import-linter
+    enforced_by: none
   - id: CIGH-003
     statement:
       en: The Python version comes from `.python-version` and the dependencies from `uv.lock` through `uv sync --frozen`; the workflow never pins another one.

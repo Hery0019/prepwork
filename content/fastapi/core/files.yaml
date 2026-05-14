@@ -1,0 +1,45 @@
+# yaml-language-server: $schema=../../../schema/fastapi/files.schema.json
+# Fichiers générés par le socle, quel que soit le profil. Les cibles passent par les rôles
+# (`host`, `kernel`) : le socle ne connaît pas les couches du profil, seulement ses rôles.
+files:
+  # --- Projet et outillage -------------------------------------------------------------
+  - source: pyproject.toml.eta
+    target: pyproject.toml
+  - source: .python-version.eta
+    target: .python-version
+  - source: .gitignore.eta
+    target: .gitignore
+  - source: .env.example.eta
+    target: .env.example
+    owner: team
+  - source: README.md.eta
+    target: README.md
+    owner: team
+
+  # --- Paquet --------------------------------------------------------------------------
+  - source: src/package__init__.py.eta
+    target: src/<%= it.project.packageName %>/__init__.py
+
+  # --- Hôte ----------------------------------------------------------------------------
+  - source: src/host/app.py.eta
+    target: src/<%= it.moduleFor('host').dir %>/app.py
+  - source: src/host/settings.py.eta
+    target: src/<%= it.moduleFor('host').dir %>/settings.py
+  - source: src/host/errors.py.eta
+    target: src/<%= it.moduleFor('host').dir %>/errors.py
+  - source: src/host/middleware.py.eta
+    target: src/<%= it.moduleFor('host').dir %>/middleware.py
+  - source: src/host/health.py.eta
+    target: src/<%= it.moduleFor('host').dir %>/health.py
+
+  # --- Noyau ---------------------------------------------------------------------------
+  - source: src/kernel/exceptions.py.eta
+    target: src/<%= it.moduleFor('kernel').dir %>/exceptions.py
+  - source: src/kernel/pagination.py.eta
+    target: src/<%= it.moduleFor('kernel').dir %>/pagination.py
+
+  # --- Tests ---------------------------------------------------------------------------
+  - source: tests/conftest.py.eta
+    target: tests/conftest.py
+  - source: tests/unit/test_core_conventions.py.eta
+    target: tests/unit/test_core_conventions.py

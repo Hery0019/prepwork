@@ -109,13 +109,13 @@ env:
 python:
   packages:
     - id: sqlalchemy
-      version: '2.0.44'
+      version: '2.0.52'
       group: main
       purpose:
         en: The ORM and the statement builder.
         fr: L'ORM et le constructeur d'instructions.
     - id: alembic
-      version: '1.17.0'
+      version: '1.19.2'
       group: main
       purpose:
         en: Schema migrations, and `alembic check` in the pipeline.
@@ -128,14 +128,14 @@ python:
         en: PostgreSQL async driver.
         fr: Driver PostgreSQL asynchrone.
     - id: asyncmy
-      version: '0.2.10'
+      version: '0.2.14'
       group: main
       when: stack.database == 'mysql'
       purpose:
         en: MySQL async driver.
         fr: Driver MySQL asynchrone.
     - id: testcontainers
-      version: '4.14.0'
+      version: '4.15.0'
       group: dev
       purpose:
         en: Starts the real database engine for the integration level (CORE-021).

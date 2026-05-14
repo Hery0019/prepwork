@@ -16,16 +16,19 @@ export const fastapiPack: StackPack = {
   catalogSpecValues: { enforcedBy: CATALOG_SPEC.enforcedBy, skills: CATALOG_SPEC.skills },
   testBackedEnforcers: TEST_BACKED_ENFORCERS,
   /**
-   * Deux porteurs de preuve, parce que le pack a deux outils : le contrat `import-linter` vit dans
-   * `pyproject.toml`, les règles que le contrat ne sait pas dire vivent dans `tests/`.
+   * Deux porteurs de preuve, parce que le pack a deux outils : les contrats `import-linter` et les
+   * tests. Les contrats vivent dans un `.importlinter` dédié, et non dans `pyproject.toml`, parce
+   * que la preuve est cherchée **dans les templates de la source qui porte la règle** : les
+   * contrats de couches appartiennent au profil, exactement comme les tests ArchUnit côté Spring,
+   * alors que `pyproject.toml` est un fichier du socle.
    */
-  carriesRuleEvidence: (path) => path.includes('tests/') || path.includes('pyproject.toml'),
+  carriesRuleEvidence: (path) => path.includes('tests/') || path.includes('.importlinter'),
   /**
-   * L'identifiant apparaît tel quel : `name = "PY-001-layers"` dans le contrat, et
-   * `test_PY_006_session_is_injected` dans un test — pytest n'acceptant pas le tiret dans un nom
-   * de fonction, la forme soulignée est aussi reconnue.
+   * Un nom de fonction Python n'accepte pas le tiret : l'identifiant apparaît souligné, aussi bien
+   * dans un test (`test_PY_006_...`) que dans le nom d'un contrat `import-linter` (`PY_001 layers`).
+   * Même convention que NetArchTest côté `aspnet`.
    */
-  ruleEvidenceToken: (id) => id,
+  ruleEvidenceToken: (id) => id.replace(/-/g, '_'),
   /**
    * `persistence` et `security` viennent d'identifiants d'options, mais ce sont aussi des mots du
    * domaine qu'un profil emploie légitimement. Le vrai garde-fou de l'orthogonalité reste

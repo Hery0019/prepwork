@@ -18,8 +18,17 @@ from <%= it.moduleFor('host').module %>.settings import Settings
 from <%= it.moduleFor('kernel').module %>.exceptions import ConflictError, NotFoundError
 
 
+def _settings(app_env: str = "local") -> Settings:
+    return Settings(
+        app_env=app_env,  # type: ignore[arg-type]
+<% if (it.stack.database !== 'none') { -%>
+        database_url="<%= it.stack.database === 'mysql' ? 'mysql+asyncmy' : 'postgresql+asyncpg' %>://test:test@localhost/test",
+<% } -%>
+    )
+
+
 def _app() -> FastAPI:
-    return create_app(Settings(app_env="local"))
+    return create_app(_settings())
 
 
 @pytest.mark.unit
@@ -81,8 +90,8 @@ def test_CORE_023_every_test_carries_exactly_one_level_marker() -> None:
 
 @pytest.mark.unit
 def test_CORE_036_docs_are_disabled_in_production() -> None:
-    assert create_app(Settings(app_env="production")).docs_url is None
-    assert create_app(Settings(app_env="local")).docs_url == "/docs"
+    assert create_app(_settings("production")).docs_url is None
+    assert create_app(_settings("local")).docs_url == "/docs"
 
 
 @pytest.mark.unit

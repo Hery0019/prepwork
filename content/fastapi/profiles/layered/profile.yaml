@@ -73,8 +73,8 @@ rules:
     enforced_by: import-linter
   - id: PY-005
     statement:
-      en: '`repository` is the only layer that builds SQLAlchemy statements; `select`, `insert`, `update` and `delete` appear nowhere else.'
-      fr: "`repository` est la seule couche qui construit des instructions SQLAlchemy ; `select`, `insert`, `update` et `delete` n'apparaissent nulle part ailleurs."
+      en: '`service` never names a SQLAlchemy symbol; statements are built in `repository`, and only the composition root names the session type.'
+      fr: '`service` ne nomme jamais un symbole SQLAlchemy ; les instructions se construisent dans `repository`, et seule la racine de composition nomme le type de session.'
     rationale:
       en: A query written in a service is a query nobody will find when the schema changes.
       fr: Une requête écrite dans un service est une requête que personne ne retrouvera quand le schéma changera.

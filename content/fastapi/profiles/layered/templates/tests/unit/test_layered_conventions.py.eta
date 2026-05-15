@@ -19,10 +19,10 @@ def _module_sources() -> list[tuple[Path, str]]:
 @pytest.mark.unit
 def test_PY_002_only_the_composition_root_imports_the_repository() -> None:
     """<%= it.t("La racine nomme le dépôt pour câbler la session ; les autres non.", "The root names the repository to wire the session; the others do not.") %>"""
-    # <%= it.t("Deux modules forment la racine : `app.py` assemble le framework,", "Two modules form the root: `app.py` assembles the framework,") %>
-    # <%= it.t("`dependencies.py` câble les fonctionnalités. C'est l'équivalent", "`dependencies.py` wires the features. It is the counterpart of") %>
-    # <%= it.t("de `Program` et des méthodes `Add*` côté ASP.NET.", "`Program` and the `Add*` methods on the ASP.NET side.") %>
-    composition_root = {"app.py", "dependencies.py"}
+    # <%= it.t("Trois modules forment la racine : `app.py` assemble le framework,", "Three modules form the root: `app.py` assembles the framework,") %>
+    # <%= it.t("`routes.py` monte et câble, `dependencies.py` fournit. C'est le", "`routes.py` mounts and wires, `dependencies.py` supplies. It is the") %>
+    # <%= it.t("pendant de `Program` et des méthodes `Add*` côté ASP.NET.", "counterpart of `Program` and the `Add*` methods on the ASP.NET side.") %>
+    composition_root = {"app.py", "routes.py", "dependencies.py"}
     repository = "<%= it.project.packageName %>.repository"
     offenders = [
         path
@@ -36,9 +36,12 @@ def test_PY_002_only_the_composition_root_imports_the_repository() -> None:
 def test_PY_006_no_module_builds_an_engine_at_import_time() -> None:
     """<%= it.t("Un moteur construit à l'import ne peut pas être remplacé dans un test.", "An engine built at import time cannot be replaced in a test.") %>"""
     builders = {"create_async_engine", "async_sessionmaker", "sessionmaker"}
+    # <%= it.t("Le niveau module seulement : dans une fonction, construire un moteur est légitime.", "Module level only: inside a function, building an engine is legitimate.") %>
+    definitions = (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
     for path, source in _module_sources():
-        tree = ast.parse(source)
-        for node in tree.body:  # <%= it.t("uniquement le niveau module : dans une fonction, c'est légitime.", "module level only: inside a function it is legitimate.") %>
+        for node in ast.parse(source).body:
+            if isinstance(node, definitions):
+                continue
             for called in ast.walk(node):
                 if isinstance(called, ast.Call) and isinstance(called.func, ast.Name):
                     assert called.func.id not in builders, f"{path} (PY-006)"

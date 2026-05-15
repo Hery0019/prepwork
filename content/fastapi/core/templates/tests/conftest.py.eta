@@ -12,7 +12,13 @@ from <%= it.moduleFor('host').module %>.settings import Settings
 @pytest.fixture
 def settings() -> Settings:
     """<%= it.t("Réglages de test : jamais ceux du `.env` du poste.", "Test settings: never the ones from the machine's `.env`.") %>"""
-    return Settings(app_env="local", cors_origins=["http://localhost:5173"]<% if (it.stack.database !== 'none') { %>, database_url="postgresql+asyncpg://test:test@localhost:5432/test"<% } %>)
+    return Settings(
+        app_env="local",
+        cors_origins=["http://localhost:5173"],
+<% if (it.stack.database !== 'none') { -%>
+        database_url="<%= it.stack.database === 'mysql' ? 'mysql+asyncmy' : 'postgresql+asyncpg' %>://test:test@localhost/test",
+<% } -%>
+    )
 
 
 @pytest.fixture

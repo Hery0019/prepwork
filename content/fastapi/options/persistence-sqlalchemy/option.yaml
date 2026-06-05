@@ -100,9 +100,18 @@ anti_patterns:
     instead:
       en: A schema revision, then a separate data revision that can be rerun.
       fr: Une révision de schéma, puis une révision de données séparée, rejouable.
+# Le pilote fait partie de l'URL : une variable par base, sans quoi `.env.example` annoncerait
+# un pilote que le projet n'installe pas.
 env:
   - name: DATABASE_URL
     example: postgresql+asyncpg://app:app@localhost:5432/app
+    when: stack.database == 'postgresql'
+    comment:
+      en: Async SQLAlchemy URL; the driver is part of it and must match the chosen database.
+      fr: URL SQLAlchemy asynchrone ; le driver en fait partie et doit correspondre à la base choisie.
+  - name: DATABASE_URL
+    example: mysql+asyncmy://app:app@localhost:3306/app
+    when: stack.database == 'mysql'
     comment:
       en: Async SQLAlchemy URL; the driver is part of it and must match the chosen database.
       fr: URL SQLAlchemy asynchrone ; le driver en fait partie et doit correspondre à la base choisie.

@@ -142,3 +142,44 @@ jobs:
             --project src/Matrix.Generated.Infrastructure \
             --startup-project src/Matrix.Generated.Api \
             --no-build --configuration Release
+
+  fastapi-matrix:
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+    needs: check
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [layered]
+        security: [none, session, oauth2-resource-server]
+        database: [postgresql, mysql, none]
+    name: fastapi ${{ matrix.profile }} / ${{ matrix.security }} / ${{ matrix.database }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Generate
+        run: pnpm matrix fastapi out ${{ matrix.profile }} ${{ matrix.security }} ${{ matrix.database }}
+      # La version de Python vient du `.python-version` que le projet généré porte lui-même : la CI
+      # de prepwork vérifie donc aussi que ce fichier désigne une version installable.
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: Verify the generated project
+        working-directory: out
+        run: |
+          cp .env.example .env
+          # Un projet fraîchement généré n'a pas encore de lockfile : la première
+          # résolution le crée. Les versions, elles, sont exactes dans pyproject.toml.
+          uv sync
+          uv run ruff format --check .
+          uv run ruff check .
+          uv run mypy
+          uv run lint-imports
+          # `alembic check` exige une base vivante, contrairement à son équivalent EF : il tourne
+          # donc dans le niveau intégration, sur la base Testcontainers déjà montée.
+          uv run pytest

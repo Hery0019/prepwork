@@ -1,0 +1,63 @@
+# Généré par prepwork. Les dépendances viennent du catalogue : `uv add` puis reporter dans la source.
+[project]
+name = "back-office"
+version = "0.1.0"
+description = "Back office"
+requires-python = "==3.13.*"
+dependencies = [
+    "alembic==1.19.2",
+    "asyncmy==0.2.14",
+    "fastapi==0.141.1",
+    "httpx==0.28.1",
+    "pydantic-settings==2.15.0",
+    "pyjwt==2.13.0",
+    "sqlalchemy==2.0.52",
+    "uvicorn==0.52.4",
+]
+
+[dependency-groups]
+dev = [
+    "import-linter==2.15",
+    "mypy==2.3.1",
+    "pip-audit==2.10.1",
+    "pytest==9.1.1",
+    "pytest-asyncio==1.4.0",
+    "ruff==0.16.6",
+    "testcontainers==4.15.0",
+]
+
+# Layout `src/` : les tests importent le paquet installé, pas le répertoire courant.
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/back_office"]
+
+# CORE-053 : le lint et le format sont un seul outil, et la configuration vit ici.
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "B", "A", "C4", "SIM", "RUF"]
+
+# Un test porte l'identifiant de la règle qu'il prouve — `test_CORE_011_...` —, et c'est cette convention que le contrôle de cohérence du catalogue vérifie. Les majuscules d'un identifiant priment donc sur N802, et seulement dans les tests.
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["N802"]
+
+# CORE-050 : le typage strict tient ici le rôle du compilateur. Aucun module n'est exclu (CORE-AP-051).
+[tool.mypy]
+python_version = "3.13"
+strict = true
+files = ["src", "tests"]
+
+# CORE-023 : un marqueur de niveau par test ; `-m "not integration"` est ce qui tourne sans Docker.
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+markers = [
+    "unit: niveau unitaire, sans application",
+    "slice: niveau slice, application avec la couche service doublée",
+    "integration: niveau intégration, Testcontainers sur la vraie base",
+]

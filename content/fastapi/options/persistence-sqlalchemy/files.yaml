@@ -17,3 +17,5 @@ files:
     target: tests/integration/__init__.py
   - source: tests/integration/conftest.py.eta
     target: tests/integration/conftest.py
+  - source: tests/integration/test_migrations.py.eta
+    target: tests/integration/test_migrations.py

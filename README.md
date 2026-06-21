@@ -4,10 +4,11 @@ A TypeScript CLI that prepares the ground for a project before the first line of
 ready-to-use skeleton, a reference example, tooled architecture rules, and the specifications
 (`CLAUDE.md` + skills) for the AI agent that will code inside that skeleton.
 
-Three stacks are shipped, each as a content pack on a stack-agnostic core (ADR 0007):
+Four stacks are shipped, each as a content pack on a stack-agnostic core (ADR 0007):
 **Spring Boot** (Maven, ArchUnit, Testcontainers), **React** (Vite or Next.js, Tailwind tokens,
-ESLint boundaries, Testing Library, Playwright) and **ASP.NET Core** (one project per layer, EF Core
-migrations, NetArchTest, Testcontainers).
+ESLint boundaries, Testing Library, Playwright), **ASP.NET Core** (one project per layer, EF Core
+migrations, NetArchTest, Testcontainers) and **FastAPI** (uv, SQLAlchemy and Alembic, strict mypy,
+import-linter contracts, Testcontainers).
 
 ## Prerequisites
 
@@ -16,6 +17,8 @@ migrations, NetArchTest, Testcontainers).
 - To verify a generated React project: nothing more than Node and pnpm
 - To verify a generated ASP.NET Core project: the .NET SDK named by its `global.json` (10.0.400 or
   newer in the same band) and Docker for the integration level
+- To verify a generated FastAPI project: `uv` alone — it downloads the Python named by
+  `.python-version` — plus Docker for the integration level
 
 Without Docker, a generated project still builds and runs everything that does not touch a real
 database — but the levels that do are then verified nowhere except in CI, so run the matrices there
@@ -24,6 +27,7 @@ before trusting a change to the templates:
 ```sh
 ./mvnw verify -DskipITs -Dtest='!NoteRepositoryTest,!NoteIT' -DfailIfNoSpecifiedTests=false  # Spring Boot
 dotnet test --filter "Category!=Integration"                                                 # ASP.NET Core
+uv run pytest -m "not integration"                                                           # FastAPI
 ```
 
 Beware of `-Dtest` on the Spring side: it overrides the surefire includes, so `NoteIT` has to be

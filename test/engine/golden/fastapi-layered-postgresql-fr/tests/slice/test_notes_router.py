@@ -5,10 +5,6 @@ from httpx import AsyncClient
 
 BASE = "/api/v1/notes"
 
-pytestmark = pytest.mark.skip(
-    reason="Le double de la couche service s'écrit avec la première fonctionnalité."
-)
-
 
 @pytest.mark.slice
 async def test_create_valid_body_returns_201_and_the_note(client: AsyncClient) -> None:

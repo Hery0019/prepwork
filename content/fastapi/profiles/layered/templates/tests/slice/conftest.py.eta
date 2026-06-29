@@ -1,0 +1,28 @@
+"""<%= it.t("Niveau slice : l'application entière, la couche service doublée (CORE-020).", "Slice level: the whole application, the service layer doubled (CORE-020).") %>
+
+<%= it.t("Le doublage passe par `dependency_overrides`, le point d'injection de FastAPI :", "The double goes through `dependency_overrides`, FastAPI's injection point:") %>
+<%= it.t("le routeur, la validation et les gestionnaires d'erreurs sont bien les vrais.", "the router, the validation and the error handlers are the real ones.") %>
+"""
+
+from collections.abc import AsyncIterator
+
+import pytest
+from httpx import ASGITransport, AsyncClient
+
+from <%= it.moduleFor('host').module %>.app import create_app
+from <%= it.moduleFor('host').module %>.dependencies import get_note_service
+from <%= it.moduleFor('host').module %>.settings import Settings
+from <%= it.modules.find((m) => m.id === 'service').module %>.note_service import NoteService
+from tests.support import FakeNoteRepository
+
+
+@pytest.fixture
+async def client(settings: Settings) -> AsyncIterator[AsyncClient]:
+    """<%= it.t("Remplace la fixture du socle : même nom, dépendances doublées.", "Replaces the core fixture: the same name, with doubled dependencies.") %>"""
+    app = create_app(settings)
+    service = NoteService(FakeNoteRepository())
+    app.dependency_overrides[get_note_service] = lambda: service
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://testserver") as http:
+        yield http
+    app.dependency_overrides.clear()

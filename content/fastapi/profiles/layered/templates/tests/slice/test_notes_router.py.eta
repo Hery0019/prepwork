@@ -4,12 +4,6 @@ import pytest
 from httpx import AsyncClient
 
 BASE = "/api/v1/notes"
-<% if (it.stack.database !== 'none') { -%>
-
-pytestmark = pytest.mark.skip(
-    reason="<%= it.t("Le double de la couche service s'écrit avec la première fonctionnalité.", "The service layer double is written with the first real feature.") %>"
-)
-<% } -%>
 
 
 @pytest.mark.slice

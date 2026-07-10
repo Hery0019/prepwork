@@ -30,7 +30,7 @@ Monolithe en couches — api, service, repository, domain, un sous-paquet chacun
 |---|---|---|
 | `id` | identity | non |
 | `title` | string(200) | non |
-| `body` | text | non |
+| `body` | text | oui |
 | `created_at` | timestamp | non |
 
 ### Ajouter une migration

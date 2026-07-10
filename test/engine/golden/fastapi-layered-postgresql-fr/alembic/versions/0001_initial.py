@@ -32,7 +32,7 @@ def upgrade() -> None:
         sa.Column(
             "body",
             sa.Text(),
-            nullable=False,
+            nullable=True,
         ),
         sa.Column(
             "created_at",

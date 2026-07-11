@@ -156,6 +156,39 @@ describe('prepwork CLI', () => {
     expect(h.fs.snapshot()['/work/out/scaffold.yaml']).toContain('target: react');
   });
 
+  it('init --stack fastapi generates the pack whose boundaries no compiler holds', async () => {
+    const answers: ScriptedAnswer[] = [
+      'pay-flow',
+      'pay_flow',
+      'Flux de paiement',
+      'postgresql',
+      // le profil est annoncé, pas demandé : le pack n'en a qu'un
+      'none',
+      true,
+      'github',
+      'Hery',
+      'hery@example.com',
+      true,
+      'fr',
+      'fr',
+      true,
+    ];
+    const h = await harness({}, answers);
+
+    const code = await runCli(h.deps, ['init', 'out', '--stack', 'fastapi', '--no-git']);
+
+    expect(code).toBe(0);
+    const files = Object.keys(h.fs.snapshot());
+    expect(files).toContain('/work/out/pyproject.toml');
+    expect(files).toContain('/work/out/src/pay_flow/api/app.py');
+    // Le contrat de couches est la seule chose qui tient les frontières : sans ce fichier,
+    // le projet généré n'a plus d'architecture, seulement une convention de nommage.
+    expect(files).toContain('/work/out/.importlinter');
+    expect(files).toContain('/work/out/alembic/versions/0001_initial.py');
+    expect(files).not.toContain('/work/out/pom.xml');
+    expect(h.fs.snapshot()['/work/out/scaffold.yaml']).toContain('target: fastapi');
+  });
+
   it('check exits 1 when the project is out of date and 0 when clean; sync repairs', async () => {
     const h = await harness({ '/work/s.yaml': serializeScaffold(SAMPLE_SCAFFOLD) });
     await runCli(h.deps, ['init', 'p', '--scaffold', 's.yaml', '--no-git']);

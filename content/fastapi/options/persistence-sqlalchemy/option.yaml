@@ -143,6 +143,13 @@ python:
       purpose:
         en: MySQL async driver.
         fr: Driver MySQL asynchrone.
+    - id: cryptography
+      version: '50.0.1'
+      group: main
+      when: stack.database == 'mysql'
+      purpose:
+        en: MySQL 8 authenticates with caching_sha2_password, which the driver cannot honour without it.
+        fr: MySQL 8 authentifie en caching_sha2_password, que le driver ne sait pas honorer sans lui.
     - id: testcontainers
       version: '4.15.0'
       group: dev

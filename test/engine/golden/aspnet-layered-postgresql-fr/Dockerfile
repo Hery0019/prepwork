@@ -15,6 +15,13 @@ RUN dotnet publish src/Solumada.PayFlow.Api/Solumada.PayFlow.Api.csproj --config
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS runtime
 WORKDIR /app
+
+# Les images Alpine n'embarquent pas ICU et forcent le mode invariant, que `Directory.Build.props` désactive. Sans ces paquets, l'application ne démarre pas. La variante `alpine-extra` n'existe que pour `runtime-deps`, donc pour un déploiement autonome : ici il faut les installer.
+RUN apk add --no-cache icu-data-full icu-libs
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false \
+    LC_ALL=en_US.UTF-8 \
+    LANG=en_US.UTF-8
+
 COPY --from=build /app .
 
 # DOCK-002 : l'utilisateur `app` est fourni par l'image de base.

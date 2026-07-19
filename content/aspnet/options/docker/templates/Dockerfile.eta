@@ -18,6 +18,13 @@ RUN dotnet publish <%= host.csproj %> --configuration Release --no-restore --out
 
 FROM mcr.microsoft.com/dotnet/aspnet:<%= version %>-alpine AS runtime
 WORKDIR /app
+
+# <%= it.d("Les images Alpine n'embarquent pas ICU et forcent le mode invariant, que `Directory.Build.props` désactive. Sans ces paquets, l'application ne démarre pas. La variante `alpine-extra` n'existe que pour `runtime-deps`, donc pour un déploiement autonome : ici il faut les installer.", "Alpine images carry no ICU and force invariant mode, which `Directory.Build.props` turns off. Without these packages the application does not start. The `alpine-extra` variant exists only for `runtime-deps`, hence for a self-contained deployment: here they must be installed.") %>
+RUN apk add --no-cache icu-data-full icu-libs
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false \
+    LC_ALL=en_US.UTF-8 \
+    LANG=en_US.UTF-8
+
 COPY --from=build /app .
 
 # <%= it.d("DOCK-002 : l'utilisateur `app` est fourni par l'image de base.", "DOCK-002: the `app` user ships with the base image.") %>

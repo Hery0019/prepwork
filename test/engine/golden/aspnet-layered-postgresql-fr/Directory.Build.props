@@ -5,7 +5,8 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <InvariantGlobalization>true</InvariantGlobalization>
+    <!-- Le mode invariant est incompatible avec Microsoft.Data.SqlClient, qui lève `Globalization Invariant Mode is not supported` à l'ouverture de la connexion. Il resterait donc à `true` pour PostgreSQL et à `false` pour SQL Server : deux projets par ailleurs identiques n'auraient pas la même comparaison de chaînes. Uniformément `false`, et l'image Docker fournit ICU. -->
+    <InvariantGlobalization>false</InvariantGlobalization>
     <!-- CORE-035 : un avertissement d'audit NuGet fait échouer le build. -->
     <NuGetAudit>true</NuGetAudit>
     <NuGetAuditMode>all</NuGetAuditMode>

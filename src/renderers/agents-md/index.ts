@@ -138,7 +138,10 @@ function profileContext(input: RenderInput, s: Strings, language: Language): str
 }
 
 function envTable(input: RenderInput, s: Strings, language: Language): string | undefined {
-  const env = input.options.flatMap((option) => option.env);
+  // Nom final via le pack : le préfixe des variables publiques dépend du profil.
+  const env = input.options.flatMap((option) =>
+    option.env.map((v) => ({ ...v, name: input.pack.presentation.envName(input.scaffold, v) })),
+  );
   if (env.length === 0) return undefined;
   return blocks(
     `#### ${s.envVars}`,

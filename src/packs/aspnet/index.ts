@@ -28,6 +28,8 @@ export const aspnetPack: StackPack = {
    * de l'orthogonalité reste l'interdiction faite aux templates d'un profil de lire `it.options`.
    */
   genericOptionWords: ['security', 'ci', 'none', 'git', 'jwt', 'bearer', 'persistence', 'ef'],
+  /** Aucune variable n'est réécrite : côté serveur, un nom d'option est le nom final. */
+  reservedEnvPrefixes: [],
 
   contributionConditions(source) {
     const packages = dotnetOf(source)?.packages ?? [];

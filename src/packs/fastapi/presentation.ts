@@ -243,10 +243,12 @@ export const fastapiPresentation: PackPresentation = {
     return value.split(PACKAGE_NAME_PLACEHOLDER).join(packageName);
   },
 
-  // Une API n'a pas de bundle client, donc pas de variable publique : le nom déclaré par une
-  // option est le nom final. Quand la branche `fix/react-public-env-prefix` sera fusionnée, ce
-  // pack devra déclarer `envName` comme l'identité et `reservedEnvPrefixes` vide (ADR 0011 §8) —
-  // et le fait que ce soit l'identité est en soi un contrôle que le point d'extension généralise.
+  /**
+   * Une API n'a pas de bundle client, donc pas de variable publique : le nom déclaré par une
+   * option est le nom final. Ce point d'extension est ici l'identité, et c'est en soi un contrôle
+   * qu'il généralise (ADR 0011 §8).
+   */
+  envName: (_scaffold, variable) => variable.name,
 
   /**
    * Skill `architecture` : le contrat `import-linter`, que le tableau des couches ne montre pas —

@@ -160,3 +160,28 @@ Microsoft déconseille lui-même — et de SQLite en mémoire pour tester du SQL
 
   Le corps de l'ADR n'est pas réécrit : il dit ce qui a été décidé, cet amendement dit où les règles
   ont atterri. Le catalogue reste la référence pour un identifiant.
+
+**2026-09-09, en diagnostiquant les trois jobs `sqlserver` rouges de la première matrice.**
+
+- **Le pack ne peut pas tourner en mode invariant de globalisation.** `Directory.Build.props`
+  portait `InvariantGlobalization=true`, un défaut hérité des modèles ASP.NET conteneurisés, jamais
+  examiné. Npgsql s'en accommode ; `Microsoft.Data.SqlClient` non, et lève
+  `NotSupportedException: Globalization Invariant Mode is not supported` **à l'ouverture de la
+  connexion**. D'où trois jobs rouges sur le seul axe SQL Server, et seulement au niveau
+  `Integration` — le seul qui ouvre vraiment une connexion.
+
+- **Le réglage est uniformément `false`, pas conditionné à la base.** Le conditionner aurait été
+  possible — `it.msbuild` existe pour ça — mais deux projets par ailleurs identiques n'auraient plus
+  comparé les chaînes de la même façon selon la base choisie. Une différence de culture silencieuse
+  entre deux générations du même profil est un piège, pas une optimisation.
+
+- **Conséquence sur l'option `docker` :** les images `-alpine` n'embarquent pas ICU et forcent le
+  mode invariant. Le `Dockerfile` installe donc `icu-data-full` et `icu-libs` et pose
+  `DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false`. La variante `alpine-extra`, qui les fournirait,
+  n'existe que pour les images `runtime-deps`, donc pour un déploiement autonome que le pack ne
+  produit pas.
+
+- **La cause a été prouvée hors Docker**, en ouvrant une `SqlConnection` vers un hôte inexistant :
+  en mode invariant l'exception est `NotSupportedException` avant toute tentative de connexion,
+  après le correctif c'est une `SqlException` réseau. Le niveau `Integration` lui-même reste
+  invérifiable sur un poste sans Docker — seule la matrice le couvre.

@@ -1,0 +1,3 @@
+<%
+// Sous-paquet du profil. Vide : les imports publics sont explicites, module par module.
+-%>

@@ -334,6 +334,10 @@
               }
             ]
           },
+          "when": {
+            "type": "string",
+            "minLength": 1
+          },
           "public": {
             "default": false,
             "type": "boolean"

@@ -1,0 +1,101 @@
+"""<%= it.t("Règles du socle que le contrat `import-linter` ne sait pas dire.", "Core rules that the `import-linter` contract cannot express.") %>
+
+<%= it.t("Chaque test porte l'identifiant de la règle qu'il prouve, comme un", "Each test carries the identifier of the rule it proves, like an") %>
+<%= it.t("test ArchUnit côté Spring : c'est cette convention que le contrôle", "ArchUnit test on the Spring side: this is the convention the") %>
+<%= it.t("de cohérence du catalogue vérifie.", "catalogue consistency check verifies.") %>
+"""
+
+import inspect
+
+import pytest
+from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
+from fastapi.routing import APIRoute
+
+from <%= it.moduleFor('host').module %>.app import create_app
+from <%= it.moduleFor('host').module %>.errors import PROBLEM_MEDIA_TYPE
+from <%= it.moduleFor('host').module %>.settings import Settings
+from <%= it.moduleFor('kernel').module %>.exceptions import ConflictError, NotFoundError
+
+
+def _settings(app_env: str = "local") -> Settings:
+    return Settings(
+        app_env=app_env,  # type: ignore[arg-type]
+<% for (const variable of it.env) { -%>
+        <%= variable.name.toLowerCase() %>="<%= variable.example || 'test' %>",
+<% } -%>
+    )
+
+
+def _app() -> FastAPI:
+    return create_app(_settings())
+
+
+@pytest.mark.unit
+def test_CORE_011_exception_handlers_are_registered_once() -> None:
+    handled = set(_app().exception_handlers)
+    assert {RequestValidationError, NotFoundError, ConflictError, Exception} <= handled
+
+
+@pytest.mark.unit
+def test_CORE_012_validation_errors_are_problem_documents() -> None:
+    assert PROBLEM_MEDIA_TYPE == "application/problem+json"
+    assert RequestValidationError in _app().exception_handlers
+
+
+@pytest.mark.unit
+def test_CORE_013_no_route_exposes_a_domain_entity() -> None:
+    """<%= it.t("Formulé sur le module et non sur l'ORM : la règle vaut aussi sans base.", "Stated on the module, not the ORM: the rule holds without a database too.") %>"""
+    domain = "<%= it.moduleFor('kernel').module %>"
+    for route in _app().routes:
+        if not isinstance(route, APIRoute):
+            continue
+        annotations = [route.response_model, *inspect.signature(route.endpoint).parameters.values()]
+        for annotation in annotations:
+            candidate = getattr(annotation, "annotation", annotation)
+            module = getattr(candidate, "__module__", "")
+            assert not module.startswith(domain), f"{route.path} <%= it.t("expose le domaine", "exposes the domain") %>"
+
+
+@pytest.mark.unit
+def test_CORE_016_every_route_is_versioned() -> None:
+    for route in _app().routes:
+        if isinstance(route, APIRoute):
+            assert route.path.startswith("/api/v1/"), route.path
+
+
+@pytest.mark.unit
+def test_CORE_021_the_test_database_is_not_sqlite() -> None:
+    """<%= it.t("L'équivalent Python de l'interdiction de H2 : SQLite ne connaît pas le SQL de production.", "The Python counterpart of the H2 ban: SQLite does not know the production SQL.") %>"""
+    import os
+
+    url = os.environ.get("DATABASE_URL", "")
+    assert "sqlite" not in url, "CORE-021"
+
+
+@pytest.mark.unit
+def test_CORE_023_every_test_carries_exactly_one_level_marker() -> None:
+    """<%= it.t("Vérifié par la configuration pytest et le hook ci-dessous ; ce test documente la règle.", "Enforced by the pytest configuration and the hook below; this test documents the rule.") %>"""
+    from pathlib import Path
+
+    levels = {"unit", "slice", "integration"}
+    for path in Path("tests").rglob("test_*.py"):
+        source = path.read_text(encoding="utf-8")
+        for marker in levels:
+            if f"@pytest.mark.{marker}" in source:
+                break
+        else:  # pragma: no cover
+            raise AssertionError(f"{path} : aucun marqueur de niveau (CORE-023)")
+
+
+@pytest.mark.unit
+def test_CORE_036_docs_are_disabled_in_production() -> None:
+    assert create_app(_settings("production")).docs_url is None
+    assert create_app(_settings("local")).docs_url == "/docs"
+
+
+@pytest.mark.unit
+def test_CORE_037_the_500_handler_hides_the_traceback() -> None:
+    source = inspect.getsource(_app().exception_handlers[Exception])
+    assert "logger.exception" in source
+    assert "traceback" not in source.lower().split("logger.exception")[1]

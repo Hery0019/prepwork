@@ -1,0 +1,13 @@
+"""<%= it.t("Aucune authentification (SECN-001).", "No authentication (SECN-001).") %>
+
+<%= it.t("Cette version ne fait rien, et c'est le point : la racine de", "This version does nothing, and that is the point: the composition") %>
+<%= it.t("composition appelle toujours `configure_security`, quelle que", "root always calls `configure_security`, whatever the option is.") %>
+<%= it.t("soit l'option. Aucun des deux axes ne nomme l'autre.", "Neither of the two axes names the other.") %>
+"""
+
+from fastapi import FastAPI
+
+
+def configure_security(app: FastAPI) -> None:
+    """<%= it.t("Rien à configurer (SECN-002 avant toute exposition publique).", "Nothing to configure (SECN-002 before any public exposure).") %>"""
+    return None

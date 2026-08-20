@@ -1,0 +1,15 @@
+# ADR 0003 — <%= it.d('Base de données', 'Database') %>
+
+<%= it.d('Date', 'Date') %> : <%= it.today %> · <%= it.d('Statut', 'Status') %> : <%= it.d('acceptée', 'accepted') %>
+
+## <%= it.d('Contexte', 'Context') %>
+
+<%= it.d("Choix fait au questionnaire prepwork, avant la première ligne de code métier.", 'Choice made in the prepwork questionnaire, before the first line of business code.') %>
+
+## <%= it.d('Décision', 'Decision') %>
+
+**<%= it.stack.database === 'none' ? it.d('aucune', 'none') : it.stack.database %>**
+
+## <%= it.d('Conséquences', 'Consequences') %>
+
+<%= it.d("Sans base, le dépôt de l'exemple de référence est une liste en mémoire ; le passage à une base est un changement de `scaffold.yaml`, suivi de `prepwork sync`.", "With no database, the reference example's repository is an in-memory list; moving to a database is a change in `scaffold.yaml`, followed by `prepwork sync`.") %>

@@ -1,0 +1,8 @@
+<% if (it.stack.database !== 'none') { -%>
+"""<%= it.t("Importer le domaine peuple `Base.metadata` : Alembic voit toutes les tables.", "Importing the domain populates `Base.metadata`: Alembic sees every table.") %>"""
+
+from <%= it.moduleFor('kernel').module %>.base import Base
+from <%= it.moduleFor('kernel').module %>.note import Note
+
+__all__ = ["Base", "Note"]
+<% } -%>

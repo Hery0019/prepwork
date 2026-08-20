@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import type { CommandRunner } from '../../src/cli/git.js';
 import { runCli, type CliDeps } from '../../src/cli/program.js';
 import type { Reporter } from '../../src/cli/report.js';
@@ -66,6 +66,12 @@ async function harness(
 }
 
 describe('prepwork CLI', () => {
+  // Lire tout `content/` est du montage, pas du test : sans cette ligne la facture tombe sur le
+  // premier cas, qui frôle alors le délai d'attente dès qu'un pack gagne des templates.
+  beforeAll(async () => {
+    await shippedContent();
+  });
+
   it('init --scaffold generates the project, then configures git', async () => {
     const h = await harness({ '/work/s.yaml': serializeScaffold(SAMPLE_SCAFFOLD) });
     const code = await runCli(h.deps, ['init', 'pay-flow', '--scaffold', 's.yaml']);
@@ -148,6 +154,39 @@ describe('prepwork CLI', () => {
     expect(files).toContain('/work/out/src/shared/styles/tokens.css');
     expect(files).not.toContain('/work/out/pom.xml');
     expect(h.fs.snapshot()['/work/out/scaffold.yaml']).toContain('target: react');
+  });
+
+  it('init --stack fastapi generates the pack whose boundaries no compiler holds', async () => {
+    const answers: ScriptedAnswer[] = [
+      'pay-flow',
+      'pay_flow',
+      'Flux de paiement',
+      'postgresql',
+      // le profil est annoncé, pas demandé : le pack n'en a qu'un
+      'none',
+      true,
+      'github',
+      'Hery',
+      'hery@example.com',
+      true,
+      'fr',
+      'fr',
+      true,
+    ];
+    const h = await harness({}, answers);
+
+    const code = await runCli(h.deps, ['init', 'out', '--stack', 'fastapi', '--no-git']);
+
+    expect(code).toBe(0);
+    const files = Object.keys(h.fs.snapshot());
+    expect(files).toContain('/work/out/pyproject.toml');
+    expect(files).toContain('/work/out/src/pay_flow/api/app.py');
+    // Le contrat de couches est la seule chose qui tient les frontières : sans ce fichier,
+    // le projet généré n'a plus d'architecture, seulement une convention de nommage.
+    expect(files).toContain('/work/out/.importlinter');
+    expect(files).toContain('/work/out/alembic/versions/0001_initial.py');
+    expect(files).not.toContain('/work/out/pom.xml');
+    expect(h.fs.snapshot()['/work/out/scaffold.yaml']).toContain('target: fastapi');
   });
 
   it('check exits 1 when the project is out of date and 0 when clean; sync repairs', async () => {

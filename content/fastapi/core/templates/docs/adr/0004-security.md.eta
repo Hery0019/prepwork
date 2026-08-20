@@ -1,0 +1,15 @@
+# ADR 0004 — <%= it.d('Sécurité', 'Security') %>
+
+<%= it.d('Date', 'Date') %> : <%= it.today %> · <%= it.d('Statut', 'Status') %> : <%= it.d('acceptée', 'accepted') %>
+
+## <%= it.d('Contexte', 'Context') %>
+
+<%= it.d("Choix fait au questionnaire prepwork, avant la première ligne de code métier.", 'Choice made in the prepwork questionnaire, before the first line of business code.') %>
+
+## <%= it.d('Décision', 'Decision') %>
+
+**<%= it.options.security %>**
+
+## <%= it.d('Conséquences', 'Consequences') %>
+
+<%= it.d("Le contrat `configure_security` est appelé par la racine de composition quelle que soit l'option, y compris `none` dont la version ne fait rien. Changer d'option est un changement de `scaffold.yaml`, pas un montage à la main.", "The `configure_security` contract is called by the composition root whatever the option, `none` included, whose version does nothing. Switching option is a change in `scaffold.yaml`, not a hand-made setup.") %>

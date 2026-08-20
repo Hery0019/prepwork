@@ -1,0 +1,40 @@
+<% const withDb = it.stack.database !== 'none'; -%>
+"""<%= it.t("L'entité `Note` : le vocabulaire partagé par toutes les couches.", "The `Note` entity: the vocabulary shared by every layer.") %>
+
+<%= it.t("PY-003 : ce module n'importe ni `fastapi` ni `starlette`. Il se lit", "PY-003: this module imports neither `fastapi` nor `starlette`. It") %>
+<%= it.t("et se teste sans démarrer d'application web.", "reads and tests without starting a web application.") %>
+"""
+<% if (withDb) { -%>
+
+from datetime import datetime
+
+from sqlalchemy import DateTime, Integer, String, Text
+from sqlalchemy.orm import Mapped, mapped_column
+
+from <%= it.moduleFor('kernel').module %>.base import Base
+
+
+class Note(Base):
+    """<%= it.t("Une note. Le mapping vit ici : c'est du domaine, pas de l'infrastructure.", "A note. The mapping lives here: it is domain, not infrastructure.") %>"""
+
+    __tablename__ = "note"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    body: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+<% } else { -%>
+
+from dataclasses import dataclass, field
+from datetime import datetime
+
+
+@dataclass(slots=True)
+class Note:
+    """<%= it.t("Une note. Sans base de données, l'entité est une simple structure.", "A note. With no database, the entity is a plain structure.") %>"""
+
+    title: str
+    created_at: datetime
+    body: str | None = None
+    id: int | None = field(default=None)
+<% } -%>

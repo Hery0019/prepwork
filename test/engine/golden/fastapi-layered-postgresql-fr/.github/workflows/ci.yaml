@@ -1,0 +1,32 @@
+# CIGH-001 : la CI exécute exactement ce qu'un développeur peut lancer localement.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # CIGH-003 : la version vient de `.python-version` et les dépendances de `uv.lock`.
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --frozen
+      - run: uv run ruff format --check .
+      - run: uv run ruff check .
+      - run: uv run mypy
+      # CIGH-002 : étape à part entière — un échec doit nommer le contrat de couches.
+      - name: Layer contract
+        run: uv run lint-imports
+      - run: uv run pip-audit
+      # Les niveaux slice et unitaire ne demandent pas Docker ; le niveau intégration si.
+      - run: uv run pytest
+      # PERS-001 : la migration livrée doit décrire exactement le modèle.
+      - name: Migration matches the model
+        run: uv run alembic check
+        env:
+          DATABASE_URL: postgresql+asyncpg://app:app@localhost/app

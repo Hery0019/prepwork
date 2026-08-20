@@ -1,0 +1,22 @@
+# ADR 0002 — <%= it.d("Python, uv et l'outillage", 'Python, uv and the tooling') %>
+
+<%= it.d('Date', 'Date') %> : <%= it.today %> · <%= it.d('Statut', 'Status') %> : <%= it.d('acceptée', 'accepted') %>
+
+## <%= it.d('Contexte', 'Context') %>
+
+<%= it.d("Épinglé par prepwork, jamais demandé au questionnaire : la version de Python, le gestionnaire de paquets et les outils de qualité. Un projet qui les choisit lui-même les choisit une fois, puis dérive.", 'Pinned by prepwork, never asked in the questionnaire: the Python version, the package manager and the quality tools. A project that picks them itself picks them once, then drifts.') %>
+
+## <%= it.d('Décision', 'Decision') %>
+
+| <%= it.d('Élément', 'Item') %> | <%= it.d('Valeur', 'Value') %> |
+| --- | --- |
+| Python | `<%= it.versions.python %>`, <%= it.d("écrite dans `.python-version`", 'written in `.python-version`') %> |
+| <%= it.d('Paquets', 'Packages') %> | `uv`, <%= it.d("avec `uv.lock` commité et `uv sync --frozen` en CI", 'with `uv.lock` committed and `uv sync --frozen` in CI') %> |
+| Lint / format | `ruff` |
+| <%= it.d('Typage', 'Typing') %> | `mypy --strict` |
+| <%= it.d('Frontières', 'Boundaries') %> | `import-linter`, <%= it.d("contrats dans `.importlinter`", 'contracts in `.importlinter`') %> |
+| <%= it.d('Tests', 'Tests') %> | `pytest`, <%= it.d('trois niveaux séparés par un marqueur', 'three levels separated by a marker') %> |
+
+## <%= it.d('Conséquences', 'Consequences') %>
+
+<%= it.d("Python n'a pas de compilateur : `mypy` est la seule étape qui refuse du code avant son exécution, et `.importlinter` la seule chose qui tient les frontières de couches. Retirer l'un ou l'autre du pipeline ne casse rien immédiatement — c'est précisément ce qui rend la suppression dangereuse.", 'Python has no compiler: `mypy` is the only step that refuses code before it runs, and `.importlinter` is the only thing holding the layer boundaries. Removing either from the pipeline breaks nothing immediately — which is exactly what makes the removal dangerous.') %>

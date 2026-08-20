@@ -1,0 +1,28 @@
+# <%= it.d("DOCK-001 : deux étapes. L'image finale ne porte ni uv, ni les sources, ni les dépendances de développement.", "DOCK-001: two stages. The final image carries neither uv, nor the sources, nor the dev dependencies.") %>
+FROM ghcr.io/astral-sh/uv:<%= it.versions.uv %>-python<%= it.versions.python %>-bookworm-slim AS build
+WORKDIR /app
+
+ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
+
+# <%= it.d("DOCK-003 : le manifeste et le lockfile d'abord, pour que l'installation se mette en cache.", "DOCK-003: the manifest and the lockfile first, so the install layer is cached.") %>
+COPY pyproject.toml uv.lock ./
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-dev --no-install-project
+
+COPY src/ src/
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-dev
+
+FROM python:<%= it.versions.pythonImage %> AS runtime
+WORKDIR /app
+
+# <%= it.d("DOCK-002 : l'application ne tourne pas en root.", "DOCK-002: the application does not run as root.") %>
+RUN useradd --create-home --uid 10001 app
+COPY --from=build --chown=app:app /app/.venv /app/.venv
+COPY --from=build --chown=app:app /app/src /app/src
+USER app
+
+ENV PATH="/app/.venv/bin:$PATH"
+EXPOSE 8000
+
+CMD ["uvicorn", "<%= it.moduleFor('host').module %>.app:create_app", "--factory", "--host", "0.0.0.0", "--port", "8000"]

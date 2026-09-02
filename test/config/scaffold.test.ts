@@ -1,23 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { parseScaffold, readScaffold, serializeScaffold } from '../../src/config/io.js';
-import {
-  basePackageProblem,
-  resolveOptionIds,
-  ScaffoldSchema,
-  type Scaffold,
-} from '../../src/config/schema.js';
+import { basePackageProblem, resolveOptionIds, ScaffoldSchema } from '../../src/config/schema.js';
 import type { PrepworkError } from '../../src/errors.js';
 import { createMemoryFileSystem } from '../../src/fs/memory.js';
-
-export const SAMPLE_SCAFFOLD: Scaffold = {
-  scaffold_version: '1.0.0',
-  project: { name: 'pay-flow', base_package: 'mg.solumada.payflow', description: 'Payment flows' },
-  stack: { java: 21, database: 'postgresql', migrations: 'flyway' },
-  profile: 'layered',
-  options: { security: 'none', docker: true, ci: 'github' },
-  git: { author: { name: 'Hery', email: 'hery@example.com' }, agent_trailer: true },
-  language: { comments: 'fr', docs: 'fr' },
-};
+import { SAMPLE_SCAFFOLD } from '../helpers/fixtures.js';
 
 describe('scaffold.yaml schema', () => {
   it('accepts the documented example', () => {

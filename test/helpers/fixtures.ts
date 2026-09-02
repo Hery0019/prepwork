@@ -1,6 +1,7 @@
 // Fabriques de contenu minimal valide pour tester le catalogue sans toucher à content/.
 import { stringify } from 'yaml';
 import type { OptionInput, ProfileInput } from '../../src/catalog/schema.js';
+import type { Scaffold } from '../../src/config/schema.js';
 
 export const CONTENT_ROOT = 'content';
 
@@ -77,3 +78,14 @@ export function catalogFiles(fixture: CatalogFixture = {}): Record<string, strin
   }
   return files;
 }
+
+/** Scaffold de référence (exemple de CLAUDE.md §5). */
+export const SAMPLE_SCAFFOLD: Scaffold = {
+  scaffold_version: '1.0.0',
+  project: { name: 'pay-flow', base_package: 'mg.solumada.payflow', description: 'Payment flows' },
+  stack: { java: 21, database: 'postgresql', migrations: 'flyway' },
+  profile: 'layered',
+  options: { security: 'none', docker: true, ci: 'github' },
+  git: { author: { name: 'Hery', email: 'hery@example.com' }, agent_trailer: true },
+  language: { comments: 'fr', docs: 'fr' },
+};

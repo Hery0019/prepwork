@@ -41,8 +41,8 @@
 
         <!-- Pagination without a database (Pageable, Page) -->
         <dependency>
-            <groupId>org.springframework.data</groupId>
-            <artifactId>spring-data-commons</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-data-commons</artifactId>
         </dependency>
 
         <!-- Tests: unit, slices, integration -->

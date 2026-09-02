@@ -1,14 +1,18 @@
 package com.example.inventory.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import com.example.inventory.domain.Note;
 import com.example.inventory.domain.NoteNotFoundException;
 import com.example.inventory.service.NoteService;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -50,6 +54,18 @@ class NoteControllerTest {
                 .extractingPath("$.detail")
                 .asString()
                 .contains("42");
+    }
+
+    @Test
+    void list_defaultPage_returnsPaginatedShape() {
+        when(service.list(any()))
+                .thenReturn(new PageImpl<>(List.of(new Note("First", null)), PageRequest.of(0, 20), 1));
+
+        assertThat(mvc.get().uri("/api/v1/notes"))
+                .hasStatusOk()
+                .bodyJson()
+                .extractingPath("$.totalElements")
+                .isEqualTo(1);
     }
 
     @Test

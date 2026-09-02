@@ -15,6 +15,17 @@ export interface GeneratedFile {
   source: string;
 }
 
+const CRLF_EXTENSIONS = ['.cmd', '.bat'];
+
+/** Post-traitements par type de fichier : imports Java triés, scripts Windows en CRLF. */
+function finalizeContent(path: string, rendered: string): string {
+  if (path.endsWith('.java')) return sortJavaImports(rendered);
+  if (CRLF_EXTENSIONS.some((ext) => path.endsWith(ext))) {
+    return rendered.split('\r\n').join('\n').split('\n').join('\r\n');
+  }
+  return rendered;
+}
+
 export function renderProject(
   composition: Composition,
   renderer: Renderer,
@@ -28,7 +39,7 @@ export function renderProject(
     );
     return {
       path: planned.target,
-      content: planned.target.endsWith('.java') ? sortJavaImports(rendered) : rendered,
+      content: finalizeContent(planned.target, rendered),
       owner: planned.owner,
       source: planned.source,
     };

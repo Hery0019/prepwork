@@ -87,8 +87,8 @@
 
         <!-- <%= it.t('Pagination sans base de données (Pageable, Page)', 'Pagination without a database (Pageable, Page)') %> -->
         <dependency>
-            <groupId>org.springframework.data</groupId>
-            <artifactId>spring-data-commons</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-data-commons</artifactId>
         </dependency>
 <% } -%>
 <% const contributed = it.maven.dependencies.filter((d) => (d.scope ?? 'compile') !== 'test'); -%>

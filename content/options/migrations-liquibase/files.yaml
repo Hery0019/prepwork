@@ -1,0 +1,6 @@
+# yaml-language-server: $schema=../../../schema/files.schema.json
+files:
+  - source: src/main/resources/db/changelog/db.changelog-master.yaml.eta
+    target: src/main/resources/db/changelog/db.changelog-master.yaml
+  - source: src/main/resources/db/changelog/changes/0001-initial-schema.yaml.eta
+    target: src/main/resources/db/changelog/changes/0001-initial-schema.yaml

@@ -1,0 +1,6 @@
+package <%= it.project.basePackage %>.note;
+
+/**
+ * <%= it.t("Événement de domaine (MOD-006) : un fait passé, immuable, publié par la façade du module.", "Domain event (MOD-006): an immutable past fact, published by the module facade.") %>
+ */
+public record NoteCreated(Long noteId, String title) {}

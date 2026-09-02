@@ -1,0 +1,49 @@
+package <%= it.project.basePackage %>.note;
+
+import <%= it.project.basePackage %>.note.internal.Note;
+import <%= it.project.basePackage %>.note.internal.NoteRepository;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+<% if (it.stack.database !== 'none') { -%>
+import org.springframework.transaction.annotation.Transactional;
+<% } -%>
+
+/**
+ * <%= it.t("Façade publique du module `note` (MOD-001) : unité de travail (MOD-008), renvoie des records publics (MOD-007) et publie les événements du module (MOD-005).", "Public facade of the `note` module (MOD-001): unit of work (MOD-008), returns public records (MOD-007) and publishes the module's events (MOD-005).") %>
+ */
+@Service
+public class NoteService {
+
+    private final NoteRepository repository;
+    private final ApplicationEventPublisher events;
+
+    public NoteService(NoteRepository repository, ApplicationEventPublisher events) {
+        this.repository = repository;
+        this.events = events;
+    }
+
+<% if (it.stack.database !== 'none') { -%>
+    @Transactional
+<% } -%>
+    public NoteDetails create(String title, String content) {
+        Note note = repository.save(new Note(title, content));
+        events.publishEvent(new NoteCreated(note.getId(), note.getTitle()));
+        return NoteDetails.from(note);
+    }
+
+<% if (it.stack.database !== 'none') { -%>
+    @Transactional(readOnly = true)
+<% } -%>
+    public NoteDetails get(Long id) {
+        return repository.findById(id).map(NoteDetails::from).orElseThrow(() -> new NoteNotFoundException(id));
+    }
+
+<% if (it.stack.database !== 'none') { -%>
+    @Transactional(readOnly = true)
+<% } -%>
+    public Page<NoteDetails> list(Pageable pageable) {
+        return repository.findAll(pageable).map(NoteDetails::from);
+    }
+}

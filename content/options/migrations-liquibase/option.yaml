@@ -1,0 +1,79 @@
+# yaml-language-server: $schema=../../../schema/option.schema.json
+# Migrations de schéma avec Liquibase (changelogs YAML). Exclusive avec migrations-flyway.
+meta:
+  id: migrations-liquibase
+  version: 1.0.0
+  rule_prefix: LIQ
+  group: migrations
+  summary:
+    en: Schema migrations as Liquibase YAML changesets applied at startup.
+    fr: Migrations de schéma en changesets YAML Liquibase, appliqués au démarrage.
+skill: db
+rules:
+  - id: LIQ-001
+    statement:
+      en: Every schema change is a new changeset file under `src/main/resources/db/changelog/changes/`, picked up by the master changelog; an applied changeset is never edited.
+      fr: Tout changement de schéma est un nouveau fichier de changeset sous `src/main/resources/db/changelog/changes/`, pris en compte par le changelog maître ; un changeset appliqué n'est jamais modifié.
+    rationale:
+      en: Liquibase stores a checksum per changeset and refuses to start when one changed.
+      fr: Liquibase enregistre une empreinte par changeset et refuse de démarrer si l'un a changé.
+    enforced_by: liquibase
+  - id: LIQ-002
+    statement:
+      en: A changeset has an `id`, an `author` and one logical change; several unrelated changes are several changesets.
+      fr: Un changeset a un `id`, un `author` et un seul changement logique ; plusieurs changements sans lien sont plusieurs changesets.
+    rationale:
+      en: A failed changeset must be diagnosable and rerunnable on its own.
+      fr: Un changeset en échec doit pouvoir être diagnostiqué et rejoué seul.
+    enforced_by: none
+  - id: LIQ-003
+    statement:
+      en: Hibernate validates the schema against the entities at startup (`ddl-auto` is `validate`) and never generates it.
+      fr: Hibernate valide le schéma par rapport aux entités au démarrage (`ddl-auto` vaut `validate`) et ne le génère jamais.
+    rationale:
+      en: A mismatch between entity and table is a startup failure, not a runtime surprise.
+      fr: Un écart entre entité et table est un échec au démarrage, pas une surprise en production.
+    enforced_by: none
+  - id: LIQ-004
+    statement:
+      en: Changeset files are named with a zero-padded sequence number and an English description (`0002-add-note-archived-flag.yaml`).
+      fr: Les fichiers de changeset sont nommés avec un numéro de séquence complété de zéros et une description en anglais (`0002-add-note-archived-flag.yaml`).
+    rationale:
+      en: The master changelog includes the directory in name order; the list must read as the schema history.
+      fr: Le changelog maître inclut le répertoire par ordre de nom ; la liste doit se lire comme l'historique du schéma.
+    enforced_by: none
+anti_patterns:
+  - id: LIQ-AP-001
+    statement:
+      en: Editing an already applied changeset to "fix" it.
+      fr: Modifier un changeset déjà appliqué pour le « corriger ».
+    rationale:
+      en: Every environment that applied it fails at the next startup with a checksum mismatch.
+      fr: Chaque environnement qui l'a appliqué échoue au prochain démarrage sur une empreinte différente.
+    enforced_by: liquibase
+    instead:
+      en: A new changeset that alters what the previous one created.
+      fr: Un nouveau changeset qui modifie ce que le précédent a créé.
+  - id: LIQ-AP-002
+    statement:
+      en: 'Setting `spring.jpa.hibernate.ddl-auto` to `update` to avoid writing a changeset.'
+      fr: "Passer `spring.jpa.hibernate.ddl-auto` à `update` pour éviter d'écrire un changeset."
+    rationale:
+      en: The schema drifts between environments and nobody can rebuild it from the repository.
+      fr: Le schéma diverge entre environnements et plus personne ne peut le reconstruire depuis le dépôt.
+    enforced_by: none
+    instead:
+      en: Write the changeset; it takes two minutes and is reviewed like code.
+      fr: Écrire le changeset ; cela prend deux minutes et se relit comme du code.
+maven:
+  dependencies:
+    - group_id: org.springframework.boot
+      artifact_id: spring-boot-starter-liquibase
+      purpose:
+        en: Runs the changelogs at application startup.
+        fr: Exécute les changelogs au démarrage de l'application.
+application_properties:
+  main:
+    spring:
+      liquibase:
+        change-log: classpath:db/changelog/db.changelog-master.yaml

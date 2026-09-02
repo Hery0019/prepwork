@@ -1,0 +1,4 @@
+# <%= it.t("Changelog maître : inclut tous les changesets de `changes/` par ordre de nom (LIQ-004).", 'Master changelog: includes every changeset under `changes/` in name order (LIQ-004).') %>
+databaseChangeLog:
+  - includeAll:
+      path: db/changelog/changes/

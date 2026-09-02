@@ -1,0 +1,57 @@
+package org.acme.shop.common;
+
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+
+/**
+ * Session authentication (SECS-001): everything is protected except health and info; CSRF enabled with a client-readable cookie (SECS-003). Disabled by `app.security.enabled=false` (tests, SECS-004).
+ */
+@Configuration(proxyBeanMethods = false)
+@EnableWebSecurity
+@EnableConfigurationProperties(SecurityProperties.class)
+@ConditionalOnProperty(name = "app.security.enabled", havingValue = "true", matchIfMissing = true)
+public class SecurityConfig {
+
+    @Bean
+    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http.authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/actuator/health", "/actuator/info")
+                        .permitAll()
+                        .anyRequest()
+                        .authenticated())
+                .httpBasic(Customizer.withDefaults())
+                .formLogin(Customizer.withDefaults())
+                .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()));
+        return http.build();
+    }
+
+    @Bean
+    PasswordEncoder passwordEncoder() {
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+    }
+
+    /** In-memory store to get started (SECS-002): replace with a real store before any multi-user use. */
+    @Bean
+    UserDetailsService userDetailsService(SecurityProperties properties, PasswordEncoder encoder) {
+        UserDetails admin = User.withUsername(properties.admin().username())
+                .password(encoder.encode(properties.admin().password()))
+                .roles("ADMIN")
+                .build();
+        return new InMemoryUserDetailsManager(admin);
+    }
+}

@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=../../../schema/option.schema.json
+# Pipeline GitLab CI. Exclusive avec ci-github.
+meta:
+  id: ci-gitlab
+  version: 1.0.0
+  rule_prefix: CIGL
+  group: ci
+  summary:
+    en: GitLab CI pipeline running the Maven verification (Docker-in-Docker for Testcontainers) and a dependency vulnerability scan.
+    fr: Pipeline GitLab CI qui exécute la vérification Maven (Docker-in-Docker pour Testcontainers) et l'analyse des dépendances vulnérables.
+skill: workflow
+rules:
+  - id: CIGL-001
+    statement:
+      en: Every push to the default branch and every merge request runs `./mvnw verify` on GitLab CI, with a Docker-in-Docker service for Testcontainers.
+      fr: Chaque push sur la branche par défaut et chaque merge request exécute `./mvnw verify` sur GitLab CI, avec un service Docker-in-Docker pour Testcontainers.
+    rationale:
+      en: A branch that does not pass `verify` is not mergeable, whatever the reviewer says.
+      fr: Une branche qui ne passe pas `verify` n'est pas fusionnable, quoi qu'en dise le relecteur.
+    enforced_by: none
+  - id: CIGL-002
+    statement:
+      en: The pipeline scans dependencies for known vulnerabilities and fails on critical or high findings.
+      fr: Le pipeline analyse les dépendances pour les vulnérabilités connues et échoue sur une criticité haute ou critique.
+    rationale:
+      en: Vulnerable dependencies are caught at the merge request, not at the audit.
+      fr: Les dépendances vulnérables sont attrapées à la merge request, pas à l'audit.
+    enforced_by: dependency-check
+  - id: CIGL-003
+    statement:
+      en: The pipeline only calls commands a developer can run locally (`./mvnw ...`); no logic lives only in `.gitlab-ci.yml`.
+      fr: Le pipeline n'appelle que des commandes qu'un développeur peut lancer en local (`./mvnw ...`) ; aucune logique ne vit uniquement dans `.gitlab-ci.yml`.
+    rationale:
+      en: A failure in CI must be reproducible on a machine in one command.
+      fr: Un échec en CI doit être reproductible sur un poste en une commande.
+    enforced_by: none

@@ -1,0 +1,119 @@
+# yaml-language-server: $schema=../../../schema/option.schema.json
+# Resource server OAuth2 (jetons JWT d'un fournisseur d'identité externe). Exclusive avec les autres security-*.
+meta:
+  id: security-oauth2-resource-server
+  version: 1.0.0
+  rule_prefix: SECO
+  group: security
+  summary:
+    en: Stateless OAuth2 resource server validating JWT access tokens issued by an external identity provider.
+    fr: Resource server OAuth2 sans état, validant des jetons d'accès JWT émis par un fournisseur d'identité externe.
+skill: security
+rules:
+  - id: SECO-001
+    statement:
+      en: Every request outside `/actuator/health` and `/actuator/info` carries a valid bearer JWT; the rule lives in `SecurityConfig` only.
+      fr: Toute requête hors `/actuator/health` et `/actuator/info` porte un JWT bearer valide ; la règle vit uniquement dans `SecurityConfig`.
+    rationale:
+      en: One place to read to know what is public.
+      fr: Un seul endroit à lire pour savoir ce qui est public.
+    enforced_by: none
+  - id: SECO-002
+    statement:
+      en: The issuer is configured through `OAUTH2_ISSUER_URI` only; the application never holds a client secret or signs tokens.
+      fr: L'issuer est configuré uniquement via `OAUTH2_ISSUER_URI` ; l'application ne détient jamais de secret client et ne signe aucun jeton.
+    rationale:
+      en: A resource server verifies; issuing tokens is the identity provider's job.
+      fr: Un resource server vérifie ; émettre des jetons est le travail du fournisseur d'identité.
+    enforced_by: gitleaks
+  - id: SECO-003
+    statement:
+      en: Sessions are stateless (`SessionCreationPolicy.STATELESS`) and CSRF is disabled, because no cookie authenticates a request.
+      fr: Les sessions sont sans état (`SessionCreationPolicy.STATELESS`) et CSRF est désactivé, parce qu'aucun cookie n'authentifie une requête.
+    rationale:
+      en: CSRF only matters when the browser attaches credentials automatically.
+      fr: CSRF n'a de sens que lorsque le navigateur attache les identifiants automatiquement.
+    enforced_by: none
+  - id: SECO-004
+    statement:
+      en: Tests run with `app.security.enabled=false` and Spring Security auto-configuration excluded; authorization itself is verified by `SecurityConfigTest` with a mock JWT.
+      fr: Les tests tournent avec `app.security.enabled=false` et l'auto-configuration Spring Security exclue ; l'autorisation elle-même est vérifiée par `SecurityConfigTest` avec un JWT simulé.
+    rationale:
+      en: Business tests must not depend on an identity provider; security rules get their own test.
+      fr: Les tests métier ne doivent pas dépendre d'un fournisseur d'identité ; les règles de sécurité ont leur propre test.
+    enforced_by: none
+  - id: SECO-005
+    statement:
+      en: Authorities come from token claims through a single `JwtAuthenticationConverter`; no role is hard-coded per user in the application.
+      fr: Les autorisations viennent des claims du jeton via un unique `JwtAuthenticationConverter` ; aucun rôle n'est codé en dur par utilisateur dans l'application.
+    rationale:
+      en: Roles managed in the identity provider stay consistent across services.
+      fr: Les rôles gérés dans le fournisseur d'identité restent cohérents entre services.
+    enforced_by: none
+anti_patterns:
+  - id: SECO-AP-001
+    statement:
+      en: Decoding the JWT by hand in a filter to "read the user".
+      fr: Décoder le JWT à la main dans un filtre pour « lire l'utilisateur ».
+    rationale:
+      en: Signature, expiry and issuer checks get skipped one by one.
+      fr: Signature, expiration et issuer finissent par être ignorés un à un.
+    enforced_by: none
+    instead:
+      en: Inject `@AuthenticationPrincipal Jwt jwt` or read the `Authentication` from the security context.
+      fr: Injecter `@AuthenticationPrincipal Jwt jwt` ou lire l'`Authentication` du contexte de sécurité.
+  - id: SECO-AP-002
+    statement:
+      en: Pointing `OAUTH2_ISSUER_URI` at a fake issuer in tests instead of using the mock JWT support.
+      fr: Faire pointer `OAUTH2_ISSUER_URI` vers un faux issuer dans les tests au lieu du support de JWT simulé.
+    rationale:
+      en: Tests then depend on the network and on a server nobody maintains.
+      fr: Les tests dépendent alors du réseau et d'un serveur que personne ne maintient.
+    enforced_by: none
+    instead:
+      en: '`jwt()` from `spring-security-test` in `SecurityConfigTest`, security excluded elsewhere.'
+      fr: '`jwt()` de `spring-security-test` dans `SecurityConfigTest`, sécurité exclue ailleurs.'
+maven:
+  dependencies:
+    - group_id: org.springframework.boot
+      artifact_id: spring-boot-starter-security-oauth2-resource-server
+      purpose:
+        en: JWT validation against the issuer's keys.
+        fr: Validation des JWT contre les clés de l'issuer.
+    - group_id: org.springframework.boot
+      artifact_id: spring-boot-starter-security-test
+      scope: test
+      purpose:
+        en: Mock JWT support for MockMvc.
+        fr: Support de JWT simulé pour MockMvc.
+application_properties:
+  main:
+    app:
+      security:
+        enabled: true
+    spring:
+      security:
+        oauth2:
+          resourceserver:
+            jwt:
+              issuer-uri: ${OAUTH2_ISSUER_URI:https://issuer.example.com/realms/app}
+  test:
+    app:
+      security:
+        enabled: false
+    spring:
+      autoconfigure:
+        exclude:
+          - org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration
+          - org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration
+          - org.springframework.boot.security.autoconfigure.web.servlet.SecurityFilterAutoConfiguration
+          - org.springframework.boot.security.autoconfigure.web.servlet.ServletWebSecurityAutoConfiguration
+          - org.springframework.boot.security.autoconfigure.actuate.web.servlet.ManagementWebSecurityAutoConfiguration
+          - org.springframework.boot.security.oauth2.server.resource.autoconfigure.OAuth2ResourceServerAutoConfiguration
+          - org.springframework.boot.security.oauth2.server.resource.autoconfigure.web.OAuth2ResourceServerWebSecurityAutoConfiguration
+env:
+  - name: OAUTH2_ISSUER_URI
+    example: https://issuer.example.com/realms/app
+    comment:
+      en: Issuer URL of the identity provider; its discovery document provides the signing keys.
+      fr: URL de l'issuer du fournisseur d'identité ; son document de découverte fournit les clés de signature.

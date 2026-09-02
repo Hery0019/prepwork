@@ -1,0 +1,29 @@
+# Initial schema: tables of the reference example. Never edit an applied changeset (LIQ-001).
+databaseChangeLog:
+  - changeSet:
+      id: 0001-initial-schema
+      author: prepwork
+      changes:
+        - createTable:
+            tableName: note
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: title
+                  type: VARCHAR(200)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: content
+                  type: VARCHAR(2000)
+              - column:
+                  name: created_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: false

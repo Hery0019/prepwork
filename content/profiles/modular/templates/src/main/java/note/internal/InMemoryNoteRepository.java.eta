@@ -1,0 +1,46 @@
+package <%= it.project.basePackage %>.note.internal;
+
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Repository;
+
+/**
+ * <%= it.t("Repository en mémoire : suffisant tant que le projet n'a pas de base de données.", "In-memory repository: enough as long as the project has no database.") %>
+ */
+@Repository
+public class InMemoryNoteRepository implements NoteRepository {
+
+    private final Map<Long, Note> notes = new ConcurrentHashMap<>();
+    private final AtomicLong sequence = new AtomicLong();
+
+    @Override
+    public Note save(Note note) {
+        if (note.getId() == null) {
+            note.assignId(sequence.incrementAndGet());
+        }
+        notes.put(note.getId(), note);
+        return note;
+    }
+
+    @Override
+    public Optional<Note> findById(Long id) {
+        return Optional.ofNullable(notes.get(id));
+    }
+
+    @Override
+    public Page<Note> findAll(Pageable pageable) {
+        List<Note> sorted = notes.values().stream()
+                .sorted(Comparator.comparing(Note::getId))
+                .toList();
+        int from = (int) Math.min(pageable.getOffset(), sorted.size());
+        int to = Math.min(from + pageable.getPageSize(), sorted.size());
+        return new PageImpl<>(sorted.subList(from, to), pageable, sorted.size());
+    }
+}

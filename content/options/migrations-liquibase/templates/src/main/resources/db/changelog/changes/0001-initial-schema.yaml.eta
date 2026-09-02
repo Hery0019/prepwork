@@ -1,0 +1,25 @@
+# <%= it.t("Schéma initial : tables de l'exemple de référence. Ne jamais modifier un changeset appliqué (LIQ-001).", 'Initial schema: tables of the reference example. Never edit an applied changeset (LIQ-001).') %>
+databaseChangeLog:
+  - changeSet:
+      id: 0001-initial-schema
+      author: prepwork
+      changes:
+<% for (const table of it.tables) { -%>
+        - createTable:
+            tableName: <%= table.name %>
+            columns:
+<% for (const column of table.columns) { -%>
+              - column:
+                  name: <%= column.name %>
+                  type: <%= it.liquibaseType(column) %>
+<% if (column.type === 'identity') { -%>
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+<% } else if (!column.nullable) { -%>
+                  constraints:
+                    nullable: false
+<% } -%>
+<% } -%>
+<% } -%>

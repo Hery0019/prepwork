@@ -40,6 +40,19 @@ Toutes acceptent `--dry-run`. Le vocabulaire du plan est décrit dans
 Une fois construit (`pnpm build`), l'exécutable est `node dist/cli/index.js` (ou `prepwork` après
 `npm link`).
 
+## Catalogue livré
+
+| Axe            | Valeurs v1                                                                      |
+| -------------- | ------------------------------------------------------------------------------- |
+| Profil         | `layered` (défaut), `modular` (Spring Modulith, événements)                     |
+| Migrations     | `migrations-flyway` (défaut), `migrations-liquibase` — absentes sans base       |
+| Sécurité       | `security-none` (défaut), `security-session`, `security-oauth2-resource-server` |
+| Autres options | `docker`, `ci-github` (défaut) / `ci-gitlab`, `git` (toujours présente)         |
+
+Le projet généré cible Spring Boot 4.1.1 (version épinglée dans `src/engine/context.ts`). La CI de
+ce dépôt (`.github/workflows/ci.yaml`) génère chaque profil × sécurité × migrations et lance
+`mvn verify` dessus sur les pull requests.
+
 ## Structure
 
 ```

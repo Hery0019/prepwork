@@ -1,0 +1,38 @@
+# Environnement local de référence (DOCK-003). `./mvnw spring-boot:run` démarre la base automatiquement ; `docker compose up` lance aussi l'application.
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: pay_flow
+      POSTGRES_USER: pay_flow
+      POSTGRES_PASSWORD: pay_flow
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pay_flow -d pay_flow"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  app:
+    build: .
+    image: pay-flow:local
+    labels:
+      # Ignoré par le support Docker Compose de Spring Boot : seul `db` est démarré par `spring-boot:run`.
+      org.springframework.boot.ignore: true
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS:-http://localhost:3000}
+      DB_URL: jdbc:postgresql://db:5432/pay_flow
+      DB_USERNAME: pay_flow
+      DB_PASSWORD: pay_flow
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db-data:

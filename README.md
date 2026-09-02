@@ -21,13 +21,24 @@ pnpm dev -- --help  # lance la CLI depuis les sources
 
 ## Commandes de la CLI
 
-| Commande              | Rôle                                                                         |
-| --------------------- | ---------------------------------------------------------------------------- |
-| `prepwork init <dir>` | Questionnaire, `scaffold.yaml`, génération complète dans un répertoire vide  |
-| `prepwork check`      | Calcule le plan de génération et le rapporte, sans rien écrire               |
-| `prepwork sync`       | Met à jour les fichiers générés non modifiés par l'équipe, rapporte le reste |
+```sh
+pnpm dev init <dir>                      # questionnaire interactif, puis génération
+pnpm dev init <dir> --scaffold s.yaml    # sans questionnaire (CI, tests)
+pnpm dev check <dir>                     # plan rapporté, zéro écriture ; code 1 si le projet n'est pas à jour
+pnpm dev sync <dir>                      # applique les opérations sûres, signale le reste
+```
 
-Chaque commande accepte `--dry-run`.
+| Commande      | Rôle                                                                                                                                                                            |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `init [dir]`  | Questionnaire (ou `--scaffold <file>`), `scaffold.yaml`, génération complète dans un répertoire vide, puis `git init` + auteur + `core.hooksPath` (`--no-git` pour s'en passer) |
+| `check [dir]` | Calcule le plan contre `.scaffold/manifest.json` et le rapporte, sans rien écrire                                                                                               |
+| `sync [dir]`  | Exécute `create`, `update` et `delete` ; `skip-modified` et `conflict` sont seulement signalés                                                                                  |
+
+Toutes acceptent `--dry-run`. Le vocabulaire du plan est décrit dans
+[docs/adr/0005-vocabulaire-du-plan.md](docs/adr/0005-vocabulaire-du-plan.md).
+
+Une fois construit (`pnpm build`), l'exécutable est `node dist/cli/index.js` (ou `prepwork` après
+`npm link`).
 
 ## Structure
 

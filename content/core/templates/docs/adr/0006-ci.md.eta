@@ -1,0 +1,19 @@
+# ADR 0006 — <%= it.d('Intégration continue', 'Continuous integration') %>
+
+<%= it.d('Date', 'Date') %> : <%= it.today %> · <%= it.d('Statut', 'Status') %> : <%= it.d('acceptée', 'accepted') %>
+
+## <%= it.d('Contexte', 'Context') %>
+
+<%= it.d("Choix fait au questionnaire prepwork. La CI exécute `./mvnw verify` (tests des trois niveaux, règles ArchUnit, formatage) et l'analyse des dépendances vulnérables (CORE-035).", 'Choice made in the prepwork questionnaire. CI runs `./mvnw verify` (three test levels, ArchUnit rules, formatting) and the vulnerable dependency scan (CORE-035).') %>
+
+## <%= it.d('Décision', 'Decision') %>
+
+<% if (it.options.ci === 'none') { -%>
+<%= it.d("**Aucune CI générée** pour l'instant ; les vérifications restent locales (`./mvnw verify`).", '**No CI generated** for now; checks stay local (`./mvnw verify`).') %>
+<% } else { -%>
+**<%= it.options.ci === 'github' ? 'GitHub Actions' : 'GitLab CI' %>**<%= it.d(' : pipeline sur chaque push et merge request, Docker disponible pour Testcontainers.', ': pipeline on every push and merge request, Docker available for Testcontainers.') %>
+<% } -%>
+
+## <%= it.d('Conséquences', 'Consequences') %>
+
+<%= it.d('Un build rouge bloque la fusion ; la CI ne fait rien que `./mvnw verify` ne fasse pas déjà localement.', 'A red build blocks the merge; CI does nothing that `./mvnw verify` does not already do locally.') %>

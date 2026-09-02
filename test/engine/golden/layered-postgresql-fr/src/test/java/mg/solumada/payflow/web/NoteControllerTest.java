@@ -1,0 +1,65 @@
+package mg.solumada.payflow.web;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+
+import mg.solumada.payflow.domain.Note;
+import mg.solumada.payflow.domain.NoteNotFoundException;
+import mg.solumada.payflow.service.NoteService;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.assertj.MockMvcTester;
+
+/**
+ * Niveau slice (CORE-020) : seul le contrôleur et l'advice sont chargés, le service est un mock. Vérifie le contrat HTTP : validation, erreurs RFC 9457, forme des réponses.
+ */
+@WebMvcTest(NoteController.class)
+class NoteControllerTest {
+
+    @Autowired
+    private MockMvcTester mvc;
+
+    @MockitoBean
+    private NoteService service;
+
+    @Test
+    void create_blankTitle_returns400ProblemDetail() {
+        assertThat(mvc.post()
+                        .uri("/api/v1/notes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\": \"\"}"))
+                .hasStatus(HttpStatus.BAD_REQUEST)
+                .hasContentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
+                .bodyJson()
+                .extractingPath("$.errors[0].field")
+                .isEqualTo("title");
+    }
+
+    @Test
+    void get_unknownId_returns404ProblemDetail() {
+        when(service.get(42L)).thenThrow(new NoteNotFoundException(42L));
+
+        assertThat(mvc.get().uri("/api/v1/notes/42"))
+                .hasStatus(HttpStatus.NOT_FOUND)
+                .hasContentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
+                .bodyJson()
+                .extractingPath("$.detail")
+                .asString()
+                .contains("42");
+    }
+
+    @Test
+    void get_existingId_returnsNoteResponse() {
+        when(service.get(1L)).thenReturn(new Note("First", "Hello"));
+
+        assertThat(mvc.get().uri("/api/v1/notes/1"))
+                .hasStatusOk()
+                .bodyJson()
+                .extractingPath("$.title")
+                .isEqualTo("First");
+    }
+}

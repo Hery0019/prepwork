@@ -1,0 +1,9 @@
+-- <%= it.t("Schéma initial : tables de l'exemple de référence. Ne jamais modifier une migration appliquée (FLY-001).", 'Initial schema: tables of the reference example. Never edit an applied migration (FLY-001).') %>
+<% for (const table of it.tables) { -%>
+
+CREATE TABLE <%= table.name %> (
+<% table.columns.forEach((column, index) => { -%>
+    <%= column.name %> <%= it.sqlType(column) %><%= column.type !== 'identity' && !column.nullable ? ' NOT NULL' : '' %><%= index < table.columns.length - 1 ? ',' : '' %>
+<% }); -%>
+);
+<% } -%>

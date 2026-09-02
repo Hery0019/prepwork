@@ -1,0 +1,9 @@
+package <%= it.project.basePackage %>.repository;
+
+import <%= it.project.basePackage %>.domain.Note;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+/**
+ * <%= it.t("Accès aux notes : interface Spring Data, aucune logique métier (LAY-004).", "Access to notes: Spring Data interface, no business logic (LAY-004).") %>
+ */
+public interface NoteRepository extends JpaRepository<Note, Long> {}

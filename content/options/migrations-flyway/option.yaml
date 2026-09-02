@@ -1,0 +1,92 @@
+# yaml-language-server: $schema=../../../schema/option.schema.json
+# Migrations de schéma avec Flyway (SQL versionné). Exclusive avec migrations-liquibase.
+meta:
+  id: migrations-flyway
+  version: 1.0.0
+  rule_prefix: FLY
+  group: migrations
+  summary:
+    en: Schema migrations as versioned SQL files applied by Flyway at startup.
+    fr: Migrations de schéma en fichiers SQL versionnés, appliquées par Flyway au démarrage.
+skill: db
+rules:
+  - id: FLY-001
+    statement:
+      en: Every schema change is a new file `src/main/resources/db/migration/V<n>__<description>.sql`; an applied migration is never edited.
+      fr: Tout changement de schéma est un nouveau fichier `src/main/resources/db/migration/V<n>__<description>.sql` ; une migration appliquée n'est jamais modifiée.
+    rationale:
+      en: Flyway records a checksum per migration and refuses to start when one changed.
+      fr: Flyway enregistre une empreinte par migration et refuse de démarrer si l'une a changé.
+    enforced_by: flyway
+  - id: FLY-002
+    statement:
+      en: Migrations are plain SQL written for the project's database engine, with no vendor-neutral abstraction.
+      fr: Les migrations sont du SQL brut écrit pour le moteur de base de données du projet, sans abstraction multi-moteurs.
+    rationale:
+      en: The SQL that runs in production is the SQL that is reviewed.
+      fr: Le SQL qui tourne en production est celui qui a été relu.
+    enforced_by: none
+  - id: FLY-003
+    statement:
+      en: Hibernate validates the schema against the entities at startup (`ddl-auto` is `validate`) and never generates it.
+      fr: Hibernate valide le schéma par rapport aux entités au démarrage (`ddl-auto` vaut `validate`) et ne le génère jamais.
+    rationale:
+      en: A mismatch between entity and table is a startup failure, not a runtime surprise.
+      fr: Un écart entre entité et table est un échec au démarrage, pas une surprise en production.
+    enforced_by: none
+  - id: FLY-004
+    statement:
+      en: Migration descriptions are English snake_case verbs (`V3__add_note_archived_flag.sql`) and version numbers are consecutive integers.
+      fr: Les descriptions de migration sont des verbes anglais en snake_case (`V3__add_note_archived_flag.sql`) et les numéros de version des entiers consécutifs.
+    rationale:
+      en: The migration list must read as the history of the schema.
+      fr: La liste des migrations doit se lire comme l'historique du schéma.
+    enforced_by: none
+anti_patterns:
+  - id: FLY-AP-001
+    statement:
+      en: Editing an already applied migration to "fix" it.
+      fr: Modifier une migration déjà appliquée pour la « corriger ».
+    rationale:
+      en: Every environment that applied it fails at the next startup with a checksum mismatch.
+      fr: Chaque environnement qui l'a appliquée échoue au prochain démarrage sur une empreinte différente.
+    enforced_by: flyway
+    instead:
+      en: A new migration that alters what the previous one created.
+      fr: Une nouvelle migration qui modifie ce que la précédente a créé.
+  - id: FLY-AP-002
+    statement:
+      en: 'Setting `spring.jpa.hibernate.ddl-auto` to `update` to avoid writing a migration.'
+      fr: "Passer `spring.jpa.hibernate.ddl-auto` à `update` pour éviter d'écrire une migration."
+    rationale:
+      en: The schema drifts between environments and nobody can rebuild it from the repository.
+      fr: Le schéma diverge entre environnements et plus personne ne peut le reconstruire depuis le dépôt.
+    enforced_by: none
+    instead:
+      en: Write the migration; it takes two minutes and is reviewed like code.
+      fr: Écrire la migration ; cela prend deux minutes et se relit comme du code.
+maven:
+  dependencies:
+    - group_id: org.springframework.boot
+      artifact_id: spring-boot-starter-flyway
+      purpose:
+        en: Runs the migrations at application startup.
+        fr: Exécute les migrations au démarrage de l'application.
+    - group_id: org.flywaydb
+      artifact_id: flyway-database-postgresql
+      when: stack.database == 'postgresql'
+      purpose:
+        en: Flyway support module for PostgreSQL.
+        fr: Module Flyway pour PostgreSQL.
+    - group_id: org.flywaydb
+      artifact_id: flyway-mysql
+      when: stack.database == 'mysql'
+      purpose:
+        en: Flyway support module for MySQL.
+        fr: Module Flyway pour MySQL.
+    - group_id: org.flywaydb
+      artifact_id: flyway-database-oracle
+      when: stack.database == 'oracle'
+      purpose:
+        en: Flyway support module for Oracle.
+        fr: Module Flyway pour Oracle.

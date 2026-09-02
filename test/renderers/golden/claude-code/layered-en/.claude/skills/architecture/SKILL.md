@@ -79,7 +79,7 @@ Files:
 - `src/test/java/mg/solumada/payflow/service/NoteServiceTest.java`
 - `src/test/java/mg/solumada/payflow/web/NoteControllerTest.java`
 - `src/test/java/mg/solumada/payflow/repository/NoteRepositoryTest.java`
-- `src/test/java/mg/solumada/payflow/NoteIntegrationTest.java`
+- `src/test/java/mg/solumada/payflow/NoteIT.java`
 - `src/test/java/mg/solumada/payflow/architecture/LayeredArchitectureTest.java`
 
 Rules illustrated: **LAY-001**, **LAY-002**, **LAY-005**, **LAY-007**, **LAY-008**, **LAY-010**, **CORE-011**, **CORE-012**, **CORE-013**, **CORE-014**, **CORE-015**, **CORE-020**, **CORE-022**

@@ -1,0 +1,44 @@
+package <%= it.project.basePackage %>.domain;
+
+import java.time.Instant;
+
+/**
+ * <%= it.t("Exemple de référence : une note de texte. Objet du domaine sans persistance ; l'identifiant est attribué par le repository.", "Reference example: a text note. Domain object without persistence; the identifier is assigned by the repository.") %>
+ */
+public class Note {
+
+    private Long id;
+    private final String title;
+    private final String content;
+    private final Instant createdAt;
+
+    public Note(String title, String content) {
+        this.title = title;
+        this.content = content;
+        this.createdAt = Instant.now();
+    }
+
+    /** <%= it.t("Appelé une seule fois, par le repository, à la première sauvegarde.", "Called once, by the repository, on first save.") %> */
+    public void assignId(Long id) {
+        if (this.id != null) {
+            throw new IllegalStateException("Note %d already has an id".formatted(this.id));
+        }
+        this.id = id;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+}

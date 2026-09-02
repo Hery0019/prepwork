@@ -1,0 +1,47 @@
+# yaml-language-server: $schema=../../../schema/files.schema.json
+# Squelette du profil layered : exemple de référence `Note` et tests ArchUnit.
+# Les variantes sans base de données remplacent JPA par un repository en mémoire.
+files:
+  # --- domain --------------------------------------------------------------------------
+  - source: src/main/java/domain/Note.java.eta
+    target: src/main/java/<%= it.project.basePackagePath %>/domain/Note.java
+    when: stack.database != 'none'
+  - source: src/main/java/domain/Note.nodb.java.eta
+    target: src/main/java/<%= it.project.basePackagePath %>/domain/Note.java
+    when: stack.database == 'none'
+  - source: src/main/java/domain/NoteNotFoundException.java.eta
+    target: src/main/java/<%= it.project.basePackagePath %>/domain/NoteNotFoundException.java
+
+  # --- repository ----------------------------------------------------------------------
+  - source: src/main/java/repository/NoteRepository.java.eta
+    target: src/main/java/<%= it.project.basePackagePath %>/repository/NoteRepository.java
+    when: stack.database != 'none'
+  - source: src/main/java/repository/NoteRepository.nodb.java.eta
+    target: src/main/java/<%= it.project.basePackagePath %>/repository/NoteRepository.java
+    when: stack.database == 'none'
+  - source: src/main/java/repository/InMemoryNoteRepository.java.eta
+    target: src/main/java/<%= it.project.basePackagePath %>/repository/InMemoryNoteRepository.java
+    when: stack.database == 'none'
+
+  # --- service et web --------------------------------------------------------------------
+  - source: src/main/java/service/NoteService.java.eta
+    target: src/main/java/<%= it.project.basePackagePath %>/service/NoteService.java
+  - source: src/main/java/web/NoteController.java.eta
+    target: src/main/java/<%= it.project.basePackagePath %>/web/NoteController.java
+  - source: src/main/java/web/NoteRequest.java.eta
+    target: src/main/java/<%= it.project.basePackagePath %>/web/NoteRequest.java
+  - source: src/main/java/web/NoteResponse.java.eta
+    target: src/main/java/<%= it.project.basePackagePath %>/web/NoteResponse.java
+
+  # --- tests : un par niveau + ArchUnit ---------------------------------------------------
+  - source: src/test/java/service/NoteServiceTest.java.eta
+    target: src/test/java/<%= it.project.basePackagePath %>/service/NoteServiceTest.java
+  - source: src/test/java/web/NoteControllerTest.java.eta
+    target: src/test/java/<%= it.project.basePackagePath %>/web/NoteControllerTest.java
+  - source: src/test/java/repository/NoteRepositoryTest.java.eta
+    target: src/test/java/<%= it.project.basePackagePath %>/repository/NoteRepositoryTest.java
+    when: stack.database != 'none'
+  - source: src/test/java/NoteIT.java.eta
+    target: src/test/java/<%= it.project.basePackagePath %>/NoteIT.java
+  - source: src/test/java/architecture/LayeredArchitectureTest.java.eta
+    target: src/test/java/<%= it.project.basePackagePath %>/architecture/LayeredArchitectureTest.java

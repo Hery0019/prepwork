@@ -87,8 +87,8 @@ rules:
     enforced_by: none
   - id: LAY-007
     statement:
-      en: Request and response DTOs are Java records declared in `web`, named `*Request` and `*Response`.
-      fr: Les DTO de requête et de réponse sont des records Java déclarés dans `web`, nommés `*Request` et `*Response`.
+      en: Request and response DTOs are Java records declared in `web`, named `*Request` and `*Response`; only the shared `PageResponse` lives in `common`.
+      fr: Les DTO de requête et de réponse sont des records Java déclarés dans `web`, nommés `*Request` et `*Response` ; seul le `PageResponse` partagé vit dans `common`.
     rationale:
       en: Immutable, explicit, and impossible to confuse with an entity.
       fr: Immuables, explicites, et impossibles à confondre avec une entité.
@@ -247,7 +247,7 @@ reference_example:
     - src/test/java/{{basePackage}}/service/NoteServiceTest.java
     - src/test/java/{{basePackage}}/web/NoteControllerTest.java
     - src/test/java/{{basePackage}}/repository/NoteRepositoryTest.java
-    - src/test/java/{{basePackage}}/NoteIntegrationTest.java
+    - src/test/java/{{basePackage}}/NoteIT.java
     - src/test/java/{{basePackage}}/architecture/LayeredArchitectureTest.java
   demonstrates:
     - LAY-001
@@ -268,7 +268,7 @@ reference_example:
       columns:
         - { name: id, type: identity }
         - { name: title, type: string, length: 200 }
-        - { name: content, type: text, nullable: true }
+        - { name: content, type: string, length: 2000, nullable: true }
         - { name: created_at, type: timestamp }
 
 skills:

@@ -1,0 +1,64 @@
+# yaml-language-server: $schema=../../../schema/option.schema.json
+# Image Docker multi-étapes et environnement local compose.
+meta:
+  id: docker
+  version: 1.0.0
+  rule_prefix: DOCK
+  summary:
+    en: Multi-stage Dockerfile and a compose.yaml for the local environment.
+    fr: Dockerfile multi-étapes et compose.yaml pour l'environnement local.
+skill: workflow
+rules:
+  - id: DOCK-001
+    statement:
+      en: The application image is built by the multi-stage `Dockerfile` from sources, never from a jar built on a developer machine.
+      fr: L'image de l'application est construite par le `Dockerfile` multi-étapes depuis les sources, jamais depuis un jar construit sur un poste.
+    rationale:
+      en: The build is reproducible and identical in CI and on any machine.
+      fr: La construction est reproductible et identique en CI et sur n'importe quel poste.
+    enforced_by: none
+  - id: DOCK-002
+    statement:
+      en: The container runs as a non-root user and exposes only port 8080.
+      fr: Le conteneur tourne avec un utilisateur non root et n'expose que le port 8080.
+    rationale:
+      en: A compromised process must not own the container.
+      fr: Un processus compromis ne doit pas posséder le conteneur.
+    enforced_by: none
+  - id: DOCK-003
+    statement:
+      en: '`compose.yaml` is the reference local environment; its database uses the same engine and major version as production.'
+      fr: "`compose.yaml` est l'environnement local de référence ; sa base de données utilise le même moteur et la même version majeure qu'en production."
+    rationale:
+      en: What works locally must work in production for the same reasons.
+      fr: Ce qui marche en local doit marcher en production pour les mêmes raisons.
+    enforced_by: none
+  - id: DOCK-004
+    statement:
+      en: Configuration reaches the container through environment variables; nothing environment-specific is baked into the image.
+      fr: La configuration arrive au conteneur par variables d'environnement ; rien de propre à un environnement n'est figé dans l'image.
+    rationale:
+      en: One image serves every environment.
+      fr: Une seule image sert tous les environnements.
+    enforced_by: none
+anti_patterns:
+  - id: DOCK-AP-001
+    statement:
+      en: '`COPY . .` before resolving dependencies in the Dockerfile.'
+      fr: '`COPY . .` avant la résolution des dépendances dans le Dockerfile.'
+    rationale:
+      en: Every source change invalidates the dependency layer and the build downloads everything again.
+      fr: Chaque changement de source invalide la couche des dépendances et la construction retélécharge tout.
+    enforced_by: none
+    instead:
+      en: Copy `pom.xml` and the wrapper first, resolve dependencies, then copy `src/`.
+      fr: Copier `pom.xml` et le wrapper d'abord, résoudre les dépendances, puis copier `src/`.
+maven:
+  dependencies:
+    - group_id: org.springframework.boot
+      artifact_id: spring-boot-docker-compose
+      scope: runtime
+      optional: true
+      purpose:
+        en: Starts the compose services (database) automatically with `./mvnw spring-boot:run`.
+        fr: Démarre automatiquement les services compose (base de données) avec `./mvnw spring-boot:run`.

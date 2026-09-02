@@ -243,6 +243,8 @@
               "commitlint",
               "gitleaks",
               "modulith",
+              "flyway",
+              "liquibase",
               "dependency-check",
               "none"
             ]
@@ -333,6 +335,8 @@
               "commitlint",
               "gitleaks",
               "modulith",
+              "flyway",
+              "liquibase",
               "dependency-check",
               "none"
             ]
@@ -736,6 +740,13 @@
                   "test",
                   "provided"
                 ]
+              },
+              "optional": {
+                "type": "boolean"
+              },
+              "when": {
+                "type": "string",
+                "minLength": 1
               },
               "purpose": {
                 "anyOf": [

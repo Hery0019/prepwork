@@ -38,5 +38,5 @@ Monolithe en couches, un package par couche technique, dépendances strictement 
 |---|---|---|
 | `id` | identity | non |
 | `title` | string(200) | non |
-| `content` | text | oui |
+| `content` | string(2000) | oui |
 | `created_at` | timestamp | non |

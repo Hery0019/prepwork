@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=../../../schema/option.schema.json
+# Pipeline GitHub Actions. Exclusive avec ci-gitlab.
+meta:
+  id: ci-github
+  version: 1.0.0
+  rule_prefix: CIGH
+  group: ci
+  summary:
+    en: GitHub Actions pipeline running the Maven verification and a dependency vulnerability scan.
+    fr: Pipeline GitHub Actions qui exécute la vérification Maven et l'analyse des dépendances vulnérables.
+skill: workflow
+rules:
+  - id: CIGH-001
+    statement:
+      en: Every push to `main` and every pull request runs `./mvnw verify` on GitHub Actions, with Docker available for Testcontainers.
+      fr: Chaque push sur `main` et chaque pull request exécute `./mvnw verify` sur GitHub Actions, avec Docker disponible pour Testcontainers.
+    rationale:
+      en: A branch that does not pass `verify` is not mergeable, whatever the reviewer says.
+      fr: Une branche qui ne passe pas `verify` n'est pas fusionnable, quoi qu'en dise le relecteur.
+    enforced_by: none
+  - id: CIGH-002
+    statement:
+      en: The pipeline scans dependencies for known vulnerabilities and fails on critical or high findings.
+      fr: Le pipeline analyse les dépendances pour les vulnérabilités connues et échoue sur une criticité haute ou critique.
+    rationale:
+      en: Vulnerable dependencies are caught at the pull request, not at the audit.
+      fr: Les dépendances vulnérables sont attrapées à la pull request, pas à l'audit.
+    enforced_by: dependency-check
+  - id: CIGH-003
+    statement:
+      en: The workflow only calls commands a developer can run locally (`./mvnw ...`); no logic lives only in the workflow file.
+      fr: Le workflow n'appelle que des commandes qu'un développeur peut lancer en local (`./mvnw ...`) ; aucune logique ne vit uniquement dans le fichier de workflow.
+    rationale:
+      en: A failure in CI must be reproducible on a machine in one command.
+      fr: Un échec en CI doit être reproductible sur un poste en une commande.
+    enforced_by: none

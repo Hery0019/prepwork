@@ -10,7 +10,7 @@ l'analyse de vulnérabilités en CI (règle CORE-035).
 
 ## Décision
 
-L'énumération devient `archunit | spotless | commitlint | gitleaks | modulith | dependency-check | none`.
+L'énumération devient `archunit | spotless | commitlint | gitleaks | modulith | flyway | liquibase | dependency-check | none` (`flyway` et `liquibase` : la validation des checksums/changelogs appliqués fait échouer le démarrage).
 La sémantique reste la même : `none` = guidance pour l'agent, toute autre valeur = contrainte outillée,
 et le renderer rend cette distinction visible.
 

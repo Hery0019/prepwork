@@ -1,0 +1,74 @@
+# yaml-language-server: $schema=../../schema/files.schema.json
+# Fichiers générés par le socle, quel que soit le profil. `owner: team` = créé une fois.
+files:
+  # --- Build ---------------------------------------------------------------------------
+  - source: pom.xml.eta
+    target: pom.xml
+  - source: mvnw.eta
+    target: mvnw
+  - source: mvnw.cmd.eta
+    target: mvnw.cmd
+  - source: .mvn/wrapper/maven-wrapper.properties.eta
+    target: .mvn/wrapper/maven-wrapper.properties
+
+  # --- Application ---------------------------------------------------------------------
+  - source: src/main/java/Application.java.eta
+    target: src/main/java/<%= it.project.basePackagePath %>/<%= it.project.className %>Application.java
+  - source: src/main/java/common/ApiExceptionHandler.java.eta
+    target: src/main/java/<%= it.project.basePackagePath %>/common/ApiExceptionHandler.java
+  - source: src/main/java/common/NotFoundException.java.eta
+    target: src/main/java/<%= it.project.basePackagePath %>/common/NotFoundException.java
+  - source: src/main/java/common/ConflictException.java.eta
+    target: src/main/java/<%= it.project.basePackagePath %>/common/ConflictException.java
+  - source: src/main/java/common/PageResponse.java.eta
+    target: src/main/java/<%= it.project.basePackagePath %>/common/PageResponse.java
+  - source: src/main/java/common/CorsConfig.java.eta
+    target: src/main/java/<%= it.project.basePackagePath %>/common/CorsConfig.java
+  - source: src/main/java/common/CorsProperties.java.eta
+    target: src/main/java/<%= it.project.basePackagePath %>/common/CorsProperties.java
+  - source: src/main/resources/application.yaml.eta
+    target: src/main/resources/application.yaml
+
+  # --- Tests ---------------------------------------------------------------------------
+  - source: src/test/resources/application-test.yaml.eta
+    target: src/test/resources/application-test.yaml
+  - source: src/test/java/TestcontainersConfiguration.java.eta
+    target: src/test/java/<%= it.project.basePackagePath %>/TestcontainersConfiguration.java
+    when: stack.database != 'none'
+  - source: src/test/java/architecture/CoreArchitectureTest.java.eta
+    target: src/test/java/<%= it.project.basePackagePath %>/architecture/CoreArchitectureTest.java
+
+  # --- Documentation et fichiers d'équipe ----------------------------------------------
+  - source: README.md.eta
+    target: README.md
+    owner: team
+  - source: .env.example.eta
+    target: .env.example
+    owner: team
+  - source: docs/glossary.md.eta
+    target: docs/glossary.md
+    owner: team
+  - source: docs/adr/README.md.eta
+    target: docs/adr/README.md
+    owner: team
+  - source: docs/adr/0001-architecture-profile.md.eta
+    target: docs/adr/0001-architecture-profile.md
+    owner: team
+  - source: docs/adr/0002-java-version.md.eta
+    target: docs/adr/0002-java-version.md
+    owner: team
+  - source: docs/adr/0003-database.md.eta
+    target: docs/adr/0003-database.md
+    owner: team
+  - source: docs/adr/0004-security.md.eta
+    target: docs/adr/0004-security.md
+    owner: team
+  - source: docs/adr/0005-docker.md.eta
+    target: docs/adr/0005-docker.md
+    owner: team
+  - source: docs/adr/0006-ci.md.eta
+    target: docs/adr/0006-ci.md
+    owner: team
+  - source: docs/adr/0007-languages.md.eta
+    target: docs/adr/0007-languages.md
+    owner: team

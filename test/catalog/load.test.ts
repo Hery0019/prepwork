@@ -191,6 +191,8 @@ describe('validateCatalog', () => {
             "    when: profile == 'layered'",
             '  - source: a.eta',
             '    target: a',
+            '  - source: a.eta',
+            '    target: b',
             '    when: stack.database ==',
           ].join('\n'),
           'options/docker/templates/a.eta': 'x',
@@ -207,7 +209,9 @@ describe('validateCatalog', () => {
     expect(messages).toContainEqual(
       expect.stringMatching(/condition sur `profile` — une option ne connaît pas/),
     );
-    expect(messages).toContainEqual(expect.stringMatching(/cible `a` déclarée deux fois/));
+    expect(messages).toContainEqual(
+      expect.stringMatching(/cible `a` déclarée deux fois sans condition/),
+    );
     expect(messages).toContainEqual(expect.stringMatching(/condition invalide/));
   });
 

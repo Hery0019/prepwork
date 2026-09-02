@@ -1,0 +1,7 @@
+# <%= it.t('Fins de ligne normalisées : LF partout, CRLF pour les scripts Windows.', 'Normalised line endings: LF everywhere, CRLF for Windows scripts.') %>
+* text=auto eol=lf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.jar binary
+*.png binary
+*.jpg binary

@@ -5,3 +5,4 @@ pnpm-lock.yaml
 content/**/templates/**
 test/**/golden/**
 schema
+.tmp

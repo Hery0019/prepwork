@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=../../../schema/option.schema.json
+# Aucune authentification. Exclusive avec security-session et security-oauth2-resource-server.
+meta:
+  id: security-none
+  version: 1.0.0
+  rule_prefix: SECN
+  group: security
+  summary:
+    en: No authentication; the API is meant for a trusted network only.
+    fr: Aucune authentification ; l'API est réservée à un réseau de confiance.
+skill: security
+rules:
+  - id: SECN-001
+    statement:
+      en: No authentication is configured; the API must only be reachable from a trusted network.
+      fr: Aucune authentification n'est configurée ; l'API ne doit être joignable que depuis un réseau de confiance.
+    rationale:
+      en: Every endpoint, including writes, is open to whoever can reach the port.
+      fr: Chaque endpoint, écritures comprises, est ouvert à quiconque atteint le port.
+    enforced_by: none
+  - id: SECN-002
+    statement:
+      en: Before any public exposure, the security option is switched to `session` or `oauth2-resource-server` in `scaffold.yaml`, then `prepwork sync` is run.
+      fr: Avant toute exposition publique, l'option de sécurité passe à `session` ou `oauth2-resource-server` dans `scaffold.yaml`, puis `prepwork sync` est lancé.
+    rationale:
+      en: The switch generates the configuration and tests consistently; a hand-made setup drifts from the conventions.
+      fr: Le changement génère configuration et tests de façon cohérente ; un montage manuel dérive des conventions.
+    enforced_by: none
+  - id: SECN-003
+    statement:
+      en: No class depends on `org.springframework.security`; Spring Security is added by switching option, never by hand.
+      fr: Aucune classe ne dépend de `org.springframework.security` ; Spring Security s'ajoute en changeant d'option, jamais à la main.
+    rationale:
+      en: A partial, hand-written security setup is worse than an explicit absence.
+      fr: Une sécurité partielle écrite à la main est pire qu'une absence explicite.
+    enforced_by: archunit

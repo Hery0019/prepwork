@@ -14,6 +14,8 @@ export interface FileSystem {
   exists(path: string): Promise<boolean>;
   /** Entrées directes d'un répertoire, triées par nom ; `[]` si le répertoire n'existe pas. */
   list(dir: string): Promise<DirEntry[]>;
+  /** Supprime un fichier ; silencieux s'il n'existe pas. */
+  remove(path: string): Promise<void>;
 }
 
 const SEPARATORS = /[\\/]+/;

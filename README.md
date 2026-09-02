@@ -1,69 +1,69 @@
 # prepwork
 
-CLI (TypeScript) qui prépare le terrain d'un projet **Spring Boot** avant la première ligne de
-code métier : squelette Maven prêt à l'emploi, exemple de référence, tests ArchUnit, et
-spécifications (`CLAUDE.md` + skills) destinées à l'agent IA qui codera dans ce squelette.
+A TypeScript CLI that prepares the ground for a **Spring Boot** project before the first line of
+business code: a ready-to-use Maven skeleton, a reference example, ArchUnit tests, and the
+specifications (`CLAUDE.md` + skills) for the AI agent that will code inside that skeleton.
 
-## Prérequis
+## Prerequisites
 
-- Node 22 LTS (ou plus récent), `pnpm` (via `corepack enable pnpm`)
-- Pour vérifier un projet généré : JDK 21 (ou 17), Docker (Testcontainers)
+- Node 22 LTS (or newer) and `pnpm` (via `corepack enable pnpm`)
+- To verify a generated project: JDK 21 (or 17) and Docker (Testcontainers)
 
-## Développement
+## Development
 
 ```sh
 pnpm install
-pnpm check          # typecheck + lint + vérification de content/ + tests
-pnpm check:content  # cohérence de content/ seule (ids, préfixes, orthogonalité, tests ArchUnit)
-pnpm schemas        # régénère schema/*.schema.json depuis les schémas Zod
-pnpm dev -- --help  # lance la CLI depuis les sources
+pnpm check          # typecheck + lint + content/ consistency check + tests
+pnpm check:content  # content/ consistency only (ids, prefixes, orthogonality, ArchUnit tests)
+pnpm schemas        # regenerates schema/*.schema.json from the Zod schemas
+pnpm dev -- --help  # runs the CLI from the sources
 ```
 
-## Commandes de la CLI
+## CLI commands
 
 ```sh
-pnpm dev init <dir>                      # questionnaire interactif, puis génération
-pnpm dev init <dir> --scaffold s.yaml    # sans questionnaire (CI, tests)
-pnpm dev check <dir>                     # plan rapporté, zéro écriture ; code 1 si le projet n'est pas à jour
-pnpm dev sync <dir>                      # applique les opérations sûres, signale le reste
+pnpm dev init <dir>                      # interactive questionnaire, then generation
+pnpm dev init <dir> --scaffold s.yaml    # no questionnaire (CI, tests)
+pnpm dev check <dir>                     # reports the plan, writes nothing; exit code 1 when out of date
+pnpm dev sync <dir>                      # applies the safe operations, reports the rest
 ```
 
-| Commande      | Rôle                                                                                                                                                                            |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `init [dir]`  | Questionnaire (ou `--scaffold <file>`), `scaffold.yaml`, génération complète dans un répertoire vide, puis `git init` + auteur + `core.hooksPath` (`--no-git` pour s'en passer) |
-| `check [dir]` | Calcule le plan contre `.scaffold/manifest.json` et le rapporte, sans rien écrire                                                                                               |
-| `sync [dir]`  | Exécute `create`, `update` et `delete` ; `skip-modified` et `conflict` sont seulement signalés                                                                                  |
+| Command       | Role                                                                                                                                                               |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `init [dir]`  | Questionnaire (or `--scaffold <file>`), `scaffold.yaml`, full generation into an empty directory, then `git init` + author + `core.hooksPath` (`--no-git` to skip) |
+| `check [dir]` | Computes the plan against `.scaffold/manifest.json` and reports it, without writing anything                                                                       |
+| `sync [dir]`  | Executes `create`, `update` and `delete`; `skip-modified` and `conflict` are only reported                                                                         |
 
-Toutes acceptent `--dry-run`. Le vocabulaire du plan est décrit dans
+All three accept `--dry-run`. The plan vocabulary is described in
 [docs/adr/0005-vocabulaire-du-plan.md](docs/adr/0005-vocabulaire-du-plan.md).
 
-Une fois construit (`pnpm build`), l'exécutable est `node dist/cli/index.js` (ou `prepwork` après
+Once built (`pnpm build`), the executable is `node dist/cli/index.js` (or `prepwork` after
 `npm link`).
 
-## Catalogue livré
+## Shipped catalogue
 
-| Axe            | Valeurs v1                                                                      |
-| -------------- | ------------------------------------------------------------------------------- |
-| Profil         | `layered` (défaut), `modular` (Spring Modulith, événements)                     |
-| Migrations     | `migrations-flyway` (défaut), `migrations-liquibase` — absentes sans base       |
-| Sécurité       | `security-none` (défaut), `security-session`, `security-oauth2-resource-server` |
-| Autres options | `docker`, `ci-github` (défaut) / `ci-gitlab`, `git` (toujours présente)         |
+| Axis          | v1 values                                                                         |
+| ------------- | --------------------------------------------------------------------------------- |
+| Profile       | `layered` (default), `modular` (Spring Modulith, events)                          |
+| Migrations    | `migrations-flyway` (default), `migrations-liquibase` — absent without a database |
+| Security      | `security-none` (default), `security-session`, `security-oauth2-resource-server`  |
+| Other options | `docker`, `ci-github` (default) / `ci-gitlab`, `git` (always present)             |
 
-Le projet généré cible Spring Boot 4.1.1 (version épinglée dans `src/engine/context.ts`). La CI de
-ce dépôt (`.github/workflows/ci.yaml`) génère chaque profil × sécurité × migrations et lance
-`mvn verify` dessus sur les pull requests.
+Generated projects target Spring Boot 4.1.1 (version pinned in `src/engine/context.ts`). The CI of
+this repository (`.github/workflows/ci.yaml`) generates every profile × security × migrations
+combination and runs `mvn verify` on each of them for pull requests.
 
-## Structure
+## Layout
 
 ```
 src/
-  cli/            commandes init / sync / check — fines, sans logique
-  questionnaire/  questions, validation des réponses → scaffold.yaml
-  config/         schéma zod de scaffold.yaml, lecture/écriture
-  catalog/        chargement et validation de content/ (core, profiles, options)
-  engine/         composition → plan → exécution ; manifeste
-  renderers/      claude-code : YAML → CLAUDE.md + .claude/skills/
-content/          données uniquement : core/, profiles/, options/ — jamais de code
-schema/           JSON Schema générés depuis Zod (autocomplétion IDE), jamais édités à la main
-docs/adr/         décisions prises pendant l'implémentation de l'outil lui-même
+  cli/            init / sync / check commands — thin, no logic
+  questionnaire/  questions, answer validation → scaffold.yaml
+  config/         zod schema for scaffold.yaml, read/write
+  catalog/        loading and validation of content/ (core, profiles, options)
+  engine/         composition → plan → execution; manifest
+  renderers/      claude-code: YAML → CLAUDE.md + .claude/skills/
+content/          data only: core/, profiles/, options/ — never code
+schema/           JSON Schema generated from Zod (IDE completion), never hand-written
+docs/adr/         decisions taken while implementing the tool itself
 ```

@@ -1,0 +1,98 @@
+# yaml-language-server: $schema=../../schema/core.schema.json
+# Workflow de l'agent (CLAUDE.md §4). Une règle = une phrase vérifiable.
+id: workflow
+skill: workflow
+title:
+  en: Agent workflow
+  fr: Workflow de l'agent
+rules:
+  - id: CORE-001
+    statement:
+      en: Before any non-trivial change (more than one file, a schema change, or a new dependency), the agent writes a short plan and waits for confirmation.
+      fr: Avant tout changement non trivial (plus d'un fichier, un changement de schéma ou une nouvelle dépendance), l'agent écrit un plan court et attend confirmation.
+    rationale:
+      en: A plan reviewed in thirty seconds avoids an hour of work in the wrong direction.
+      fr: Un plan relu en trente secondes évite une heure de travail dans la mauvaise direction.
+    enforced_by: none
+  - id: CORE-002
+    statement:
+      en: One task is one coherent change and one commit; refactoring and features are never mixed in the same commit.
+      fr: Une tâche est un changement cohérent et un commit ; refactoring et fonctionnalité ne sont jamais mélangés dans un même commit.
+    rationale:
+      en: Reviewable history; a commit can be reverted without losing unrelated work.
+      fr: Historique relisible ; un commit peut être annulé sans perdre un travail sans rapport.
+    enforced_by: none
+  - id: CORE-003
+    statement:
+      en: The agent never creates `WIP`, `tmp` or `fix later` commits; a change is committed only once its tests pass.
+      fr: L'agent ne crée jamais de commit `WIP`, `tmp` ou `fix later` ; un changement n'est commité que lorsque ses tests passent.
+    rationale:
+      en: Every commit on the branch must be a state the team can build on.
+      fr: Chaque commit de la branche doit être un état sur lequel l'équipe peut s'appuyer.
+    enforced_by: none
+  - id: CORE-004
+    statement:
+      en: Tests are written in the same change as the code they cover, never in a later commit.
+      fr: Les tests sont écrits dans le même changement que le code qu'ils couvrent, jamais dans un commit ultérieur.
+    rationale:
+      en: A change without its tests is not finished; deferring them is how they disappear.
+      fr: Un changement sans ses tests n'est pas terminé ; les reporter est le meilleur moyen de ne jamais les écrire.
+    enforced_by: none
+  - id: CORE-005
+    statement:
+      en: When the specification is ambiguous or contradictory, the agent stops and asks; it does not pick the most likely interpretation.
+      fr: Quand la spécification est ambiguë ou contradictoire, l'agent s'arrête et pose la question ; il ne choisit pas l'interprétation la plus probable.
+    rationale:
+      en: A wrong guess costs far more to undo than a question costs to answer.
+      fr: Une mauvaise supposition coûte bien plus à défaire qu'une question à répondre.
+    enforced_by: none
+  - id: CORE-006
+    statement:
+      en: Adding a dependency is a separate commit that follows the profile's dependency procedure.
+      fr: L'ajout d'une dépendance est un commit séparé qui suit la procédure de dépendances du profil.
+    rationale:
+      en: Dependencies are long-term commitments; they deserve their own review.
+      fr: Une dépendance est un engagement de long terme ; elle mérite sa propre revue.
+    enforced_by: none
+  - id: CORE-007
+    statement:
+      en: The agent never runs `git push`, `git reset --hard`, `git clean`, and never deletes a database migration.
+      fr: L'agent n'exécute jamais `git push`, `git reset --hard`, `git clean`, et ne supprime jamais une migration de base de données.
+    rationale:
+      en: These actions are irreversible or affect shared state; only a human takes them.
+      fr: Ces actions sont irréversibles ou touchent un état partagé ; seul un humain les prend.
+    enforced_by: none
+anti_patterns:
+  - id: CORE-AP-001
+    statement:
+      en: Committing a half-done change to "save progress".
+      fr: Commiter un changement à moitié fait pour « sauvegarder l'avancement ».
+    rationale:
+      en: The branch then contains states that do not build or do not pass tests.
+      fr: La branche contient alors des états qui ne compilent pas ou ne passent pas les tests.
+    enforced_by: none
+    instead:
+      en: Finish the coherent step, run the tests, then commit; keep unfinished work in the working tree.
+      fr: Terminer l'étape cohérente, lancer les tests, puis commiter ; garder le travail inachevé dans l'arbre de travail.
+  - id: CORE-AP-002
+    statement:
+      en: Guessing the intended behaviour when the specification is unclear.
+      fr: Deviner le comportement attendu quand la spécification n'est pas claire.
+    rationale:
+      en: The guess is invisible to the reviewer and becomes a silent decision.
+      fr: La supposition est invisible pour le relecteur et devient une décision silencieuse.
+    enforced_by: none
+    instead:
+      en: Stop and ask a concrete question that lists the interpretations considered.
+      fr: S'arrêter et poser une question concrète qui liste les interprétations envisagées.
+  - id: CORE-AP-003
+    statement:
+      en: Slipping a refactoring into a feature commit "while I'm here".
+      fr: Glisser un refactoring dans un commit de fonctionnalité « tant qu'on y est ».
+    rationale:
+      en: The diff mixes intent and noise; the reviewer cannot tell which lines change behaviour.
+      fr: Le diff mélange intention et bruit ; le relecteur ne sait plus quelles lignes changent le comportement.
+    enforced_by: none
+    instead:
+      en: Make the refactoring its own commit, before or after the feature.
+      fr: Faire du refactoring un commit à part, avant ou après la fonctionnalité.

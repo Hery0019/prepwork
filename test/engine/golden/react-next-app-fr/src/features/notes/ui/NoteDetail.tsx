@@ -1,0 +1,17 @@
+// Rendu sur le serveur : la note arrive déjà chargée.
+import type { Note } from '@entities/note';
+import { Card } from '@shared/ui';
+
+export function NoteDetail({ note }: { note: Note }) {
+  return (
+    <Card className="flex flex-col gap-4">
+      <h2 className="text-2xl font-semibold">{note.title}</h2>
+      <p className="max-w-measure whitespace-pre-line">{note.body}</p>
+      <p className="text-sm text-muted">
+        {new Intl.DateTimeFormat('fr', { dateStyle: 'long' }).format(
+          new Date(note.createdAt),
+        )}
+      </p>
+    </Card>
+  );
+}

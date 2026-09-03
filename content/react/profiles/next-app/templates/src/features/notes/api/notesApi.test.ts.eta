@@ -1,0 +1,22 @@
+<%= it.t("// CORE-062 : le HTTP est simulé à la frontière réseau, y compris pour un module serveur.", "// CORE-062: HTTP is stubbed at the network boundary, including for a server module.") %>
+import { describe, expect, it } from 'vitest';
+import { server } from '@shared/test/server';
+import { aNote, notesHandlers } from './handlers';
+import { listNotes } from './notesApi';
+
+describe('listNotes', () => {
+  it('listNotes_apiAnswers_returnsTheValidatedPage', async () => {
+    server.use(notesHandlers.page([aNote()]));
+
+    const page = await listNotes(0);
+
+    expect(page.content).toHaveLength(1);
+    expect(page.content[0]?.title).toBe('Première note');
+  });
+
+  it('listNotes_apiFails_raisesATypedDomainError', async () => {
+    server.use(notesHandlers.failure());
+
+    await expect(listNotes(0)).rejects.toMatchObject({ kind: 'unavailable' });
+  });
+});

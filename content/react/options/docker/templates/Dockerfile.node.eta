@@ -1,0 +1,21 @@
+# <%= it.t("DOCK-001 : image multi-étapes construite depuis les sources, jamais depuis un build local.", "DOCK-001: multi-stage image built from the sources, never from a local build.") %>
+FROM node:<%= it.stack.node %>-alpine AS build
+WORKDIR /app
+RUN corepack enable pnpm
+COPY package.json pnpm-lock.yaml* ./
+RUN pnpm install --frozen-lockfile
+COPY . .
+# <%= it.t("La sortie autonome embarque le serveur et ses seules dépendances utiles.", "The standalone output bundles the server and only the dependencies it needs.") %>
+RUN pnpm build
+
+# <%= it.t("DOCK-002 : le serveur tourne avec un utilisateur non root et n'expose qu'un port.", "DOCK-002: the server runs as a non-root user and exposes a single port.") %>
+FROM node:<%= it.stack.node %>-alpine AS runtime
+WORKDIR /app
+ENV NODE_ENV=production PORT=8080 HOSTNAME=0.0.0.0
+COPY --from=build /app/<%= it.config.build.outputDir %>/standalone ./
+COPY --from=build /app/<%= it.config.build.outputDir %>/static ./<%= it.config.build.outputDir %>/static
+COPY --from=build /app/public ./public
+USER node
+EXPOSE 8080
+# <%= it.t("DOCK-003 : la configuration d'exécution est lue dans l'environnement au démarrage.", "DOCK-003: runtime configuration is read from the environment at startup.") %>
+CMD ["node", "server.js"]

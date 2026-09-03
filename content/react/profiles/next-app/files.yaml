@@ -1,0 +1,55 @@
+# yaml-language-server: $schema=../../../../schema/react/files.schema.json
+# Squelette du profil next-app : coquille App Router, entité `note` et feature `notes`.
+# Les lectures sont des composants serveur, les écritures des actions serveur.
+files:
+  # --- frontières outillées : la configuration décrit les couches de ce profil ------------
+  - source: eslint.config.js.eta
+    target: eslint.config.js
+  - source: .dependency-cruiser.cjs.eta
+    target: .dependency-cruiser.cjs
+
+  # --- coquille et routes ----------------------------------------------------------------
+  - source: src/app/layout.tsx.eta
+    target: src/app/layout.tsx
+  - source: src/app/page.tsx.eta
+    target: src/app/page.tsx
+  - source: src/app/notes/page.tsx.eta
+    target: src/app/notes/page.tsx
+  - source: src/app/notes/loading.tsx.eta
+    target: src/app/notes/loading.tsx
+  - source: src/app/notes/error.tsx.eta
+    target: src/app/notes/error.tsx
+  - source: src/app/notes/new/page.tsx.eta
+    target: src/app/notes/new/page.tsx
+  - source: src/app/notes/[id]/page.tsx.eta
+    target: src/app/notes/[id]/page.tsx
+
+  # --- entité ----------------------------------------------------------------------------
+  - source: src/entities/note/model/note.ts.eta
+    target: src/entities/note/model/note.ts
+  - source: src/entities/note/model/note.test.ts.eta
+    target: src/entities/note/model/note.test.ts
+  - source: src/entities/note/ui/NoteCard.tsx.eta
+    target: src/entities/note/ui/NoteCard.tsx
+  - source: src/entities/note/index.ts.eta
+    target: src/entities/note/index.ts
+
+  # --- feature notes ---------------------------------------------------------------------
+  - source: src/features/notes/api/notesApi.ts.eta
+    target: src/features/notes/api/notesApi.ts
+  - source: src/features/notes/api/notesApi.test.ts.eta
+    target: src/features/notes/api/notesApi.test.ts
+  - source: src/features/notes/api/actions.ts.eta
+    target: src/features/notes/api/actions.ts
+  - source: src/features/notes/api/handlers.ts.eta
+    target: src/features/notes/api/handlers.ts
+  - source: src/features/notes/ui/NoteList.tsx.eta
+    target: src/features/notes/ui/NoteList.tsx
+  - source: src/features/notes/ui/NoteList.test.tsx.eta
+    target: src/features/notes/ui/NoteList.test.tsx
+  - source: src/features/notes/ui/NoteDetail.tsx.eta
+    target: src/features/notes/ui/NoteDetail.tsx
+  - source: src/features/notes/ui/NoteForm.tsx.eta
+    target: src/features/notes/ui/NoteForm.tsx
+  - source: src/features/notes/index.ts.eta
+    target: src/features/notes/index.ts

@@ -1,6 +1,10 @@
 <%= it.t("// CORE-040 : la seule porte d'entrée du réseau. Les modules `api/` des features passent par ici.", "// CORE-040: the single network entry point. The `api/` modules of the features go through it.") %>
 import type { ZodType } from 'zod';
+<% if (it.profile === 'next-app') { -%>
+import { serverEnv } from '@shared/config/env';
+<% } else { -%>
 import { env } from '@shared/config/env';
+<% } -%>
 import { ApiError, errorKindForStatus } from './errors';
 
 export interface RequestOptions<T> {
@@ -25,7 +29,12 @@ export async function request<T>(path: string, options: RequestOptions<T>): Prom
 
   let response: Response;
   try {
+<% if (it.profile === 'next-app') { -%>
+    // NEXT-010 : l'URL de base ne quitte pas le serveur ; ce module n'est jamais importé côté client.
+    response = await fetch(`${serverEnv().API_BASE_URL}${path}`, init);
+<% } else { -%>
     response = await fetch(`${env.apiBaseUrl}${path}`, init);
+<% } -%>
   } catch {
     throw new ApiError('unavailable', <%= it.t("'Le service est injoignable.'", "'The service is unreachable.'") %>);
   }
@@ -34,7 +43,11 @@ export async function request<T>(path: string, options: RequestOptions<T>): Prom
 <% if (it.options.security === 'oidc-bff') { -%>
     // SECO-002 : une session expirée renvoie vers la connexion, jamais dans une boucle de réessai.
     if (response.status === 401) {
+<% if (it.profile === 'next-app') { -%>
+      throw new ApiError('unauthorized', <%= it.t("'La session a expiré.'", "'The session has expired.'") %>);
+<% } else { -%>
       window.location.assign(env.authLoginPath);
+<% } -%>
     }
 <% } -%>
     throw new ApiError(

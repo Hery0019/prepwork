@@ -1,0 +1,15 @@
+/* Surcharges d'équipe du contrat visuel. Ce fichier appartient à l'équipe : prepwork ne le */
+/* réécrit jamais. C'est ici que vit la marque. */
+/* */
+/* `tokens.css` porte le preset `app-sober` et se régénère quand `scaffold.yaml` change. */
+/* Redéclarer ici un token du même nom l'emporte : les utilitaires Tailwind suivent (CORE-027). */
+/* */
+/* Exemple — adopter la couleur primaire de la marque, dans les deux thèmes : */
+/* */
+/*   @theme {                                                                      */
+/*     --color-primary: #123456;                                                   */
+/*   }                                                                             */
+/*                                                                                 */
+/*   :root[data-theme='dark'] {                                                    */
+/*     --color-primary: #8fa6f5;                                                   */
+/*   }                                                                             */

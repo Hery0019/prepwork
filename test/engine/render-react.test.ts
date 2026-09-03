@@ -60,6 +60,45 @@ const MINIMAL = ScaffoldSchema.parse({
   language: { comments: 'en', docs: 'en' },
 });
 
+const NEXT = ScaffoldSchema.parse({
+  scaffold_version: '1.2.0',
+  project: { name: 'note-board', description: 'Interface rendue sur le serveur' },
+  stack: { target: 'react', data: 'none', forms: 'none' },
+  profile: 'next-app',
+  renderer: 'claude-code',
+  options: {
+    state: 'context',
+    security: 'oidc-bff',
+    i18n: false,
+    e2e: false,
+    docker: true,
+    ci: 'github',
+  },
+  design: { preset: 'app-sober', dark: true },
+  git: { author: { name: 'Hery', email: 'hery@example.com' }, agent_trailer: true },
+  language: { comments: 'fr', docs: 'fr' },
+});
+
+describe('react project rendering (next-app)', () => {
+  it('renders the App Router skeleton — golden', async () => {
+    const composition = compose(await catalog(), NEXT, reactPack, COMPOSE_OPTIONS);
+    const files = renderProject(composition, claudeCodeRenderer);
+    await expectGolden(join(goldenRoot, 'react-next-app-fr'), files);
+
+    const paths = files.map((f) => f.path);
+    // Le démarrage vient du socle, conditionné par le profil : pas de Vite ici.
+    expect(paths).toContain('next.config.ts');
+    expect(paths).toContain('src/app/layout.tsx');
+    expect(paths).toContain('src/features/notes/api/actions.ts');
+    expect(paths).not.toContain('vite.config.ts');
+    expect(paths).not.toContain('index.html');
+    // L'option docker sert la sortie déclarée par le profil, sans le nommer.
+    const dockerfile = files.find((f) => f.path === 'Dockerfile')?.content ?? '';
+    expect(dockerfile).toContain('"server.js"');
+    expect(paths).not.toContain('nginx.conf');
+  });
+});
+
 describe('react project rendering (spa-feature)', () => {
   it('renders the full variant (TanStack Query, forms, zustand, OIDC, i18n, e2e, fr) — golden', async () => {
     const composition = compose(await catalog(), FULL, reactPack, COMPOSE_OPTIONS);

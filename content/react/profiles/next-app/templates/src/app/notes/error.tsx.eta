@@ -1,0 +1,18 @@
+'use client';
+
+<%= it.t("// NEXT-011 : l'état d'erreur est un fichier client, seul endroit qui a besoin d'un état.", "// NEXT-011: the error state is a client file, the only place that needs state.") %>
+import { t } from '@shared/lib/text';
+import { Alert, Button } from '@shared/ui';
+
+export default function Error({ reset }: { error: globalThis.Error; reset: () => void }) {
+  return (
+    <Alert
+      tone="error"
+      title={t('notes.error.title', <%= it.t("'Les notes n\\'ont pas pu être chargées.'", "'The notes could not be loaded.'") %>)}
+    >
+      <Button size="sm" onClick={reset}>
+        {t('notes.error.retry', <%= it.t("'Réessayer'", "'Try again'") %>)}
+      </Button>
+    </Alert>
+  );
+}

@@ -222,3 +222,23 @@ remonte dans `content/common/`, consommé par les deux packs.
   `spring-boot` le fait depuis le début ; l'outil ne peut pas prétendre épingler et livrer des
   plages. Le projet généré n'a pas de lockfile à la première génération : son README dit de le
   commiter après la première installation, et la matrice front l'installe sans `--frozen-lockfile`.
+
+**2026-09-03, en ajoutant le profil `next-app` (le second du pack).**
+
+- **Le démarrage de l'application appartient au socle, conditionné par le profil.** Déplacer
+  `vite.config.ts`, `index.html`, `main.tsx`, `providers.tsx`, `env.ts` et `tsconfig.json` vers le
+  profil paraissait plus propre, jusqu'à ce que le contrôle d'orthogonalité le refuse : ces fichiers
+  lisent `it.options` (docker, sécurité, e2e), et un profil ne connaît pas les options. Ils restent
+  donc dans `core/`, en variantes `when: profile == '…'` — exactement comme le socle Spring gère
+  `stack.database`. Le socle est le seul endroit qui connaît les deux axes ; c'est son rôle.
+- **Un profil déclare sa sortie de build** (`config.build.kind`, `static` ou `node`). L'option
+  `docker` lit cette déclaration pour choisir entre nginx et le serveur Node de Next, sans jamais
+  nommer un profil : l'axe option reste aveugle à l'axe profil.
+- **`server-only` fait la frontière serveur/client**, et il fallait le neutraliser dans les tests :
+  le vrai module lève dès qu'il est chargé hors contexte serveur. Les tests du profil `next-app`
+  sont donc deux projets Vitest — les composants clients dans jsdom, les modules serveur dans Node
+  avec `server-only` remplacé par un module vide. La garantie reste entière au build.
+- **Une page qui lit des données vivantes se déclare dynamique** (`NEXT-013`). Sans cela le build
+  tente de la prérendre, appelle l'API absente et échoue — ce que le premier `pnpm build` a montré.
+- **La matrice front gagne l'axe profil**, avec une exclusion : `next-app` ne varie pas selon les
+  bibliothèques de données et de formulaires du client, qu'il n'utilise pas.

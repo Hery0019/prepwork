@@ -85,7 +85,7 @@ describe('the shipped react content', () => {
       'testing',
       'workflow',
     ]);
-    expect([...catalog.profiles.keys()]).toEqual(['spa-feature']);
+    expect([...catalog.profiles.keys()].sort()).toEqual(['next-app', 'spa-feature']);
 
     const diagnostics = validateCatalog(catalog, reactPack);
     const errors = diagnostics.filter((d) => d.level === 'error');

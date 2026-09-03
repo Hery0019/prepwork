@@ -1,0 +1,7 @@
+# Scripts de build autorisés (pnpm refuse les autres par défaut) : esbuild compile son binaire,
+# MSW installe son worker de navigateur. Toute autre dépendance qui demande à exécuter du code
+# à l'installation est refusée tant que l'équipe ne l'a pas ajoutée ici en connaissance de cause.
+allowBuilds:
+  esbuild: true
+  msw: true
+  unrs-resolver: true

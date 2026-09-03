@@ -58,7 +58,8 @@
     "profile": {
       "type": "string",
       "enum": [
-        "spa-feature"
+        "spa-feature",
+        "next-app"
       ]
     },
     "renderer": {

@@ -1,0 +1,26 @@
+# CIGH-001 : type-check, lint, tests et build sur chaque pull request.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      # CIGH-002 : installation figée depuis le fichier de verrouillage.
+      - run: pnpm install --frozen-lockfile
+      # Les valeurs réelles viennent du déploiement ; la CI se contente des exemples.
+      - run: cp .env.example .env
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test
+      - run: pnpm build

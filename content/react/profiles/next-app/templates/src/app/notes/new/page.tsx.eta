@@ -1,0 +1,6 @@
+<%= it.t("// La page ne fait que composer : le formulaire et son action vivent dans la feature.", "// The page only composes: the form and its action live in the feature.") %>
+import { NoteForm } from '@features/notes';
+
+export default function NewNotePage() {
+  return <NoteForm />;
+}

@@ -1,0 +1,36 @@
+<%= it.t("// Composant de présentation : il reçoit ses notes en props (NEXT-001, NEXT-003).", "// Presentational component: it receives its notes as props (NEXT-001, NEXT-003).") %>
+import Link from 'next/link';
+import { NoteCard, type Note } from '@entities/note';
+import { t } from '@shared/lib/text';
+import { Alert, Button } from '@shared/ui';
+
+export function NoteList({ notes }: { notes: Note[] }) {
+  if (notes.length === 0) {
+    return (
+      <Alert title={t('notes.empty.title', <%= it.t("'Aucune note pour le moment.'", "'No notes yet.'") %>)}>
+        <Link href="/notes/new">
+          <Button size="sm">
+            {t('notes.empty.action', <%= it.t("'Créer la première'", "'Create the first one'") %>)}
+          </Button>
+        </Link>
+      </Alert>
+    );
+  }
+
+  return (
+    <ul className="flex flex-col gap-4">
+      {notes.map((note) => (
+        <li key={note.id}>
+          <NoteCard
+            note={note}
+            action={
+              <Link href={`/notes/${note.id}`} className="text-primary underline">
+                {t('notes.list.open', <%= it.t("'Ouvrir'", "'Open'") %>)}
+              </Link>
+            }
+          />
+        </li>
+      ))}
+    </ul>
+  );
+}

@@ -6,6 +6,7 @@ import {
   LanguagesSchema,
   ProjectDescriptionSchema,
   ProjectNameSchema,
+  RendererIdSchema,
   ScaffoldVersionSchema,
   type BaseScaffold,
 } from '../../config/schema.js';
@@ -36,6 +37,7 @@ export const ScaffoldSchema = z
       })
       .strict(),
     profile: ProfileIdSchema,
+    renderer: RendererIdSchema,
     options: z
       .object({
         state: StateSchema,

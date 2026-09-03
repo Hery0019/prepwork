@@ -10,6 +10,7 @@ import { formatDiagnostic, hasErrors, PrepworkError } from '../errors.js';
 import type { FileSystem } from '../fs/types.js';
 import { joinPath, toPosix } from '../fs/types.js';
 import { getPack, PACK_IDS } from '../packs/index.js';
+import { getRenderer, RENDERER_IDS } from '../renderers/index.js';
 import type { QuestionnaireInput, StackPack } from '../packs/types.js';
 import type { Prompter } from '../questionnaire/prompter.js';
 import { readGlobalGitIdentity, setupGitRepository, type CommandRunner } from './git.js';
@@ -105,12 +106,19 @@ export function createProgram(deps: CliDeps): { program: Command; result: CliRes
     .argument('[dir]', 'répertoire cible (créé si absent)', '.')
     .option('--scaffold <file>', 'utiliser ce scaffold.yaml au lieu du questionnaire')
     .option('--stack <id>', `stack cible (${PACK_IDS.join(', ')})`)
+    .option('--renderer <id>', `cible d'agent (${RENDERER_IDS.join(', ')})`)
     .option('--dry-run', 'calculer le plan sans rien écrire', false)
     .option('--no-git', 'ne pas initialiser ni configurer le dépôt git')
     .action(
       async (
         dir: string,
-        options: { scaffold?: string; stack?: string; dryRun: boolean; git: boolean },
+        options: {
+          scaffold?: string;
+          stack?: string;
+          renderer?: string;
+          dryRun: boolean;
+          git: boolean;
+        },
       ) => {
         const projectDir = resolveDir(deps, dir);
 
@@ -142,6 +150,10 @@ export function createProgram(deps: CliDeps): { program: Command; result: CliRes
           });
           scaffold = answers.scaffold;
           extras = answers.extras;
+        }
+
+        if (options.renderer !== undefined) {
+          scaffold = { ...scaffold, renderer: getRenderer(options.renderer).id };
         }
 
         const outcome = await runInit(engineDeps(catalog, pack), {

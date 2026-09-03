@@ -23,10 +23,11 @@ async function catalog(): Promise<Catalog> {
 }
 
 const FULL = ScaffoldSchema.parse({
-  scaffold_version: '1.1.0',
+  scaffold_version: '1.2.0',
   project: { name: 'note-book', description: 'Interface de gestion de notes' },
   stack: { target: 'react', data: 'tanstack-query', forms: 'rhf' },
   profile: 'spa-feature',
+  renderer: 'claude-code',
   options: {
     state: 'zustand',
     security: 'oidc-bff',
@@ -41,10 +42,11 @@ const FULL = ScaffoldSchema.parse({
 });
 
 const MINIMAL = ScaffoldSchema.parse({
-  scaffold_version: '1.1.0',
+  scaffold_version: '1.2.0',
   project: { name: 'kiosk', description: 'Read-only dashboard' },
   stack: { target: 'react', data: 'none', forms: 'none' },
   profile: 'spa-feature',
+  renderer: 'claude-code',
   options: {
     state: 'context',
     security: 'none',

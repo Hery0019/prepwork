@@ -12,6 +12,7 @@ export default tseslint.config(
       'schema/**',
       '.tmp/**',
       'test/**/golden/**',
+      'out/**',
     ],
   },
   eslint.configs.recommended,

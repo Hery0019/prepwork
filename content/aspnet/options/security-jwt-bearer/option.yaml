@@ -1,0 +1,102 @@
+# yaml-language-server: $schema=../../../../schema/aspnet/option.schema.json
+# Jetons JWT émis par un fournisseur OIDC externe. Exclusive avec les autres security-*.
+meta:
+  id: security-jwt-bearer
+  version: 1.0.0
+  rule_prefix: SECJ
+  group: security
+  summary:
+    en: Stateless API validating JWT access tokens issued by an external OIDC provider.
+    fr: API sans état validant des jetons d'accès JWT émis par un fournisseur OIDC externe.
+skill: security
+rules:
+  - id: SECJ-001
+    statement:
+      en: Every endpoint requires an authenticated user by default; making one public is an explicit `[AllowAnonymous]`.
+      fr: Chaque endpoint exige un utilisateur authentifié par défaut ; rendre l'un d'eux public est un `[AllowAnonymous]` explicite.
+    rationale:
+      en: A forgotten attribute must fail closed, not open.
+      fr: Un attribut oublié doit fermer, pas ouvrir.
+    enforced_by: none
+  - id: SECJ-002
+    statement:
+      en: The application validates tokens and never issues any; it holds no signing key and no client secret.
+      fr: L'application valide des jetons et n'en émet jamais ; elle ne détient ni clé de signature ni secret client.
+    rationale:
+      en: Issuing tokens is the identity provider's job; a key held here is a key to steal.
+      fr: Émettre des jetons est le travail du fournisseur d'identité ; une clé détenue ici est une clé à voler.
+    enforced_by: gitleaks
+  - id: SECJ-003
+    statement:
+      en: The authority comes from `JWT_AUTHORITY` and the audience from `JWT_AUDIENCE`; neither is hard-coded.
+      fr: L'autorité vient de `JWT_AUTHORITY` et l'audience de `JWT_AUDIENCE` ; ni l'une ni l'autre n'est codée en dur.
+    rationale:
+      en: The same build must run against the test and the production provider.
+      fr: Le même binaire doit tourner contre le fournisseur de test et celui de production.
+    enforced_by: none
+  - id: SECJ-004
+    statement:
+      en: Issuer, audience, signature and lifetime are all validated; disabling one of them requires an ADR.
+      fr: Issuer, audience, signature et durée de vie sont tous validés ; en désactiver un exige un ADR.
+    rationale:
+      en: Each check dropped turns a token from another system into a valid one here.
+      fr: Chaque contrôle abandonné transforme un jeton d'un autre système en jeton valide ici.
+    enforced_by: none
+  - id: SECJ-005
+    statement:
+      en: Business tests run with `Security:Enabled=false`; authentication itself has its own test.
+      fr: Les tests métier tournent avec `Security:Enabled=false` ; l'authentification a son propre test.
+    rationale:
+      en: A business test must not depend on an identity provider being reachable.
+      fr: Un test métier ne doit pas dépendre de la joignabilité d'un fournisseur d'identité.
+    enforced_by: arch-test
+  - id: SECJ-006
+    statement:
+      en: Authorities come from the token claims; no role is stored per user in the application.
+      fr: Les autorisations viennent des claims du jeton ; aucun rôle n'est stocké par utilisateur dans l'application.
+    rationale:
+      en: Roles kept in the identity provider stay consistent across every service that trusts it.
+      fr: Les rôles gérés dans le fournisseur d'identité restent cohérents entre tous les services qui lui font confiance.
+    enforced_by: none
+anti_patterns:
+  - id: SECJ-AP-001
+    statement:
+      en: Decoding the JWT by hand in a middleware to "read the user".
+      fr: Décoder le JWT à la main dans un middleware pour « lire l'utilisateur ».
+    rationale:
+      en: Signature, expiry and issuer checks end up skipped one by one.
+      fr: Signature, expiration et issuer finissent par être ignorés un à un.
+    enforced_by: none
+    instead:
+      en: Read `User.Claims`, which the handler has already validated.
+      fr: Lire `User.Claims`, que le handler a déjà validés.
+  - id: SECJ-AP-002
+    statement:
+      en: '`RequireHttpsMetadata = false` to make a local provider work.'
+      fr: '`RequireHttpsMetadata = false` pour faire marcher un fournisseur local.'
+    rationale:
+      en: The metadata, hence the signing keys, then travel in clear text.
+      fr: Les métadonnées, donc les clés de signature, circulent alors en clair.
+    enforced_by: none
+    instead:
+      en: Keep it enabled outside `Development`, where the skeleton already relaxes it.
+      fr: Le garder actif hors `Development`, où le squelette le relâche déjà.
+env:
+  - name: JWT_AUTHORITY
+    example: https://auth.example.com/realms/app
+    comment:
+      en: OIDC provider that issues the tokens; the application refuses to start without it.
+      fr: Fournisseur OIDC qui émet les jetons ; l'application refuse de démarrer sans lui.
+  - name: JWT_AUDIENCE
+    example: ''
+    comment:
+      en: Expected audience of the tokens; empty disables the audience check (SECJ-004).
+      fr: Audience attendue des jetons ; vide désactive le contrôle d'audience (SECJ-004).
+dotnet:
+  packages:
+    - id: Microsoft.AspNetCore.Authentication.JwtBearer
+      version: 10.0.11
+      role: host
+      purpose:
+        en: Validates the bearer tokens against the provider metadata.
+        fr: Valide les jetons bearer contre les métadonnées du fournisseur.

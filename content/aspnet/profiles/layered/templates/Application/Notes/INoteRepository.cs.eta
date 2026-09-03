@@ -1,0 +1,22 @@
+<%
+const application = it.projects.find((candidate) => candidate.id === 'application');
+const domain = it.projects.find((candidate) => candidate.id === 'domain');
+-%>
+using <%= domain.namespace %>.Notes;
+
+namespace <%= application.namespace %>.Notes;
+
+<%= it.t("// NET-002 : le port. La couche applicative le déclare, l'infrastructure l'implémente ;", "// NET-002: the port. The application layer declares it, infrastructure implements it;") %>
+<%= it.t("// aucune référence de projet ne remonte, donc aucun type EF Core n'est atteignable ici.", "// no project reference points upwards, so no EF Core type is reachable here.") %>
+public interface INoteRepository
+{
+    Task<Note> AddAsync(Note note, CancellationToken cancellationToken);
+
+    Task<Note?> FindAsync(long id, CancellationToken cancellationToken);
+
+    Task<(IReadOnlyList<Note> Items, long Total)> ListAsync(
+        int page,
+        int size,
+        CancellationToken cancellationToken
+    );
+}

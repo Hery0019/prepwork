@@ -1,10 +1,11 @@
 // Matrice de génération (CLAUDE.md §8) : écrit un scaffold.yaml pour une combinaison, puis rend
 // le projet. La CI lance ensuite l'outillage du projet généré (`mvn verify` côté Spring,
-// `pnpm lint && pnpm test && pnpm build` côté React).
+// `pnpm lint && pnpm test && pnpm build` côté React, `dotnet test` côté ASP.NET).
 //
 // Usage :
 //   pnpm matrix spring-boot <outDir> <profile> <security> <migrations|none> [database]
 //   pnpm matrix react       <outDir> <data> <forms> <security> [preset]
+//   pnpm matrix aspnet      <outDir> <profile> <security> [database]
 import { defaultContentRoot, loadCatalog } from '../src/catalog/index.js';
 import { serializeScaffold } from '../src/config/io.js';
 import type { BaseScaffold } from '../src/config/schema.js';
@@ -14,6 +15,7 @@ import { PrepworkError } from '../src/errors.js';
 import { createNodeFileSystem } from '../src/fs/node.js';
 import { joinPath } from '../src/fs/types.js';
 import { getPack } from '../src/packs/index.js';
+import { ScaffoldSchema as AspnetScaffoldSchema } from '../src/packs/aspnet/scaffold.js';
 import { ScaffoldSchema as ReactScaffoldSchema } from '../src/packs/react/scaffold.js';
 import { ScaffoldSchema as SpringScaffoldSchema } from '../src/packs/spring-boot/scaffold.js';
 import { claudeCodeRenderer } from '../src/renderers/index.js';
@@ -22,6 +24,7 @@ const USAGE = [
   'usage:',
   '  pnpm matrix spring-boot <outDir> <profile> <security> <migrations|none> [database]',
   '  pnpm matrix react       <outDir> <profile> <data> <forms> <security> [preset]',
+  '  pnpm matrix aspnet      <outDir> <profile> <security> [database]',
 ].join('\n');
 
 function springScaffold(args: readonly string[]): BaseScaffold {
@@ -61,6 +64,24 @@ function reactScaffold(args: readonly string[]): BaseScaffold {
   });
 }
 
+function aspnetScaffold(args: readonly string[]): BaseScaffold {
+  const [profile, security, database = 'postgresql'] = args;
+  if (!profile || !security) throw new PrepworkError('SCAFFOLD_INVALID', USAGE);
+  return AspnetScaffoldSchema.parse({
+    scaffold_version: '1.2.0',
+    project: {
+      name: `matrix-${profile}`,
+      root_namespace: 'Matrix.Generated',
+      description: `Generation matrix: ${profile} / ${security} / ${database}`,
+    },
+    stack: { target: 'aspnet', database },
+    profile,
+    options: { security, docker: true, ci: 'github' },
+    git: { author: { name: 'prepwork-ci', email: 'ci@example.com' }, agent_trailer: true },
+    language: { comments: 'fr', docs: 'fr' },
+  });
+}
+
 const [stack, outDir, ...rest] = process.argv.slice(2);
 if (!stack || !outDir) {
   console.error(USAGE);
@@ -69,7 +90,12 @@ if (!stack || !outDir) {
 
 try {
   const pack = getPack(stack);
-  const scaffold = stack === 'react' ? reactScaffold(rest) : springScaffold(rest);
+  const scaffold =
+    stack === 'react'
+      ? reactScaffold(rest)
+      : stack === 'aspnet'
+        ? aspnetScaffold(rest)
+        : springScaffold(rest);
   const fs = createNodeFileSystem();
   const catalog = await loadCatalog(fs, defaultContentRoot(), pack);
   const files = renderProject(

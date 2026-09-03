@@ -1,0 +1,37 @@
+<%
+const infrastructure = it.projects.find((candidate) => candidate.id === 'infrastructure');
+const domain = it.projects.find((candidate) => candidate.id === 'domain');
+const table = it.tables[0];
+-%>
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using <%= domain.namespace %>.Notes;
+
+namespace <%= infrastructure.namespace %>.Notes;
+
+<%= it.t("// NET-006 : le mapping relationnel vit ici, un fichier par entité, et non dans le", "// NET-006: the relational mapping lives here, one file per entity, and not in the") %>
+<%= it.t("// `DbContext`. Le `DbContext` les découvre tous à l'assemblage.", "// `DbContext`. The `DbContext` discovers them all at assembly time.") %>
+internal sealed class NoteConfiguration : IEntityTypeConfiguration<Note>
+{
+    public void Configure(EntityTypeBuilder<Note> builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.ToTable("<%= table.name %>");
+<% for (const column of table.columns) { -%>
+<% if (column.type === 'identity') { -%>
+
+        builder.HasKey(note => note.<%= it.propertyName(column) %>);
+        builder
+            .Property(note => note.<%= it.propertyName(column) %>)
+            .HasColumnName("<%= column.name %>")
+            .ValueGeneratedOnAdd();
+<% } else { -%>
+        builder
+            .Property(note => note.<%= it.propertyName(column) %>)
+            .HasColumnName("<%= column.name %>")
+            .HasColumnType("<%= it.efColumnType(column) %>")<%= column.nullable ? '' : '\n            .IsRequired()' %>;
+<% } -%>
+<% } -%>
+    }
+}

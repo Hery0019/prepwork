@@ -1,0 +1,40 @@
+# CIGL-001 : la CI ne fait rien de plus que ce qu'une machine de développement peut faire.
+image: mcr.microsoft.com/dotnet/sdk:10.0
+
+stages:
+  - verify
+
+variables:
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_NOLOGO: "1"
+  NUGET_PACKAGES: "$CI_PROJECT_DIR/.nuget"
+  # CIGL-002 : Testcontainers a besoin d'un démon Docker joignable.
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_TLS_CERTDIR: ""
+  TESTCONTAINERS_HOST_OVERRIDE: docker
+
+cache:
+  key:
+    files:
+      - "**/*.csproj"
+  paths:
+    - .nuget/
+
+verify:
+  stage: verify
+  services:
+    - name: docker:27-dind
+      alias: docker
+  script:
+    - dotnet restore
+    - dotnet format --verify-no-changes --no-restore
+    - dotnet build --configuration Release --no-restore
+    - dotnet test --configuration Release --no-build
+    # PERS-001 : un modèle modifié sans migration fait échouer la CI.
+    - dotnet tool install --global dotnet-ef --version 10.0.11
+    - export PATH="$PATH:$HOME/.dotnet/tools"
+    - >
+      dotnet ef migrations has-pending-model-changes
+      --project src/BackOffice.Infrastructure/BackOffice.Infrastructure.csproj
+      --startup-project src/BackOffice.Api/BackOffice.Api.csproj
+      --no-build --configuration Release

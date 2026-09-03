@@ -1,0 +1,6 @@
+{
+  "sdk": {
+    "version": "<%= it.versions.sdk %>",
+    "rollForward": "<%= it.versions.rollForward %>"
+  }
+}

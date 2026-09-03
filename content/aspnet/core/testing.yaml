@@ -1,0 +1,90 @@
+# yaml-language-server: $schema=../../../schema/aspnet/core.schema.json
+# Tests (CLAUDE.md §4).
+id: testing
+skill: testing
+title:
+  en: Testing
+  fr: Tests
+rules:
+  - id: CORE-020
+    statement:
+      en: There are exactly three test levels, unit (no host), slice (`WebApplicationFactory` with the application layer substituted) and integration (`WebApplicationFactory` with Testcontainers).
+      fr: Il existe exactement trois niveaux de test, unitaire (sans hôte), slice (`WebApplicationFactory` avec la couche applicative doublée) et intégration (`WebApplicationFactory` avec Testcontainers).
+    rationale:
+      en: Each level has a cost and a purpose; a fourth category is where confusion starts.
+      fr: Chaque niveau a un coût et un rôle ; une quatrième catégorie est le début de la confusion.
+    enforced_by: none
+  - id: CORE-021
+    statement:
+      en: Persistence is tested against the real database engine through Testcontainers; the `InMemory` provider is never used.
+      fr: La persistance est testée sur le vrai moteur de base de données via Testcontainers ; le provider `InMemory` n'est jamais utilisé.
+    rationale:
+      en: The InMemory provider is not a relational database and Microsoft advises against testing with it.
+      fr: Le provider InMemory n'est pas une base relationnelle et Microsoft lui-même déconseille de tester avec.
+    enforced_by: arch-test
+  - id: CORE-022
+    statement:
+      en: Test methods are named `Method_Condition_ExpectedResult`.
+      fr: Les méthodes de test sont nommées `Method_Condition_ExpectedResult`.
+    rationale:
+      en: A failing test name must say what broke without opening the file.
+      fr: Le nom d'un test en échec doit dire ce qui casse sans ouvrir le fichier.
+    enforced_by: none
+  - id: CORE-023
+    statement:
+      en: Every test carries a `[Trait("Category", …)]` naming its level, `Unit`, `Slice` or `Integration`.
+      fr: Chaque test porte un `[Trait("Category", …)]` qui nomme son niveau, `Unit`, `Slice` ou `Integration`.
+    rationale:
+      en: '`dotnet test --filter Category!=Integration` must run the whole suite that needs no Docker.'
+      fr: "`dotnet test --filter Category!=Integration` doit lancer toute la suite qui n'a pas besoin de Docker."
+    enforced_by: arch-test
+  - id: CORE-024
+    statement:
+      en: No numeric coverage threshold is imposed; a test is judged on what it verifies.
+      fr: Aucun seuil numérique de couverture n'est imposé ; un test est jugé sur ce qu'il vérifie.
+    rationale:
+      en: A percentage target produces assertion-free tests written to satisfy the metric.
+      fr: Un objectif en pourcentage produit des tests sans assertion écrits pour la métrique.
+    enforced_by: none
+  - id: CORE-025
+    statement:
+      en: Every feature ships with at least one unit test, plus the slice test of each endpoint it adds.
+      fr: Toute fonctionnalité est livrée avec au moins un test unitaire, plus le test slice de chaque endpoint qu'elle ajoute.
+    rationale:
+      en: The reference example shows one test per level; new code follows the same shape.
+      fr: L'exemple de référence montre un test par niveau ; le nouveau code suit la même forme.
+    enforced_by: none
+anti_patterns:
+  - id: CORE-AP-020
+    statement:
+      en: Starting the whole host for every test because it "always works".
+      fr: Démarrer l'hôte complet pour tous les tests parce que « ça marche toujours ».
+    rationale:
+      en: The suite becomes minutes long and nobody runs it before pushing.
+      fr: La suite dure des minutes et plus personne ne la lance avant de pousser.
+    enforced_by: none
+    instead:
+      en: Pick the cheapest level that exercises the behaviour under test.
+      fr: Choisir le niveau le moins coûteux qui exerce le comportement testé.
+  - id: CORE-AP-021
+    statement:
+      en: Swapping the provider for `UseInMemoryDatabase` or SQLite in a persistence test.
+      fr: Remplacer le provider par `UseInMemoryDatabase` ou SQLite dans un test de persistance.
+    rationale:
+      en: The test validates the fake, not the SQL that will run in production.
+      fr: Le test valide le faux, pas le SQL qui tournera en production.
+    enforced_by: none
+    instead:
+      en: An integration test on the Testcontainers database.
+      fr: Un test d'intégration sur la base Testcontainers.
+  - id: CORE-AP-022
+    statement:
+      en: Test names such as `Test1`, `ShouldWork` or `TestCreate`.
+      fr: Des noms de test tels que `Test1`, `ShouldWork` ou `TestCreate`.
+    rationale:
+      en: The name carries no information when it appears in a failure report.
+      fr: Le nom n'apporte aucune information quand il apparaît dans un rapport d'échec.
+    enforced_by: none
+    instead:
+      en: '`Create_TitleBlank_Returns400`: method, condition, expected result.'
+      fr: '`Create_TitleBlank_Returns400` : méthode, condition, résultat attendu.'

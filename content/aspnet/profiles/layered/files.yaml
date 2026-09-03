@@ -1,0 +1,75 @@
+# yaml-language-server: $schema=../../../../schema/aspnet/files.schema.json
+# Squelette du profil `layered` : cinq projets, l'exemple de référence `Note` et les tests
+# d'architecture. Les variantes sans base de données remplacent EF Core par un dépôt en mémoire.
+#
+# Les chemins viennent du graphe de projets résolu (`it.projects`), jamais recomposés à la main :
+# le répertoire d'un projet est une propriété du pack, pas une convention à répéter ici.
+files:
+  # --- Projets -------------------------------------------------------------------------
+  - source: csproj/Domain.csproj.eta
+    target: <%= it.projects.find((p) => p.id === 'domain').csproj %>
+  - source: csproj/Application.csproj.eta
+    target: <%= it.projects.find((p) => p.id === 'application').csproj %>
+  - source: csproj/Infrastructure.csproj.eta
+    target: <%= it.projects.find((p) => p.id === 'infrastructure').csproj %>
+  - source: csproj/Api.csproj.eta
+    target: <%= it.projects.find((p) => p.id === 'api').csproj %>
+  - source: csproj/Tests.csproj.eta
+    target: <%= it.projects.find((p) => p.id === 'tests').csproj %>
+
+  # --- Domain --------------------------------------------------------------------------
+  - source: Domain/Notes/Note.cs.eta
+    target: <%= it.projects.find((p) => p.id === 'domain').dir %>/Notes/Note.cs
+
+  # --- Application ---------------------------------------------------------------------
+  - source: Application/ApplicationServices.cs.eta
+    target: <%= it.projects.find((p) => p.id === 'application').dir %>/ApplicationServices.cs
+  - source: Application/Notes/INoteRepository.cs.eta
+    target: <%= it.projects.find((p) => p.id === 'application').dir %>/Notes/INoteRepository.cs
+  - source: Application/Notes/NoteView.cs.eta
+    target: <%= it.projects.find((p) => p.id === 'application').dir %>/Notes/NoteView.cs
+  - source: Application/Notes/NoteService.cs.eta
+    target: <%= it.projects.find((p) => p.id === 'application').dir %>/Notes/NoteService.cs
+
+  # --- Infrastructure ------------------------------------------------------------------
+  - source: Infrastructure/InfrastructureServices.cs.eta
+    target: <%= it.projects.find((p) => p.id === 'infrastructure').dir %>/InfrastructureServices.cs
+  - source: Infrastructure/Notes/NoteRepository.cs.eta
+    target: <%= it.projects.find((p) => p.id === 'infrastructure').dir %>/Notes/NoteRepository.cs
+    when: stack.database != 'none'
+  - source: Infrastructure/Notes/NoteConfiguration.cs.eta
+    target: <%= it.projects.find((p) => p.id === 'infrastructure').dir %>/Notes/NoteConfiguration.cs
+    when: stack.database != 'none'
+  - source: Infrastructure/Notes/InMemoryNoteRepository.cs.eta
+    target: <%= it.projects.find((p) => p.id === 'infrastructure').dir %>/Notes/InMemoryNoteRepository.cs
+    when: stack.database == 'none'
+
+  # --- Api -----------------------------------------------------------------------------
+  - source: Program.cs.eta
+    target: <%= it.projects.find((p) => p.id === 'api').dir %>/Program.cs
+  - source: Api/Notes/NotesController.cs.eta
+    target: <%= it.projects.find((p) => p.id === 'api').dir %>/Notes/NotesController.cs
+  - source: Api/Notes/CreateNoteRequest.cs.eta
+    target: <%= it.projects.find((p) => p.id === 'api').dir %>/Notes/CreateNoteRequest.cs
+
+  # --- Tests : un par niveau, plus les règles d'architecture ----------------------------
+  - source: tests/Architecture/LayeredArchitectureTest.cs.eta
+    target: <%= it.projects.find((p) => p.id === 'tests').dir %>/Architecture/LayeredArchitectureTest.cs
+  - source: tests/Unit/NoteServiceTest.cs.eta
+    target: <%= it.projects.find((p) => p.id === 'tests').dir %>/Unit/NoteServiceTest.cs
+  - source: tests/Slice/NotesControllerTest.cs.eta
+    target: <%= it.projects.find((p) => p.id === 'tests').dir %>/Slice/NotesControllerTest.cs
+  - source: tests/Integration/NotesApiTest.cs.eta
+    target: <%= it.projects.find((p) => p.id === 'tests').dir %>/Integration/NotesApiTest.cs
+    when: stack.database != 'none'
+
+  # --- Migration initiale : livrée avec le squelette, pas générée par l'équipe ----------
+  - source: Infrastructure/Migrations/InitialSchema.cs.eta
+    target: <%= it.projects.find((p) => p.id === 'infrastructure').dir %>/Migrations/<%= it.today.split('-').join('') %>000000_InitialSchema.cs
+    when: stack.database != 'none'
+  - source: Infrastructure/Migrations/InitialSchema.Designer.cs.eta
+    target: <%= it.projects.find((p) => p.id === 'infrastructure').dir %>/Migrations/<%= it.today.split('-').join('') %>000000_InitialSchema.Designer.cs
+    when: stack.database != 'none'
+  - source: Infrastructure/Migrations/AppDbContextModelSnapshot.cs.eta
+    target: <%= it.projects.find((p) => p.id === 'infrastructure').dir %>/Migrations/AppDbContextModelSnapshot.cs
+    when: stack.database != 'none'

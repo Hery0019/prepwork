@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=../../../../schema/aspnet/option.schema.json
+# Pipeline GitHub Actions. Exclusive avec ci-gitlab.
+meta:
+  id: ci-github
+  version: 1.0.0
+  rule_prefix: CIGH
+  group: ci
+  summary:
+    en: GitHub Actions pipeline running the build, the three test levels and the migration check.
+    fr: Pipeline GitHub Actions qui exécute le build, les trois niveaux de test et le contrôle des migrations.
+skill: workflow
+rules:
+  - id: CIGH-001
+    statement:
+      en: The pipeline runs `dotnet format --verify-no-changes`, `dotnet build` and `dotnet test` on every push and pull request.
+      fr: Le pipeline exécute `dotnet format --verify-no-changes`, `dotnet build` et `dotnet test` à chaque push et pull request.
+    rationale:
+      en: CI must run exactly what a developer can run locally, no more and no less.
+      fr: La CI doit exécuter exactement ce qu'un développeur peut lancer localement, ni plus ni moins.
+    enforced_by: format
+  - id: CIGH-002
+    statement:
+      en: The SDK version comes from `global.json`; the workflow never pins a different one.
+      fr: La version du SDK vient de `global.json` ; le workflow n'en épingle jamais une autre.
+    rationale:
+      en: Two sources of truth for the SDK version produce a green CI and a red machine.
+      fr: Deux sources de vérité pour la version du SDK produisent une CI verte et une machine rouge.
+    enforced_by: none
+  - id: CIGH-003
+    statement:
+      en: A red pipeline blocks the merge; nothing is merged with a failing check.
+      fr: Un pipeline rouge bloque la fusion ; rien n'est fusionné avec une vérification en échec.
+    rationale:
+      en: A check that can be ignored stops being a check.
+      fr: Une vérification qu'on peut ignorer cesse d'être une vérification.
+    enforced_by: none

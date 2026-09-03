@@ -1,0 +1,48 @@
+# yaml-language-server: $schema=../../../../schema/aspnet/option.schema.json
+# Aucune authentification. Exclusive avec security-cookie et security-jwt-bearer.
+meta:
+  id: security-none
+  version: 1.0.0
+  rule_prefix: SECN
+  group: security
+  summary:
+    en: No authentication; the API is meant for a trusted network only.
+    fr: Aucune authentification ; l'API est réservée à un réseau de confiance.
+skill: security
+rules:
+  - id: SECN-001
+    statement:
+      en: No authentication is configured; the API must only be reachable from a trusted network.
+      fr: Aucune authentification n'est configurée ; l'API ne doit être joignable que depuis un réseau de confiance.
+    rationale:
+      en: Every endpoint, including writes, is open to whoever can reach the port.
+      fr: Chaque endpoint, écritures comprises, est ouvert à quiconque atteint le port.
+    enforced_by: none
+  - id: SECN-002
+    statement:
+      en: Before any public exposure, the security option is switched to `cookie` or `jwt-bearer` in `scaffold.yaml`, then `prepwork sync` is run.
+      fr: Avant toute exposition publique, l'option de sécurité passe à `cookie` ou `jwt-bearer` dans `scaffold.yaml`, puis `prepwork sync` est lancé.
+    rationale:
+      en: The switch generates the configuration and the tests consistently; a hand-made setup drifts from the conventions.
+      fr: Le changement génère configuration et tests de façon cohérente ; un montage manuel dérive des conventions.
+    enforced_by: none
+  - id: SECN-003
+    statement:
+      en: No type depends on `Microsoft.AspNetCore.Authentication`; authentication is added by switching option, never by hand.
+      fr: Aucun type ne dépend de `Microsoft.AspNetCore.Authentication` ; l'authentification s'ajoute en changeant d'option, jamais à la main.
+    rationale:
+      en: A partial, hand-written security setup is worse than an explicit absence.
+      fr: Une sécurité partielle écrite à la main est pire qu'une absence explicite.
+    enforced_by: arch-test
+anti_patterns:
+  - id: SECN-AP-001
+    statement:
+      en: Adding an `X-Api-Key` header check in a middleware to "secure it a bit".
+      fr: Ajouter un contrôle d'en-tête `X-Api-Key` dans un middleware pour « sécuriser un peu ».
+    rationale:
+      en: A shared static key cannot be revoked, rotated or attributed to anyone.
+      fr: Une clé statique partagée ne peut être ni révoquée, ni tournée, ni attribuée à quelqu'un.
+    enforced_by: none
+    instead:
+      en: Switch the security option, which brings a real authentication scheme and its tests.
+      fr: Changer d'option de sécurité, qui apporte un vrai schéma d'authentification et ses tests.

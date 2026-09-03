@@ -1,0 +1,13 @@
+# Ce qui ne doit jamais entrer dans le contexte de build (DOCK-003).
+**/bin/
+**/obj/
+**/.vs/
+.git/
+.githooks/
+.env
+.env.*
+!.env.example
+tests/
+docs/
+artifacts/
+TestResults/

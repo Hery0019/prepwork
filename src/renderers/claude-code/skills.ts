@@ -164,10 +164,29 @@ function packExtra(model: RenderModel, skillId: string): Extra {
   );
 }
 
+/**
+ * Additionne deux sections : celle du renderer et celle du pack. Le skill `architecture` est le
+ * seul où les deux ont quelque chose à dire — les couches viennent du cœur, ce qui les tient
+ * (graphe de projets, chemins) appartient à la stack.
+ */
+function mergeExtras(first: Extra, second: Extra): Extra {
+  const join = (a: string | undefined, b: string | undefined): string | undefined =>
+    a !== undefined && b !== undefined ? blocks(a, b) : (a ?? b);
+  const before = join(first.before, second.before);
+  const after = join(first.after, second.after);
+  return {
+    ...(before !== undefined ? { before } : {}),
+    ...(after !== undefined ? { after } : {}),
+  };
+}
+
 function extrasFor(model: RenderModel, skillId: string): { core: Extra; profile: Extra } {
   switch (skillId) {
     case 'architecture':
-      return { core: {}, profile: architectureExtra(model) };
+      return {
+        core: {},
+        profile: mergeExtras(architectureExtra(model), packExtra(model, skillId)),
+      };
     case 'workflow':
       return { core: workflowExtra(model), profile: packExtra(model, skillId) };
     case 'security':

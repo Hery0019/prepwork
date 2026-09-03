@@ -1,0 +1,67 @@
+<%
+const db = it.stack.database;
+const dbName = it.project.dbName;
+const connection = db === 'postgresql'
+  ? `Host=db;Port=5432;Database=${dbName};Username=${dbName};Password=local_dev`
+  : `Server=db,1433;Database=${dbName};User Id=sa;Password=Local_dev_1;TrustServerCertificate=True`;
+-%>
+# <%= it.d("DOCK-004 : environnement local uniquement. Le déploiement réel se décrit ailleurs.", "DOCK-004: local environment only. The real deployment is described elsewhere.") %>
+# <%= it.d("Le mot de passe ci-dessous est local et jetable : il ne vaut que pour ce conteneur.", "The password below is local and disposable: it is worth nothing outside this container.") %>
+services:
+  api:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+<% if (db !== 'none') { -%>
+      DB_CONNECTION_STRING: <%= connection %>
+    depends_on:
+      db:
+        condition: service_healthy
+<% } -%>
+<% if (db === 'postgresql') { -%>
+
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: <%= dbName %>
+      POSTGRES_USER: <%= dbName %>
+      POSTGRES_PASSWORD: local_dev
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U <%= dbName %>"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+volumes:
+  db-data:
+<% } else if (db === 'sqlserver') { -%>
+
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: Local_dev_1
+    ports:
+      - "1433:1433"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P Local_dev_1 -Q 'SELECT 1'",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - db-data:/var/opt/mssql
+
+volumes:
+  db-data:
+<% } -%>

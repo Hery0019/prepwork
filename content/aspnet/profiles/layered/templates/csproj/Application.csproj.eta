@@ -1,0 +1,38 @@
+<% const project = it.projects.find((candidate) => candidate.id === 'application'); -%>
+<Project Sdk="<%= project.kind === 'web' ? 'Microsoft.NET.Sdk.Web' : 'Microsoft.NET.Sdk' %>">
+
+<% if (project.kind === 'test') { -%>
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+<% } -%>
+<% if (project.references.length > 0) { -%>
+  <ItemGroup>
+<% for (const reference of project.references) { -%>
+    <ProjectReference Include="<%= reference.path %>" />
+<% } -%>
+  </ItemGroup>
+
+<% } -%>
+<% if (project.packages.length > 0) { -%>
+  <ItemGroup>
+<% for (const nuget of project.packages) { -%>
+<% if (nuget.private_assets) { -%>
+    <PackageReference Include="<%= nuget.id %>" Version="<%= nuget.version %>">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+<% } else { -%>
+    <PackageReference Include="<%= nuget.id %>" Version="<%= nuget.version %>" />
+<% } -%>
+<% } -%>
+  </ItemGroup>
+
+<% } -%>
+<% if (project.kind === 'test') { -%>
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+<% } -%>
+</Project>

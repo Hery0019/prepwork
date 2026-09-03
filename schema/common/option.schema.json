@@ -162,7 +162,13 @@
               "stylelint",
               "prettier",
               "vitest",
-              "playwright"
+              "playwright",
+              "compiler",
+              "arch-test",
+              "analyzer",
+              "format",
+              "ef-migrations",
+              "nuget-audit"
             ]
           }
         },
@@ -263,7 +269,13 @@
               "stylelint",
               "prettier",
               "vitest",
-              "playwright"
+              "playwright",
+              "compiler",
+              "arch-test",
+              "analyzer",
+              "format",
+              "ef-migrations",
+              "nuget-audit"
             ]
           },
           "instead": {

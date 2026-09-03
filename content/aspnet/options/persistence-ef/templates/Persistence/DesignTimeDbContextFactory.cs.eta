@@ -1,0 +1,29 @@
+<%
+const persistence = it.projectFor('persistence');
+const useProvider = it.stack.database === 'postgresql' ? 'UseNpgsql' : 'UseSqlServer';
+const placeholder = it.stack.database === 'postgresql'
+  ? 'Host=localhost;Database=design;Username=design;Password=design'
+  : 'Server=localhost,1433;Database=design;User Id=sa;Password=Local_dev_1;TrustServerCertificate=True';
+-%>
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
+
+namespace <%= persistence.namespace %>.Persistence;
+
+<%= it.t("// Utilisé uniquement par `dotnet ef`, qui doit construire un contexte sans démarrer", "// Used only by `dotnet ef`, which must build a context without starting the application.") %>
+<%= it.t("// l'application. Générer une migration ne se connecte à aucune base : la chaîne de repli", "// Generating a migration connects to no database: the fallback string below is only there") %>
+<%= it.t("// ci-dessous ne sert qu'à choisir le dialecte.", "// to pick the dialect.") %>
+internal sealed class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
+{
+    public AppDbContext CreateDbContext(string[] args)
+    {
+        var connectionString =
+            Environment.GetEnvironmentVariable("DB_CONNECTION_STRING") ?? "<%= placeholder %>";
+
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .<%= useProvider %>(connectionString)
+            .Options;
+
+        return new AppDbContext(options);
+    }
+}

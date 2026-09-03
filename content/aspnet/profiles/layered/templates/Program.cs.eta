@@ -1,0 +1,68 @@
+<%
+const api = it.projects.find((candidate) => candidate.id === 'api');
+const application = it.projects.find((candidate) => candidate.id === 'application');
+const infrastructure = it.projects.find((candidate) => candidate.id === 'infrastructure');
+-%>
+using <%= api.namespace %>.Common;
+using <%= api.namespace %>.Security;
+using <%= application.namespace %>;
+using <%= infrastructure.namespace %>;
+
+<%= it.t("// Racine de composition (NET-003) : le seul endroit qui nomme un type d'infrastructure.", "// Composition root (NET-003): the only place that names an infrastructure type.") %>
+<%= it.t("// Elle n'a pas d'espace de noms — `Program` doit rester accessible aux tests.", "// It has no namespace — `Program` must stay reachable from the tests.") %>
+var builder = WebApplication.CreateBuilder(args);
+
+<%= it.t("// CORE-010 et CORE-011 : une seule forme d'erreur, un seul traducteur.", "// CORE-010 and CORE-011: one error shape, one translator.") %>
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
+builder.Services.AddControllers();
+builder.Services.AddOpenApi();
+builder.Services.AddHealthChecks();
+
+<%= it.t("// CORE-033 : liste explicite d'origines, `CORS_ORIGINS` l'emporte sur la configuration.", "// CORE-033: an explicit list of origins, `CORS_ORIGINS` taking precedence over configuration.") %>
+var configuredOrigins = builder.Configuration.GetSection("Cors:Origins").Get<string[]>() ?? [];
+var environmentOrigins = builder.Configuration["CORS_ORIGINS"];
+var origins = string.IsNullOrWhiteSpace(environmentOrigins)
+    ? configuredOrigins
+    : environmentOrigins.Split(
+        ',',
+        StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
+    );
+builder.Services.AddCors(options =>
+    options.AddDefaultPolicy(policy => policy.WithOrigins(origins).AllowAnyHeader().AllowAnyMethod())
+);
+
+<%= it.t("// NET-010 : chaque couche enregistre ses propres services.", "// NET-010: each layer registers its own services.") %>
+builder.Services.AddApiSecurity(builder.Configuration);
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
+
+var app = builder.Build();
+
+app.UseExceptionHandler();
+app.UseMiddleware<SecurityHeadersMiddleware>();
+
+if (app.Environment.IsDevelopment())
+{
+    <%= it.t("// CORE-036 : le document OpenAPI n'est servi qu'en développement.", "// CORE-036: the OpenAPI document is served in development only.") %>
+    app.MapOpenApi();
+}
+else
+{
+    app.UseHsts();
+    app.UseHttpsRedirection();
+}
+
+app.UseCors();
+app.UseApiSecurity();
+
+app.MapControllers();
+
+<%= it.t("// CORE-032 : le seul endpoint de diagnostic, et il reste public.", "// CORE-032: the only diagnostic endpoint, and it stays public.") %>
+app.MapHealthChecks("/health").AllowAnonymous();
+
+app.Run();
+
+<%= it.t("// Rend `Program` visible à `WebApplicationFactory<Program>` (CORE-020).", "// Makes `Program` visible to `WebApplicationFactory<Program>` (CORE-020).") %>
+public partial class Program;

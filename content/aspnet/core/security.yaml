@@ -1,0 +1,98 @@
+# yaml-language-server: $schema=../../../schema/aspnet/core.schema.json
+# Sécurité de base (CLAUDE.md §4), indépendante de l'option security-*.
+id: security
+skill: security
+title:
+  en: Baseline security
+  fr: Sécurité de base
+rules:
+  - id: CORE-030
+    statement:
+      en: Secrets and environment-specific values come from environment variables; `.env.example` is committed and `.env` is ignored.
+      fr: Les secrets et valeurs propres à un environnement viennent de variables d'environnement ; `.env.example` est commité et `.env` est ignoré.
+    rationale:
+      en: Configuration that differs per environment must never be a code change.
+      fr: Une configuration qui diffère par environnement ne doit jamais être un changement de code.
+    enforced_by: gitleaks
+  - id: CORE-031
+    statement:
+      en: No credential, token or private key is ever committed; the gitleaks pre-commit hook blocks the commit.
+      fr: Aucun identifiant, jeton ou clé privée n'est jamais commité ; le hook pre-commit gitleaks bloque le commit.
+    rationale:
+      en: A secret in history is compromised even after it is removed.
+      fr: Un secret dans l'historique est compromis même après sa suppression.
+    enforced_by: gitleaks
+  - id: CORE-032
+    statement:
+      en: The only diagnostic endpoint exposed is `/health`; no endpoint returns configuration, environment or dumps.
+      fr: Le seul endpoint de diagnostic exposé est `/health` ; aucun endpoint ne renvoie la configuration, l'environnement ou des dumps.
+    rationale:
+      en: A diagnostics endpoint is a configuration leak waiting for the first scan.
+      fr: Un endpoint de diagnostic est une fuite de configuration qui attend le premier scan.
+    enforced_by: none
+  - id: CORE-033
+    statement:
+      en: CORS origins are an explicit list read from configuration; `AllowAnyOrigin` is never used outside `Development`.
+      fr: Les origines CORS sont une liste explicite lue depuis la configuration ; `AllowAnyOrigin` n'est jamais utilisé hors `Development`.
+    rationale:
+      en: A wildcard origin turns every browser into a client of the API.
+      fr: Une origine joker fait de chaque navigateur un client de l'API.
+    enforced_by: none
+  - id: CORE-034
+    statement:
+      en: The response security headers set by the pipeline (`X-Content-Type-Options`, `X-Frame-Options`, HSTS) are never removed without an ADR.
+      fr: Les en-têtes de sécurité posés par le pipeline (`X-Content-Type-Options`, `X-Frame-Options`, HSTS) ne sont jamais retirés sans ADR.
+    rationale:
+      en: ASP.NET Core does not set them by default; the skeleton adds them and each one closes a class of browser attacks for free.
+      fr: ASP.NET Core ne les pose pas par défaut ; le squelette les ajoute et chacun ferme gratuitement une classe d'attaques navigateur.
+    enforced_by: none
+  - id: CORE-035
+    statement:
+      en: A package with a known vulnerability fails the build, NuGet audit warnings being treated as errors.
+      fr: Un paquet porteur d'une vulnérabilité connue fait échouer le build, les avertissements de l'audit NuGet étant traités comme des erreurs.
+    rationale:
+      en: Most breaches exploit a known, already patched vulnerability.
+      fr: La plupart des intrusions exploitent une vulnérabilité connue et déjà corrigée.
+    enforced_by: nuget-audit
+  - id: CORE-036
+    statement:
+      en: Detailed error pages are enabled in `Development` only; every other environment answers with `ProblemDetails`.
+      fr: Les pages d'erreur détaillées ne sont activées qu'en `Development` ; tout autre environnement répond un `ProblemDetails`.
+    rationale:
+      en: A stack trace hands an attacker the framework versions and the internal file layout.
+      fr: Une stack trace donne à un attaquant les versions du framework et l'arborescence interne.
+    enforced_by: none
+anti_patterns:
+  - id: CORE-AP-030
+    statement:
+      en: A password or API key written in `appsettings.json`.
+      fr: Un mot de passe ou une clé d'API écrit dans `appsettings.json`.
+    rationale:
+      en: The value is committed, shared and impossible to rotate per environment.
+      fr: La valeur est commitée, partagée et impossible à faire tourner par environnement.
+    enforced_by: gitleaks
+    instead:
+      en: An environment variable read by the configuration, documented in `.env.example`.
+      fr: Une variable d'environnement lue par la configuration, documentée dans `.env.example`.
+  - id: CORE-AP-031
+    statement:
+      en: '`app.UseDeveloperExceptionPage()` left outside the `Development` branch to "help debugging in staging".'
+      fr: '`app.UseDeveloperExceptionPage()` laissé hors de la branche `Development` pour « aider à déboguer en recette ».'
+    rationale:
+      en: Staging is reachable and the page prints the exception, the source and the configuration.
+      fr: La recette est joignable et la page affiche l'exception, le source et la configuration.
+    enforced_by: none
+    instead:
+      en: Read the logs, which carry the same information without publishing it.
+      fr: Lire les logs, qui portent la même information sans la publier.
+  - id: CORE-AP-032
+    statement:
+      en: '`AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()` to make a local front end work.'
+      fr: '`AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()` pour faire marcher un front local.'
+    rationale:
+      en: The shortcut ships to production because nobody remembers it.
+      fr: Le raccourci part en production parce que personne ne s'en souvient.
+    enforced_by: none
+    instead:
+      en: The local origin in the `Development` configuration and the real one in production.
+      fr: L'origine locale dans la configuration `Development` et la vraie en production.

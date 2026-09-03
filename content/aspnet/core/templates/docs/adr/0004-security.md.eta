@@ -1,0 +1,23 @@
+# ADR 0004 — <%= it.d('Sécurité', 'Security') %>
+
+<%= it.d('Date', 'Date') %> : <%= it.today %> · <%= it.d('Statut', 'Status') %> : <%= it.d('acceptée', 'accepted') %>
+
+## <%= it.d('Contexte', 'Context') %>
+
+<%= it.d("Choix fait au questionnaire prepwork. La sécurité de base (secrets par variables d'environnement, un seul endpoint de diagnostic, CORS explicite, en-têtes de réponse, audit NuGet) s'applique quel que soit ce choix.", 'Choice made in the prepwork questionnaire. Baseline security (secrets through environment variables, a single diagnostic endpoint, explicit CORS, response headers, NuGet audit) applies whatever this choice.') %>
+
+## <%= it.d('Décision', 'Decision') %>
+
+<%= it.d("Option d'authentification", 'Authentication option') %> : **`<%= it.options.security %>`**
+
+<% if (it.options.security === 'none') { -%>
+<%= it.d("Aucune authentification : l'API n'est joignable que depuis un réseau de confiance. Passer à `cookie` ou `jwt-bearer` avant toute exposition publique.", 'No authentication: the API is reachable only from a trusted network. Switch to `cookie` or `jwt-bearer` before any public exposure.') %>
+<% } else if (it.options.security === 'cookie') { -%>
+<%= it.d("Authentification par cookie de session, adaptée à un front servi par la même origine. Le cookie est `HttpOnly`, `Secure` et `SameSite=Strict`.", 'Cookie session authentication, suited to a front end served from the same origin. The cookie is `HttpOnly`, `Secure` and `SameSite=Strict`.') %>
+<% } else { -%>
+<%= it.d("Jetons JWT : l'API valide des jetons émis par un fournisseur OIDC externe (`JWT_AUTHORITY`), sans jamais en émettre elle-même.", 'JWT tokens: the API validates tokens issued by an external OIDC provider (`JWT_AUTHORITY`), and never issues any itself.') %>
+<% } -%>
+
+## <%= it.d('Conséquences', 'Consequences') %>
+
+<%= it.d("Le détail des règles est dans `.claude/skills/security/SKILL.md` ; changer d'option passe par `scaffold.yaml` puis `prepwork sync`.", 'Rule details live in `.claude/skills/security/SKILL.md`; changing the option goes through `scaffold.yaml` then `prepwork sync`.') %>

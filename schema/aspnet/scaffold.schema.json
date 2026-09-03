@@ -1,0 +1,166 @@
+{
+  "title": "prepwork scaffold.yaml (aspnet)",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "scaffold_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "project": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+        },
+        "root_namespace": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      },
+      "required": [
+        "name",
+        "root_namespace",
+        "description"
+      ],
+      "additionalProperties": false
+    },
+    "stack": {
+      "type": "object",
+      "properties": {
+        "target": {
+          "type": "string",
+          "const": "aspnet"
+        },
+        "database": {
+          "type": "string",
+          "enum": [
+            "postgresql",
+            "sqlserver",
+            "none"
+          ]
+        }
+      },
+      "required": [
+        "target",
+        "database"
+      ],
+      "additionalProperties": false
+    },
+    "profile": {
+      "type": "string",
+      "enum": [
+        "layered"
+      ]
+    },
+    "renderer": {
+      "default": "claude-code",
+      "type": "string",
+      "enum": [
+        "claude-code",
+        "agents-md"
+      ]
+    },
+    "options": {
+      "type": "object",
+      "properties": {
+        "security": {
+          "type": "string",
+          "enum": [
+            "none",
+            "cookie",
+            "jwt-bearer"
+          ]
+        },
+        "docker": {
+          "type": "boolean"
+        },
+        "ci": {
+          "type": "string",
+          "enum": [
+            "github",
+            "gitlab",
+            "none"
+          ]
+        }
+      },
+      "required": [
+        "security",
+        "docker",
+        "ci"
+      ],
+      "additionalProperties": false
+    },
+    "git": {
+      "type": "object",
+      "properties": {
+        "author": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "email": {
+              "type": "string",
+              "format": "email",
+              "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+            }
+          },
+          "required": [
+            "name",
+            "email"
+          ],
+          "additionalProperties": false
+        },
+        "agent_trailer": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "author",
+        "agent_trailer"
+      ],
+      "additionalProperties": false
+    },
+    "language": {
+      "type": "object",
+      "properties": {
+        "comments": {
+          "type": "string",
+          "enum": [
+            "fr",
+            "en"
+          ]
+        },
+        "docs": {
+          "type": "string",
+          "enum": [
+            "fr",
+            "en"
+          ]
+        }
+      },
+      "required": [
+        "comments",
+        "docs"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "scaffold_version",
+    "project",
+    "stack",
+    "profile",
+    "options",
+    "git",
+    "language"
+  ],
+  "additionalProperties": false
+}

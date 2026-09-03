@@ -1,0 +1,66 @@
+# yaml-language-server: $schema=../../../../schema/aspnet/option.schema.json
+# Image applicative et environnement local. Indépendante du profil.
+meta:
+  id: docker
+  version: 1.0.0
+  rule_prefix: DOCK
+  summary:
+    en: Multi-stage image and a `compose.yaml` for the local environment.
+    fr: Image multi-étapes et un `compose.yaml` pour l'environnement local.
+skill: workflow
+rules:
+  - id: DOCK-001
+    statement:
+      en: The image is built in two stages; the runtime stage carries no SDK and no source.
+      fr: L'image se construit en deux étapes ; l'étape d'exécution ne porte ni SDK ni sources.
+    rationale:
+      en: A production image that contains a compiler is a bigger attack surface for no benefit.
+      fr: Une image de production qui contient un compilateur est une surface d'attaque de plus, sans contrepartie.
+    enforced_by: none
+  - id: DOCK-002
+    statement:
+      en: The container runs as a non-root user.
+      fr: Le conteneur tourne avec un utilisateur non root.
+    rationale:
+      en: A container escape then starts from an unprivileged account.
+      fr: Une évasion de conteneur part alors d'un compte sans privilège.
+    enforced_by: none
+  - id: DOCK-003
+    statement:
+      en: No secret is written in the `Dockerfile` or in `compose.yaml`; values come from the environment.
+      fr: Aucun secret n'est écrit dans le `Dockerfile` ni dans `compose.yaml` ; les valeurs viennent de l'environnement.
+    rationale:
+      en: An image layer keeps what it was given, even if a later layer removes it.
+      fr: Une couche d'image conserve ce qu'on lui a donné, même si une couche suivante l'efface.
+    enforced_by: gitleaks
+  - id: DOCK-004
+    statement:
+      en: '`compose.yaml` is for the local environment only; it is never the deployment description.'
+      fr: "`compose.yaml` sert à l'environnement local uniquement ; il n'est jamais la description du déploiement."
+    rationale:
+      en: A compose file that drifts into production hides the real deployment from review.
+      fr: Un fichier compose qui dérive vers la production cache le vrai déploiement à la revue.
+    enforced_by: none
+anti_patterns:
+  - id: DOCK-AP-001
+    statement:
+      en: '`COPY . .` followed by a full build inside the image.'
+      fr: "`COPY . .` suivi d'un build complet dans l'image."
+    rationale:
+      en: Every file change invalidates the restore layer, so each build downloads everything again.
+      fr: Chaque changement de fichier invalide la couche de restauration, donc chaque build retélécharge tout.
+    enforced_by: none
+    instead:
+      en: Copy the project files, restore, then copy the sources.
+      fr: Copier les fichiers projet, restaurer, puis copier les sources.
+  - id: DOCK-AP-002
+    statement:
+      en: A `latest` tag for the base image.
+      fr: Un tag `latest` pour l'image de base.
+    rationale:
+      en: The build stops being reproducible the day the tag moves.
+      fr: Le build cesse d'être reproductible le jour où le tag bouge.
+    enforced_by: none
+    instead:
+      en: The pinned major version of the runtime, as the generated `Dockerfile` does.
+      fr: La version majeure épinglée du runtime, comme le fait le `Dockerfile` généré.

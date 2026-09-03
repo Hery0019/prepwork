@@ -1,0 +1,71 @@
+<% const host = it.projectFor('host'); -%>
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace <%= host.namespace %>.Security;
+
+<%= it.t("// SECC-002 : les réglages du cookie vivent ici, à un seul endroit.", "// SECC-002: the cookie settings live here, in one single place.") %>
+public static class ApiSecurity
+{
+    public static IServiceCollection AddApiSecurity(
+        this IServiceCollection services,
+        IConfiguration configuration
+    )
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configuration);
+
+        <%= it.t("// SECC-005 : les tests métier n'ont pas à se connecter.", "// SECC-005: business tests do not have to sign in.") %>
+        if (!configuration.GetValue("Security:Enabled", defaultValue: true))
+        {
+            return services;
+        }
+
+        services
+            .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+            .AddCookie(options =>
+            {
+                options.Cookie.Name = "<%= it.project.name %>.session";
+                options.Cookie.HttpOnly = true;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                options.Cookie.SameSite = SameSiteMode.Strict;
+                options.ExpireTimeSpan = TimeSpan.FromHours(8);
+                options.SlidingExpiration = true;
+
+                <%= it.t("// SECC-003 : une API répond des codes, pas des redirections vers du HTML.", "// SECC-003: an API answers status codes, not redirections to HTML.") %>
+                options.Events.OnRedirectToLogin = context =>
+                {
+                    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                    return Task.CompletedTask;
+                };
+                options.Events.OnRedirectToAccessDenied = context =>
+                {
+                    context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                    return Task.CompletedTask;
+                };
+            });
+
+        <%= it.t("// SECC-001 : fermé par défaut. Un endpoint public est un `[AllowAnonymous]` explicite.", "// SECC-001: closed by default. A public endpoint is an explicit `[AllowAnonymous]`.") %>
+        services
+            .AddAuthorizationBuilder()
+            .SetFallbackPolicy(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
+
+        return services;
+    }
+
+    public static WebApplication UseApiSecurity(this WebApplication app)
+    {
+        ArgumentNullException.ThrowIfNull(app);
+
+        if (!app.Configuration.GetValue("Security:Enabled", defaultValue: true))
+        {
+            return app;
+        }
+
+        app.UseAuthentication();
+        app.UseAuthorization();
+        return app;
+    }
+}

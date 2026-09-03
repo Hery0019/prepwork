@@ -1,0 +1,17 @@
+# <%= it.d("Décisions d'architecture (ADR)", 'Architecture decision records (ADR)') %>
+
+<%= it.d("Une décision par fichier, numérotée, jamais réécrite : une décision remplacée reçoit le statut « remplacée par ADR-NNNN » et la nouvelle décision est un nouveau fichier. Les sept premières ADR ont été créées par prepwork à partir des réponses au questionnaire ; ce répertoire appartient à l'équipe.", 'One decision per file, numbered, never rewritten: a superseded decision gets the status "superseded by ADR-NNNN" and the new decision is a new file. The first seven ADRs were created by prepwork from the questionnaire answers; this directory belongs to the team.') %>
+
+## <%= it.d('Format', 'Format') %>
+
+```markdown
+# ADR NNNN — <%= it.d('Titre', 'Title') %>
+
+<%= it.d('Date', 'Date') %> : YYYY-MM-DD · <%= it.d('Statut', 'Status') %> : <%= it.d('proposée | acceptée | remplacée par ADR-NNNN', 'proposed | accepted | superseded by ADR-NNNN') %>
+
+## <%= it.d('Contexte', 'Context') %>
+## <%= it.d('Décision', 'Decision') %>
+## <%= it.d('Conséquences', 'Consequences') %>
+```
+
+<%= it.d("L'agent propose une ADR avant de coder toute décision qui change l'architecture (CORE-001, CORE-006) ; un humain l'accepte.", 'The agent proposes an ADR before coding any decision that changes the architecture (CORE-001, CORE-006); a human accepts it.') %>

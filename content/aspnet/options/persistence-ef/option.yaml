@@ -1,0 +1,156 @@
+# yaml-language-server: $schema=../../../../schema/aspnet/option.schema.json
+# Persistance EF Core. Présente dès qu'une base de données est choisie ; il n'y a pas d'autre
+# outil de migration dans ce pack (ADR 0010 §3), donc pas de groupe d'exclusivité.
+meta:
+  id: persistence-ef
+  version: 1.0.0
+  rule_prefix: PERS
+  summary:
+    en: EF Core persistence, its migrations and the Testcontainers fixture of the integration tests.
+    fr: Persistance EF Core, ses migrations et la fixture Testcontainers des tests d'intégration.
+skill: db
+rules:
+  - id: PERS-001
+    statement:
+      en: A model change without its migration fails the build (`dotnet ef migrations has-pending-model-changes`).
+      fr: Un changement du modèle sans sa migration fait échouer le build (`dotnet ef migrations has-pending-model-changes`).
+    rationale:
+      en: The gap between the model and the schema is otherwise found in production, not in review.
+      fr: L'écart entre le modèle et le schéma se découvre sinon en production, pas en revue.
+    enforced_by: ef-migrations
+  - id: PERS-002
+    statement:
+      en: The `DbContext` declares no `DbSet`; entities are discovered through their `IEntityTypeConfiguration`.
+      fr: Le `DbContext` ne déclare aucun `DbSet` ; les entités sont découvertes par leur `IEntityTypeConfiguration`.
+    rationale:
+      en: A context that lists every entity becomes the one file every feature has to touch.
+      fr: Un contexte qui liste toutes les entités devient le fichier que chaque fonctionnalité doit modifier.
+    enforced_by: none
+  - id: PERS-003
+    statement:
+      en: The connection string comes from `DB_CONNECTION_STRING`; no committed file ever holds one.
+      fr: La chaîne de connexion vient de `DB_CONNECTION_STRING` ; aucun fichier commité n'en contient.
+    rationale:
+      en: A connection string carries a password, and a committed password is a compromised password.
+      fr: Une chaîne de connexion porte un mot de passe, et un mot de passe commité est un mot de passe compromis.
+    enforced_by: gitleaks
+  - id: PERS-004
+    statement:
+      en: A read query is `AsNoTracking`; the change tracker is for writes only.
+      fr: Une requête de lecture est `AsNoTracking` ; le suivi de modifications ne sert qu'aux écritures.
+    rationale:
+      en: Tracking every read entity costs memory and produces surprising updates.
+      fr: Suivre chaque entité lue coûte de la mémoire et produit des mises à jour surprenantes.
+    enforced_by: none
+  - id: PERS-005
+    statement:
+      en: The application never applies migrations at startup; they are applied by a deployment step or by the test fixture.
+      fr: L'application n'applique jamais les migrations au démarrage ; elles le sont par une étape de déploiement ou par la fixture de test.
+    rationale:
+      en: Two instances starting together would migrate the same schema at the same time.
+      fr: Deux instances qui démarrent ensemble migreraient le même schéma en même temps.
+    enforced_by: none
+  - id: PERS-006
+    statement:
+      en: A migration that has been applied anywhere is never edited nor deleted; a correction is a new migration.
+      fr: Une migration déjà appliquée quelque part n'est jamais modifiée ni supprimée ; une correction est une nouvelle migration.
+    rationale:
+      en: Rewriting history leaves every environment that already ran it in an unknown state.
+      fr: Réécrire l'historique laisse dans un état inconnu tous les environnements qui l'ont déjà jouée.
+    enforced_by: none
+anti_patterns:
+  - id: PERS-AP-001
+    statement:
+      en: '`Database.EnsureCreated()` to "get a schema quickly".'
+      fr: '`Database.EnsureCreated()` pour « avoir un schéma rapidement ».'
+    rationale:
+      en: It bypasses the migration history, and the next migration then has nothing to build on.
+      fr: Elle contourne l'historique des migrations, et la migration suivante n'a plus rien sur quoi s'appuyer.
+    enforced_by: none
+    instead:
+      en: '`dotnet ef migrations add`, then apply the migration.'
+      fr: '`dotnet ef migrations add`, puis appliquer la migration.'
+  - id: PERS-AP-002
+    statement:
+      en: Interpolating a value into `FromSqlRaw`.
+      fr: Interpoler une valeur dans `FromSqlRaw`.
+    rationale:
+      en: That is an SQL injection, in the one place the ORM was protecting.
+      fr: C'est une injection SQL, au seul endroit que l'ORM protégeait.
+    enforced_by: none
+    instead:
+      en: '`FromSql` with an interpolated string, which produces parameters.'
+      fr: '`FromSql` avec une chaîne interpolée, qui produit des paramètres.'
+  - id: PERS-AP-003
+    statement:
+      en: Enabling lazy loading to avoid writing an `Include`.
+      fr: Activer le lazy loading pour éviter d'écrire un `Include`.
+    rationale:
+      en: The N+1 queries appear far from the code that caused them.
+      fr: Les requêtes N+1 apparaissent loin du code qui les a provoquées.
+    enforced_by: none
+    instead:
+      en: An explicit `Include`, or a projection that reads only what is needed.
+      fr: Un `Include` explicite, ou une projection qui ne lit que le nécessaire.
+env:
+  - name: DB_CONNECTION_STRING
+    example: ''
+    comment:
+      en: Database connection string; the application refuses to start without it.
+      fr: Chaîne de connexion à la base ; l'application refuse de démarrer sans elle.
+dotnet:
+  packages:
+    - id: Microsoft.EntityFrameworkCore
+      version: 10.0.11
+      role: persistence
+      purpose:
+        en: The ORM and its migrations.
+        fr: L'ORM et ses migrations.
+    - id: Microsoft.EntityFrameworkCore.Relational
+      version: 10.0.11
+      role: persistence
+      purpose:
+        en: The relational building blocks shared by every provider.
+        fr: Les briques relationnelles communes à tous les providers.
+    - id: Npgsql.EntityFrameworkCore.PostgreSQL
+      version: 10.0.3
+      role: persistence
+      when: stack.database == 'postgresql'
+      purpose:
+        en: PostgreSQL provider.
+        fr: Provider PostgreSQL.
+    - id: Microsoft.EntityFrameworkCore.SqlServer
+      version: 10.0.11
+      role: persistence
+      when: stack.database == 'sqlserver'
+      purpose:
+        en: SQL Server provider.
+        fr: Provider SQL Server.
+    - id: Microsoft.EntityFrameworkCore.Design
+      version: 10.0.11
+      role: host
+      private_assets: true
+      purpose:
+        en: Required by `dotnet ef` in the startup project.
+        fr: Exigé par `dotnet ef` dans le projet de démarrage.
+    - id: Microsoft.EntityFrameworkCore.Design
+      version: 10.0.11
+      role: persistence
+      private_assets: true
+      purpose:
+        en: Provides `IDesignTimeDbContextFactory`; `PrivateAssets` keeps it out of the consumers.
+        fr: Fournit `IDesignTimeDbContextFactory` ; `PrivateAssets` l'empêche d'atteindre les consommateurs.
+    - id: Testcontainers.PostgreSql
+      version: 4.14.0
+      role: tests
+      when: stack.database == 'postgresql'
+      purpose:
+        en: Starts a real PostgreSQL for the integration tests (CORE-021).
+        fr: Démarre un vrai PostgreSQL pour les tests d'intégration (CORE-021).
+    - id: Testcontainers.MsSql
+      version: 4.14.0
+      role: tests
+      when: stack.database == 'sqlserver'
+      purpose:
+        en: Starts a real SQL Server for the integration tests (CORE-021).
+        fr: Démarre un vrai SQL Server pour les tests d'intégration (CORE-021).

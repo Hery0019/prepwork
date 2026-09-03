@@ -1,0 +1,29 @@
+<%
+const host = it.projectFor('host');
+const version = it.versions.targetFramework.replace('net', '');
+-%>
+# <%= it.d("DOCK-001 : deux étapes. L'image finale ne porte ni SDK ni sources.", "DOCK-001: two stages. The final image carries neither SDK nor sources.") %>
+FROM mcr.microsoft.com/dotnet/sdk:<%= version %>-alpine AS build
+WORKDIR /src
+
+# <%= it.d("DOCK-AP-001 : les fichiers projet d'abord, pour que la restauration se mette en cache.", "DOCK-AP-001: project files first, so the restore layer is cached.") %>
+COPY global.json Directory.Build.props ./
+<% for (const project of it.projects.filter((candidate) => candidate.kind !== 'test')) { -%>
+COPY <%= project.csproj %> <%= project.dir %>/
+<% } -%>
+RUN dotnet restore <%= host.csproj %>
+
+COPY src/ src/
+RUN dotnet publish <%= host.csproj %> --configuration Release --no-restore --output /app
+
+FROM mcr.microsoft.com/dotnet/aspnet:<%= version %>-alpine AS runtime
+WORKDIR /app
+COPY --from=build /app .
+
+# <%= it.d("DOCK-002 : l'utilisateur `app` est fourni par l'image de base.", "DOCK-002: the `app` user ships with the base image.") %>
+USER $APP_UID
+
+ENV ASPNETCORE_HTTP_PORTS=8080
+EXPOSE 8080
+
+ENTRYPOINT ["dotnet", "<%= host.name %>.dll"]

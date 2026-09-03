@@ -1,0 +1,20 @@
+<% const host = it.projectFor('host'); -%>
+namespace <%= host.namespace %>.Common;
+
+<%= it.t("// CORE-034 : ASP.NET Core ne pose aucun de ces en-têtes par défaut, contrairement à", "// CORE-034: ASP.NET Core sets none of these headers by default, unlike") %>
+<%= it.t("// Spring Security. Les retirer demande un ADR.", "// Spring Security. Removing them requires an ADR.") %>
+internal sealed class SecurityHeadersMiddleware(RequestDelegate next)
+{
+    public Task InvokeAsync(HttpContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+
+        var headers = context.Response.Headers;
+        headers["X-Content-Type-Options"] = "nosniff";
+        headers["X-Frame-Options"] = "DENY";
+        headers["Referrer-Policy"] = "no-referrer";
+        headers["Cross-Origin-Opener-Policy"] = "same-origin";
+
+        return next(context);
+    }
+}

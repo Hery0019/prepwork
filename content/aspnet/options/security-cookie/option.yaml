@@ -1,0 +1,75 @@
+# yaml-language-server: $schema=../../../../schema/aspnet/option.schema.json
+# Authentification par cookie de session. Exclusive avec les autres security-*.
+meta:
+  id: security-cookie
+  version: 1.0.0
+  rule_prefix: SECC
+  group: security
+  summary:
+    en: Cookie session authentication, for a front end served from the same origin.
+    fr: Authentification par cookie de session, pour un front servi par la même origine.
+skill: security
+rules:
+  - id: SECC-001
+    statement:
+      en: Every endpoint requires an authenticated user by default; making one public is an explicit `[AllowAnonymous]`.
+      fr: Chaque endpoint exige un utilisateur authentifié par défaut ; rendre l'un d'eux public est un `[AllowAnonymous]` explicite.
+    rationale:
+      en: A forgotten attribute must fail closed, not open.
+      fr: Un attribut oublié doit fermer, pas ouvrir.
+    enforced_by: none
+  - id: SECC-002
+    statement:
+      en: The cookie is `HttpOnly`, `Secure` and `SameSite=Strict`, and these three settings live in one place.
+      fr: Le cookie est `HttpOnly`, `Secure` et `SameSite=Strict`, et ces trois réglages vivent à un seul endroit.
+    rationale:
+      en: Each of the three closes a distinct theft route; changing one is a security decision.
+      fr: Chacun des trois ferme une voie de vol distincte ; en changer un est une décision de sécurité.
+    enforced_by: none
+  - id: SECC-003
+    statement:
+      en: The API answers 401 and 403; it never redirects to a login page.
+      fr: L'API répond 401 et 403 ; elle ne redirige jamais vers une page de connexion.
+    rationale:
+      en: A 302 towards HTML is unreadable for a client that expects JSON.
+      fr: Une 302 vers du HTML est illisible pour un client qui attend du JSON.
+    enforced_by: none
+  - id: SECC-004
+    statement:
+      en: The credential check and the sign-in endpoint are written by the team; the skeleton ships no user store.
+      fr: La vérification des identifiants et l'endpoint de connexion sont écrits par l'équipe ; le squelette ne livre aucun magasin d'utilisateurs.
+    rationale:
+      en: A generated fake user store would end up in production one day.
+      fr: Un faux magasin d'utilisateurs généré finirait un jour en production.
+    enforced_by: none
+  - id: SECC-005
+    statement:
+      en: Business tests run with `Security:Enabled=false`; authentication itself has its own test.
+      fr: Les tests métier tournent avec `Security:Enabled=false` ; l'authentification a son propre test.
+    rationale:
+      en: Otherwise every test would have to sign in, and would test the sign-in rather than the behaviour.
+      fr: Sinon chaque test devrait se connecter, et testerait la connexion plutôt que le comportement.
+    enforced_by: arch-test
+anti_patterns:
+  - id: SECC-AP-001
+    statement:
+      en: '`SameSite=None` to make a front end on another domain work.'
+      fr: '`SameSite=None` pour faire marcher un front sur un autre domaine.'
+    rationale:
+      en: The cookie then travels with every cross-site request, which is exactly CSRF.
+      fr: Le cookie part alors avec chaque requête cross-site, ce qui est exactement le CSRF.
+    enforced_by: none
+    instead:
+      en: Serve the front end from the same origin, or switch to the `jwt-bearer` option.
+      fr: Servir le front depuis la même origine, ou passer à l'option `jwt-bearer`.
+  - id: SECC-AP-002
+    statement:
+      en: Storing the user identifier in a second, unsigned cookie "for convenience".
+      fr: Stocker l'identifiant de l'utilisateur dans un second cookie non signé « pour la commodité ».
+    rationale:
+      en: An unsigned cookie is client-editable, so it is an authentication bypass.
+      fr: Un cookie non signé est modifiable par le client, donc c'est un contournement d'authentification.
+    enforced_by: none
+    instead:
+      en: Read the identity from `User.Claims`, which the authentication cookie carries signed.
+      fr: Lire l'identité dans `User.Claims`, que le cookie d'authentification porte signée.

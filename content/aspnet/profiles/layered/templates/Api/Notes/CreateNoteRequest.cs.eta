@@ -1,0 +1,16 @@
+<%
+const api = it.projects.find((candidate) => candidate.id === 'api');
+-%>
+using System.ComponentModel.DataAnnotations;
+
+namespace <%= api.namespace %>.Notes;
+
+<%= it.t("// CORE-013 : les contraintes sont déclarées sur le DTO d'entrée. `[ApiController]` répond", "// CORE-013: constraints are declared on the input DTO. `[ApiController]` answers a") %>
+<%= it.t("// un 400 au format `ProblemDetails` avant que le contrôleur ne soit appelé.", "// 400 in the `ProblemDetails` format before the controller is even called.") %>
+//
+<%= it.t("// Sur un `record`, les attributs vont sur le paramètre du constructeur, jamais sur la", "// On a `record`, the attributes go on the constructor parameter, never on the property") %>
+<%= it.t("// propriété via `[property: …]` : MVC refuse ce cas et lève au premier appel.", "// through `[property: …]`: MVC rejects that case and throws on the first call.") %>
+public sealed record CreateNoteRequest(
+    [Required][StringLength(200, MinimumLength = 1)] string Title,
+    [StringLength(2000)] string Body
+);

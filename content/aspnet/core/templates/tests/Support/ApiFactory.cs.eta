@@ -1,0 +1,86 @@
+<%
+const tests = it.projectFor('tests');
+const db = it.stack.database;
+const fallback = db === 'postgresql'
+  ? 'Host=localhost;Port=5432;Database=slice;Username=slice;Password=slice'
+  : 'Server=localhost,1433;Database=slice;User Id=sa;Password=Local_dev_1;TrustServerCertificate=True';
+-%>
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+
+namespace <%= tests.namespace %>.Support;
+
+<%= it.t("// CORE-020 : l'hôte des tests slice et d'intégration. Un test slice remplace les ports par", "// CORE-020: the host of slice and integration tests. A slice test replaces the ports with") %>
+<%= it.t("// des doublures ; un test d'intégration branche la base Testcontainers.", "// test doubles; an integration test plugs in the Testcontainers database.") %>
+public class ApiFactory : WebApplicationFactory<Program>
+{
+    private readonly Dictionary<string, string?> _settings = [];
+    private Action<IServiceCollection>? _configureServices;
+<% if (db !== 'none') { -%>
+    private bool _migrate;
+<% } -%>
+
+    <%= it.t("/// <summary>Force un réglage de configuration pour ce test.</summary>", "/// <summary>Forces one configuration setting for this test.</summary>") %>
+    public ApiFactory WithSetting(string key, string? value)
+    {
+        _settings[key] = value;
+        return this;
+    }
+
+    <%= it.t("/// <summary>Remplace des services enregistrés — un port par une doublure.</summary>", "/// <summary>Replaces registered services — a port by a test double.</summary>") %>
+    public ApiFactory WithServices(Action<IServiceCollection> configure)
+    {
+        _configureServices = configure;
+        return this;
+    }
+<% if (db !== 'none') { -%>
+
+    <%= it.t("/// <summary>Branche la base du conteneur et applique les migrations avant le premier test.</summary>", "/// <summary>Plugs in the container database and applies the migrations before the first test.</summary>") %>
+    public ApiFactory WithDatabase(string connectionString)
+    {
+        _migrate = true;
+        return WithSetting("DB_CONNECTION_STRING", connectionString);
+    }
+<% } -%>
+
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        builder.UseEnvironment("Testing");
+        <%= it.t("// L'authentification est éteinte par défaut : un test métier ne dépend pas du mode", "// Authentication is off by default: a business test does not depend on the chosen") %>
+        <%= it.t("// d'authentification choisi. Les tests de sécurité la rallument explicitement.", "// authentication mode. The security tests switch it back on explicitly.") %>
+        builder.UseSetting("Security:Enabled", "false");
+<% if (db !== 'none') { -%>
+        <%= it.t("// EF Core n'ouvre aucune connexion au démarrage : un test slice tourne avec cette", "// EF Core opens no connection at startup: a slice test runs with this") %>
+        <%= it.t("// chaîne factice, qu'un test d'intégration remplace.", "// dummy string, which an integration test overrides.") %>
+        builder.UseSetting("DB_CONNECTION_STRING", "<%= fallback %>");
+<% } -%>
+
+        foreach (var (key, value) in _settings)
+        {
+            builder.UseSetting(key, value);
+        }
+
+        if (_configureServices is not null)
+        {
+            builder.ConfigureTestServices(_configureServices);
+        }
+    }
+<% if (db !== 'none') { -%>
+
+    protected override IHost CreateHost(IHostBuilder builder)
+    {
+        var host = base.CreateHost(builder);
+        if (_migrate)
+        {
+            <%= it.t("// CORE-021 : le schéma vient des migrations, jamais d'un `EnsureCreated`.", "// CORE-021: the schema comes from the migrations, never from an `EnsureCreated`.") %>
+            DatabaseMigrator.Migrate(host.Services);
+        }
+
+        return host;
+    }
+<% } -%>
+}

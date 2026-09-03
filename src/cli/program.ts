@@ -74,7 +74,7 @@ export function createProgram(deps: CliDeps): { program: Command; result: CliRes
   program
     .name('prepwork')
     .description(
-      "Prépare un projet Spring Boot : squelette, conventions et spécifications pour l'agent.",
+      `Prépare un projet (${PACK_IDS.join(', ')}) : squelette, conventions et spécifications pour l'agent.`,
     )
     .version(deps.toolVersion)
     .exitOverride()
@@ -178,7 +178,11 @@ export function createProgram(deps: CliDeps): { program: Command; result: CliRes
         reporter.info(
           "Le hook pre-commit exige gitleaks (https://github.com/gitleaks/gitleaks#installing) : sans lui, aucun commit n'est possible.",
         );
-        reporter.info("Prochaine étape : ./mvnw verify, puis un premier commit par l'équipe.");
+        const first = pack.presentation
+          .initialCommands()
+          .map((command) => `\`${command}\``)
+          .join(', puis ');
+        reporter.info(`Prochaine étape : ${first}, puis un premier commit par l'équipe.`);
       },
     );
 

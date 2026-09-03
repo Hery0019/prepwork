@@ -1,5 +1,5 @@
 /* Contrat visuel du projet — preset `app-sober`. */
-/* Ce fichier appartient à l'équipe : c'est ici que vit la marque. prepwork ne le réécrit jamais. */
+/* Fichier généré depuis `scaffold.yaml` : ne pas éditer. Les surcharges de l'équipe vivent dans `tokens.override.css`, importé après celui-ci. */
 /* Les tokens sont déclarés dans les espaces de noms de Tailwind : chacun devient une classe */
 /* utilitaire (`bg-primary`, `text-lg`, `rounded-md`), ce qui rend inutile toute valeur écrite à la main (CORE-020, CORE-021). */
 @theme {

@@ -230,6 +230,7 @@ export const springPresentation: PackPresentation = {
   enforcedLegend: (language) => strings(language).enforcedLegend,
   commands: (language) => strings(language).commands,
   layerTargetColumn: (language) => strings(language).layerTargetColumn,
+  initialCommands: () => ['./mvnw verify'],
 
   substitute(scaffold, value) {
     const basePackage = asSpringScaffold(scaffold).project.base_package;

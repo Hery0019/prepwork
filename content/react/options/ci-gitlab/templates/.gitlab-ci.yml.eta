@@ -36,7 +36,7 @@ check:
 
 e2e:
   stage: e2e
-  image: mcr.microsoft.com/playwright:v1.52.0-noble
+  image: mcr.microsoft.com/playwright:v<%= it.versions.playwright %>-noble
   script:
     - pnpm e2e
   artifacts:

@@ -29,12 +29,12 @@ rules:
 npm:
   dependencies:
     - name: react-hook-form
-      version: ^7.56.0
+      version: 7.87.0
       purpose:
         en: Registration, validation and submission state of the forms.
         fr: Enregistrement, validation et état de soumission des formulaires.
     - name: '@hookform/resolvers'
-      version: ^5.0.0
+      version: 5.9.1
       purpose:
         en: Bridge between the form library and the shared validation schema.
         fr: Pont entre la bibliothèque de formulaires et le schéma de validation partagé.

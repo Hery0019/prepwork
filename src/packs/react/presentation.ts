@@ -30,6 +30,7 @@ interface PackStrings {
   none: string;
   layerTargetColumn: string;
   visualContract: string;
+  visualContractSource: string;
   tokenColumn: string;
   valueColumn: string;
   typography: string;
@@ -62,6 +63,8 @@ const fr: PackStrings = {
   none: 'aucune',
   layerTargetColumn: 'Chemin',
   visualContract: 'Contrat visuel',
+  visualContractSource:
+    'Ces valeurs viennent du preset et sont générées dans `src/shared/styles/tokens.css`. Pour adapter la marque, redéclarer le token dans `src/shared/styles/tokens.override.css`, qui appartient à l’équipe (CORE-027).',
   tokenColumn: 'Token',
   valueColumn: 'Valeur',
   typography: 'Typographie',
@@ -158,6 +161,8 @@ const en: PackStrings = {
   none: 'none',
   layerTargetColumn: 'Path',
   visualContract: 'Visual contract',
+  visualContractSource:
+    'These values come from the preset and are generated into `src/shared/styles/tokens.css`. To adapt the brand, redeclare the token in `src/shared/styles/tokens.override.css`, which belongs to the team (CORE-027).',
   tokenColumn: 'Token',
   valueColumn: 'Value',
   typography: 'Typography',
@@ -274,6 +279,7 @@ export const reactPresentation: PackPresentation = {
   enforcedLegend: (language) => strings(language).enforcedLegend,
   commands: (language) => strings(language).commands,
   layerTargetColumn: (language) => strings(language).layerTargetColumn,
+  initialCommands: () => ['pnpm install', 'pnpm dev'],
 
   /** Aucun placeholder dans le catalogue react : les chemins sont littéraux. */
   substitute: (_scaffold, value) => value,
@@ -303,7 +309,13 @@ export const reactPresentation: PackPresentation = {
       ]),
     );
     return {
-      before: blocks(`### ${s.visualContract}`, typography, `**${s.colors}**`, colors),
+      before: blocks(
+        `### ${s.visualContract}`,
+        s.visualContractSource,
+        typography,
+        `**${s.colors}**`,
+        colors,
+      ),
     };
   },
 };

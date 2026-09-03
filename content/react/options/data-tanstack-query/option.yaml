@@ -37,7 +37,7 @@ rules:
 npm:
   dependencies:
     - name: '@tanstack/react-query'
-      version: ^5.75.0
+      version: 5.102.8
       purpose:
         en: Cache, deduplication and invalidation of server state.
         fr: Cache, déduplication et invalidation de l'état serveur.

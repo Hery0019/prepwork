@@ -54,6 +54,8 @@ files:
     target: src/shared/styles/app.css
   - source: src/shared/styles/tokens.css.eta
     target: src/shared/styles/tokens.css
+  - source: src/shared/styles/tokens.override.css.eta
+    target: src/shared/styles/tokens.override.css
     owner: team
 
   # --- kit d'interface : copié dans le dépôt, donc possédé par l'équipe -------------------

@@ -1,0 +1,15 @@
+/* Team overrides of the visual contract. This file belongs to the team: prepwork never rewrites */
+/* it. This is where the brand lives. */
+/* */
+/* `tokens.css` carries the `dense` preset and is regenerated when `scaffold.yaml` changes. */
+/* Redeclaring a token of the same name here wins: the Tailwind utilities follow (CORE-027). */
+/* */
+/* Example — adopt the brand primary colour, in both themes: */
+/* */
+/*   @theme {                                                                      */
+/*     --color-primary: #123456;                                                   */
+/*   }                                                                             */
+/*                                                                                 */
+/*   :root[data-theme='dark'] {                                                    */
+/*     --color-primary: #8fa6f5;                                                   */
+/*   }                                                                             */

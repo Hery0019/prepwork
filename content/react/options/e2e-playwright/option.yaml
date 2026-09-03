@@ -28,7 +28,7 @@ rules:
 npm:
   dependencies:
     - name: '@playwright/test'
-      version: ^1.52.0
+      version: 1.62.1
       scope: dev
       purpose:
         en: Browser runner for the end-to-end journey.

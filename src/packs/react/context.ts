@@ -17,25 +17,14 @@ import { designPreset, type DesignPreset } from './design.js';
 import { asReactScaffold } from './scaffold.js';
 
 /**
- * Versions épinglées par l'outil (CLAUDE.md §5 : jamais demandées). Ce sont des plages tant que
- * le squelette n'existe pas ; l'étape 10 les fige sur la résolution réelle d'un `pnpm install`.
+ * Versions épinglées par l'outil (CLAUDE.md §5 : jamais demandées), figées sur la résolution
+ * réelle d'un `pnpm install`. Les dépendances du projet généré sont déclarées dans le catalogue ;
+ * ce bloc ne porte que ce dont les templates ont besoin directement.
  */
 export const PINNED_VERSIONS = {
   node: '22',
-  react: '^19.1.0',
-  reactDom: '^19.1.0',
-  reactRouter: '^7.6.0',
-  vite: '^6.3.0',
-  typescript: '^5.9.0',
-  tailwind: '^4.1.0',
-  vitest: '^3.2.0',
-  testingLibrary: '^16.3.0',
-  msw: '^2.7.0',
-  playwright: '^1.52.0',
-  tanstackQuery: '^5.75.0',
-  zod: '^3.25.0',
-  reactHookForm: '^7.56.0',
-  zustand: '^5.0.0',
+  /** Image Playwright de la CI GitLab : elle doit suivre la version du paquet. */
+  playwright: '1.62.1',
 } as const;
 export type PinnedVersions = typeof PINNED_VERSIONS;
 

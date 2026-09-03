@@ -18,6 +18,8 @@ pnpm install
 pnpm dev
 ```
 
+Commit `pnpm-lock.yaml` right after the first install: the versions are pinned in `package.json`, and CI installs in frozen mode (`--frozen-lockfile`).
+
 ## Commands
 
 | Command | What it does |
@@ -38,7 +40,8 @@ pnpm dev
 | `src/features/*` | layer `features` — depends on entities, shared |
 | `src/entities/*` | layer `entities` — depends on shared |
 | `src/shared` | layer `shared` — depends on nothing |
-| `src/shared/styles/tokens.css` | Visual contract — team-owned |
+| `src/shared/styles/tokens.css` | Visual contract, generated from the preset |
+| `src/shared/styles/tokens.override.css` | Brand overrides — team-owned |
 | `src/shared/ui/` | Interface kit copied into the repository — team-owned |
 | `docs/adr/` | Architecture decision records — team-owned |
 | `.scaffold/manifest.json` | Generated files and their hashes |

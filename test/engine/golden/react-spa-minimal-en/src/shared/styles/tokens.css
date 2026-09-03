@@ -1,5 +1,5 @@
 /* Visual contract of the project — `dense` preset. */
-/* This file belongs to the team: this is where the brand lives. prepwork never rewrites it. */
+/* Generated from `scaffold.yaml`: do not edit. Team overrides live in `tokens.override.css`, imported after this file. */
 /* The tokens are declared in Tailwind namespaces: each one becomes a utility class */
 /* (`bg-primary`, `text-lg`, `rounded-md`), which makes any hand-written value unnecessary (CORE-020, CORE-021). */
 @theme {

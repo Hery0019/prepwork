@@ -65,6 +65,8 @@ export interface PackPresentation {
   enforcedLegend(language: string): string;
   /** Commandes du projet : `[commande, rôle]`. */
   commands(language: string): [string, string][];
+  /** Premières commandes à lancer dans le projet fraîchement généré. */
+  initialCommands(): string[];
   /** En-tête de la colonne qui porte la cible d'une couche (`Package`, `Chemin`…). */
   layerTargetColumn(language: string): string;
   /** Remplace les placeholders du catalogue par leur valeur concrète (`{{basePackage}}`…). */

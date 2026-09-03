@@ -1,21 +1,20 @@
 // Rendu d'un skill Claude Code : `.claude/skills/<name>/SKILL.md` avec frontmatter.
-import type { SkillName } from '../../catalog/schema.js';
+// Les sections génériques (profil, exemple de référence, dépendances, réglages, variables
+// d'environnement) sont ici ; celles qui nomment la stack viennent de `pack.skillSections`.
 import { pickText } from '../../catalog/text.js';
+import type { SkillPresentation, SkillSections } from '../../packs/types.js';
+import { blocks, bullets, document, frontmatter, numbered, table } from '../markdown.js';
 import type { RenderedFile } from '../types.js';
 import { LANGUAGE_LABEL } from './i18n.js';
-import { blocks, bullets, document, frontmatter, numbered, table } from './markdown.js';
 import type { RenderModel, ResolvedRule, SourceGroup } from './model.js';
-import { substituteBasePackage } from './model.js';
+import { substitute } from './model.js';
 
-export function skillPath(name: SkillName): string {
+export function skillPath(name: string): string {
   return `.claude/skills/${name}/SKILL.md`;
 }
 
 /** Sections propres à une source, placées avant (contexte) ou après (annexes) ses règles. */
-interface Extra {
-  before?: string | undefined;
-  after?: string | undefined;
-}
+type Extra = SkillSections;
 
 function marker(model: RenderModel, rule: ResolvedRule): string {
   return rule.enforcedBy === 'none' ? model.strings.skill.guidance : `\`${rule.enforcedBy}\``;
@@ -72,10 +71,10 @@ function architectureExtra(model: RenderModel): Extra {
     layers.length > 0 && `### ${s.layers}`,
     layers.length > 0 &&
       table(
-        [s.layerColumn, s.packageColumn, s.mayDependOn],
+        [s.layerColumn, model.input.pack.presentation.layerTargetColumn(lang), s.mayDependOn],
         layers.map((l) => [
           `\`${l.id}\``,
-          `\`${substituteBasePackage(model, l.package)}\``,
+          `\`${substitute(model, l.target)}\``,
           l.may_depend_on.length > 0
             ? l.may_depend_on.map((d) => `\`${d}\``).join(', ')
             : s.nothing,
@@ -89,8 +88,7 @@ function architectureExtra(model: RenderModel): Extra {
     `### ${s.referenceExample}`,
     pickText(example.feature, lang),
     example.files.length > 0 && `${s.referenceFiles}${model.strings.colon.trimEnd()}`,
-    example.files.length > 0 &&
-      bullets(example.files.map((f) => `\`${substituteBasePackage(model, f)}\``)),
+    example.files.length > 0 && bullets(example.files.map((f) => `\`${substitute(model, f)}\``)),
     example.demonstrates.length > 0 &&
       `${s.referenceDemonstrates}${model.strings.colon}${example.demonstrates.map((id) => `**${id}**`).join(', ')}`,
     `### ${s.dependencies}`,
@@ -111,31 +109,6 @@ function architectureExtra(model: RenderModel): Extra {
   );
 
   return { before, after };
-}
-
-/** Skill `db` : tables de l'exemple de référence, après les règles du profil. */
-function dbExtra(model: RenderModel): Extra {
-  const s = model.strings.skill;
-  const tables = model.input.profile.reference_example.tables;
-  if (tables.length === 0) return {};
-  return {
-    after: blocks(
-      `### ${s.referenceTables}`,
-      ...tables.map((t) =>
-        blocks(
-          `\`${t.name}\``,
-          table(
-            [s.columnName, s.columnType, s.columnNullable],
-            t.columns.map((c) => [
-              `\`${c.name}\``,
-              c.length !== undefined ? `${c.type}(${c.length})` : c.type,
-              c.nullable ? model.strings.claudeMd.yes : model.strings.claudeMd.no,
-            ]),
-          ),
-        ),
-      ),
-    ),
-  };
 }
 
 /** Skill `workflow` : réglages du projet, après les règles de base. */
@@ -180,18 +153,26 @@ function securityExtra(model: RenderModel): Extra {
   };
 }
 
-function extrasFor(model: RenderModel, name: SkillName): { core: Extra; profile: Extra } {
-  switch (name) {
+function packExtra(model: RenderModel, skillId: string): Extra {
+  return (
+    model.input.pack.presentation.skillSections(skillId, {
+      profile: model.input.profile,
+      options: model.input.options,
+      language: model.language,
+    }) ?? {}
+  );
+}
+
+function extrasFor(model: RenderModel, skillId: string): { core: Extra; profile: Extra } {
+  switch (skillId) {
     case 'architecture':
       return { core: {}, profile: architectureExtra(model) };
-    case 'db':
-      return { core: {}, profile: dbExtra(model) };
     case 'workflow':
-      return { core: workflowExtra(model), profile: {} };
+      return { core: workflowExtra(model), profile: packExtra(model, skillId) };
     case 'security':
-      return { core: securityExtra(model), profile: {} };
+      return { core: securityExtra(model), profile: packExtra(model, skillId) };
     default:
-      return { core: {}, profile: {} };
+      return { core: {}, profile: packExtra(model, skillId) };
   }
 }
 
@@ -199,11 +180,11 @@ function hasExtra(extra: Extra): boolean {
   return extra.before !== undefined || extra.after !== undefined;
 }
 
-export function renderSkill(model: RenderModel, name: SkillName): RenderedFile {
+export function renderSkill(model: RenderModel, skill: SkillPresentation): RenderedFile {
   const s = model.strings.skill;
-  const view = model.skills[name];
-  const extras = extrasFor(model, name);
-  const groupBlocks = view.groups.map((group) =>
+  const view = model.skills[skill.id];
+  const extras = extrasFor(model, skill.id);
+  const groupBlocks = (view?.groups ?? []).map((group) =>
     renderGroup(
       model,
       group,
@@ -211,7 +192,7 @@ export function renderSkill(model: RenderModel, name: SkillName): RenderedFile {
     ),
   );
   // Un profil sans règle pour ce skill garde ses sections propres (architecture, db).
-  const profileHasGroup = view.groups.some((g) => g.kind === 'profile');
+  const profileHasGroup = (view?.groups ?? []).some((g) => g.kind === 'profile');
   const orphanProfileExtra =
     !profileHasGroup && hasExtra(extras.profile)
       ? blocks(
@@ -222,13 +203,13 @@ export function renderSkill(model: RenderModel, name: SkillName): RenderedFile {
       : undefined;
 
   const content = document(
-    frontmatter({ name, description: s.description[name] }),
+    frontmatter({ name: skill.id, description: skill.description }),
     `<!-- ${model.strings.generatedHeader(model.input.toolVersion)} -->`,
-    `# ${s.title[name]}`,
-    s.intro[name],
+    `# ${skill.title}`,
+    skill.intro,
     s.legend,
     ...groupBlocks,
     orphanProfileExtra,
   );
-  return { path: skillPath(name), content };
+  return { path: skillPath(skill.id), content };
 }

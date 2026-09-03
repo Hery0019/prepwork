@@ -1,142 +1,48 @@
-// Schéma de `scaffold.yaml` : la seule entrée de `sync` et `check`. Il ne contient rien
-// d'inférable ni de secret (CLAUDE.md §5).
+// Partie générique de `scaffold.yaml` : ce que le cœur connaît de tout projet, quelle que soit
+// la stack (CLAUDE.md §2 et §5). Chaque pack compose son schéma complet à partir de ces
+// fragments et ajoute les siens (`stack`, `options`, et pour Spring `project.base_package`).
 import { z } from 'zod';
 
-export const SCAFFOLD_VERSION = '1.0.0';
+/** Version du format. 1.1.0 : ajout de `stack.target` (ADR 0007). */
+export const SCAFFOLD_VERSION = '1.1.0';
+
+/** Valeur de `stack.target` supposée quand le champ est absent (scaffold écrit par la v1). */
+export const DEFAULT_STACK_TARGET = 'spring-boot';
 
 export const PROJECT_NAME_PATTERN = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
-export const BASE_PACKAGE_PATTERN = /^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/;
+export const SEMVER_PATTERN = /^\d+\.\d+\.\d+$/;
 
-/** Mots réservés Java : interdits comme segment de package. */
-const JAVA_KEYWORDS = new Set([
-  'abstract',
-  'assert',
-  'boolean',
-  'break',
-  'byte',
-  'case',
-  'catch',
-  'char',
-  'class',
-  'const',
-  'continue',
-  'default',
-  'do',
-  'double',
-  'else',
-  'enum',
-  'extends',
-  'final',
-  'finally',
-  'float',
-  'for',
-  'goto',
-  'if',
-  'implements',
-  'import',
-  'instanceof',
-  'int',
-  'interface',
-  'long',
-  'native',
-  'new',
-  'package',
-  'private',
-  'protected',
-  'public',
-  'return',
-  'short',
-  'static',
-  'strictfp',
-  'super',
-  'switch',
-  'synchronized',
-  'this',
-  'throw',
-  'throws',
-  'transient',
-  'try',
-  'void',
-  'volatile',
-  'while',
-  'true',
-  'false',
-  'null',
-]);
-
-export function basePackageProblem(value: string): string | undefined {
-  if (!BASE_PACKAGE_PATTERN.test(value)) {
-    return 'package Java attendu, en minuscules, avec au moins deux segments (ex. mg.solumada.payflow)';
-  }
-  const keyword = value.split('.').find((segment) => JAVA_KEYWORDS.has(segment));
-  if (keyword !== undefined) return `\`${keyword}\` est un mot réservé Java`;
-  return undefined;
-}
-
-export const JavaVersionSchema = z.union([z.literal(21), z.literal(17)]);
-export const DatabaseSchema = z.enum(['postgresql', 'mysql', 'oracle', 'none']);
-export const MigrationsSchema = z.enum(['flyway', 'liquibase']);
-export const ProfileIdSchema = z.enum(['layered', 'modular']);
-export const SecuritySchema = z.enum(['none', 'session', 'oauth2-resource-server']);
-export const CiSchema = z.enum(['github', 'gitlab', 'none']);
 export const LanguageSchema = z.enum(['fr', 'en']);
+export type Language = z.infer<typeof LanguageSchema>;
 
-export const ScaffoldSchema = z
+export const ScaffoldVersionSchema = z.string().regex(SEMVER_PATTERN);
+
+export const ProjectNameSchema = z
+  .string()
+  .regex(PROJECT_NAME_PATTERN, 'nom de projet en kebab-case');
+
+export const ProjectDescriptionSchema = z.string().min(1).max(200);
+
+export const GitSchema = z
   .object({
-    scaffold_version: z.string().regex(/^\d+\.\d+\.\d+$/),
-    project: z
-      .object({
-        name: z.string().regex(PROJECT_NAME_PATTERN, 'nom de projet en kebab-case'),
-        base_package: z.string().refine((v) => basePackageProblem(v) === undefined, {
-          message: 'package Java invalide',
-        }),
-        description: z.string().min(1).max(200),
-      })
-      .strict(),
-    stack: z
-      .object({
-        java: JavaVersionSchema,
-        database: DatabaseSchema,
-        migrations: MigrationsSchema.optional(),
-      })
-      .strict()
-      .refine((s) => (s.database === 'none') === (s.migrations === undefined), {
-        message: '`migrations` est requis avec une base de données et absent sans',
-        path: ['migrations'],
-      }),
-    profile: ProfileIdSchema,
-    options: z
-      .object({
-        security: SecuritySchema,
-        docker: z.boolean(),
-        ci: CiSchema,
-      })
-      .strict(),
-    git: z
-      .object({
-        author: z.object({ name: z.string().min(1), email: z.email() }).strict(),
-        agent_trailer: z.boolean(),
-      })
-      .strict(),
-    language: z.object({ comments: LanguageSchema, docs: LanguageSchema }).strict(),
+    author: z.object({ name: z.string().min(1), email: z.email() }).strict(),
+    agent_trailer: z.boolean(),
   })
   .strict();
 
-export type Scaffold = z.infer<typeof ScaffoldSchema>;
-export type Database = z.infer<typeof DatabaseSchema>;
-export type Migrations = z.infer<typeof MigrationsSchema>;
-export type ProfileId = z.infer<typeof ProfileIdSchema>;
-export type Security = z.infer<typeof SecuritySchema>;
-export type Ci = z.infer<typeof CiSchema>;
-export type JavaVersion = z.infer<typeof JavaVersionSchema>;
+export const LanguagesSchema = z
+  .object({ comments: LanguageSchema, docs: LanguageSchema })
+  .strict();
 
-/** Identifiants d'options du catalogue résolus à partir du scaffold (CLAUDE.md §2). */
-export function resolveOptionIds(scaffold: Scaffold): string[] {
-  const ids: string[] = [];
-  if (scaffold.stack.migrations !== undefined) ids.push(`migrations-${scaffold.stack.migrations}`);
-  ids.push(`security-${scaffold.options.security}`);
-  if (scaffold.options.docker) ids.push('docker');
-  if (scaffold.options.ci !== 'none') ids.push(`ci-${scaffold.options.ci}`);
-  ids.push('git');
-  return ids;
+/**
+ * Ce que le cœur lit dans un `scaffold.yaml`, quel que soit le pack. Le schéma Zod complet
+ * appartient au pack : il produit un objet qui satisfait cette forme et porte ses propres champs.
+ */
+export interface BaseScaffold {
+  scaffold_version: string;
+  project: { name: string; description: string };
+  stack: { target: string };
+  profile: string;
+  git: { author: { name: string; email: string }; agent_trailer: boolean };
+  language: { comments: Language; docs: Language };
 }

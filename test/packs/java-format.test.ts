@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { sortJavaImports } from '../../src/engine/java-format.js';
+import { sortJavaImports } from '../../src/packs/spring-boot/java-format.js';
 
 describe('sortJavaImports', () => {
   it('orders static imports first, then regular imports in ASCII order, deduplicated', () => {

@@ -2,7 +2,8 @@
 // deviennent des fichiers de spécification pour une cible d'agent (claude-code en v1).
 // Un renderer ne connaît ni la CLI ni le questionnaire.
 import type { CoreRuleSet, Option, Profile } from '../catalog/schema.js';
-import type { Scaffold } from '../config/schema.js';
+import type { BaseScaffold } from '../config/schema.js';
+import type { StackPack } from '../packs/types.js';
 
 export interface RenderedFile {
   /** Chemin relatif à la racine du projet généré, en `/`. */
@@ -11,7 +12,9 @@ export interface RenderedFile {
 }
 
 export interface RenderInput {
-  scaffold: Scaffold;
+  scaffold: BaseScaffold;
+  /** Pack de la stack : skills, libellés et sections qui nomment la technologie. */
+  pack: StackPack;
   core: readonly CoreRuleSet[];
   profile: Profile;
   /** Options résolues depuis le scaffold, dans l'ordre de `resolveOptionIds`. */

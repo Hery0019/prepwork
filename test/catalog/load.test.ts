@@ -3,10 +3,13 @@ import { defaultContentRoot } from '../../src/catalog/content-root.js';
 import { loadCatalog } from '../../src/catalog/load.js';
 import { validateCatalog } from '../../src/catalog/validate.js';
 import { PrepworkError } from '../../src/errors.js';
+import { tablesOf } from '../../src/packs/spring-boot/catalog.js';
 import { createMemoryFileSystem } from '../../src/fs/memory.js';
 import { createNodeFileSystem } from '../../src/fs/node.js';
 import {
   CONTENT_ROOT,
+  PACK_ROOT,
+  TEST_PACK,
   catalogFiles,
   minimalCoreRuleSet,
   minimalOption,
@@ -15,7 +18,7 @@ import {
 
 describe('the shipped content/', () => {
   it('loads and passes the consistency check without errors', async () => {
-    const catalog = await loadCatalog(createNodeFileSystem(), defaultContentRoot());
+    const catalog = await loadCatalog(createNodeFileSystem(), defaultContentRoot(), TEST_PACK);
     expect(catalog.core.ruleSets.map((s) => s.id)).toEqual([
       'api',
       'language',
@@ -25,13 +28,13 @@ describe('the shipped content/', () => {
     ]);
     expect([...catalog.profiles.keys()]).toContain('layered');
 
-    const diagnostics = validateCatalog(catalog);
+    const diagnostics = validateCatalog(catalog, TEST_PACK);
     const errors = diagnostics.filter((d) => d.level === 'error');
     expect(errors, errors.map((e) => `${e.source}: ${e.message}`).join('\n')).toEqual([]);
   });
 
   it('describes the layered profile as in CLAUDE.md', async () => {
-    const catalog = await loadCatalog(createNodeFileSystem(), defaultContentRoot());
+    const catalog = await loadCatalog(createNodeFileSystem(), defaultContentRoot(), TEST_PACK);
     const layered = catalog.profiles.get('layered');
     expect(layered?.profile.architecture.layers.map((l) => l.id)).toEqual([
       'web',
@@ -40,7 +43,7 @@ describe('the shipped content/', () => {
       'domain',
     ]);
     expect(layered?.profile.rules.find((r) => r.id === 'LAY-002')?.enforced_by).toBe('archunit');
-    expect(layered?.profile.reference_example.tables[0]?.name).toBe('note');
+    expect(tablesOf(layered?.profile.reference_example ?? {})[0]?.name).toBe('note');
   });
 });
 
@@ -56,7 +59,7 @@ describe('loadCatalog on an in-memory catalog', () => {
         },
       }),
     );
-    const catalog = await loadCatalog(fs, CONTENT_ROOT);
+    const catalog = await loadCatalog(fs, CONTENT_ROOT, TEST_PACK);
     expect(catalog.core.ruleSets[0]?.id).toBe('workflow');
     expect(catalog.profiles.get('layered')?.profile.meta.rule_prefix).toBe('LAY');
     const docker = catalog.options.get('docker');
@@ -64,21 +67,21 @@ describe('loadCatalog on an in-memory catalog', () => {
       { source: 'Dockerfile.eta', target: 'Dockerfile', owner: 'generated' },
     ]);
     expect(docker?.templates.get('Dockerfile.eta')).toBe('FROM x');
-    expect(validateCatalog(catalog)).toEqual([]);
+    expect(validateCatalog(catalog, TEST_PACK)).toEqual([]);
   });
 
   it('reports invalid YAML and schema violations with the file path', async () => {
     const broken = createMemoryFileSystem(
       catalogFiles({ extra: { 'core/workflow.yaml': 'id: workflow\nrules: [\n' } }),
     );
-    await expect(loadCatalog(broken, CONTENT_ROOT)).rejects.toThrow(
+    await expect(loadCatalog(broken, CONTENT_ROOT, TEST_PACK)).rejects.toThrow(
       /core\/workflow\.yaml : YAML invalide/,
     );
 
     const invalid = createMemoryFileSystem(
       catalogFiles({ core: [minimalCoreRuleSet({ skill: 'devops' })] }),
     );
-    const error = await loadCatalog(invalid, CONTENT_ROOT).catch((e: unknown) => e);
+    const error = await loadCatalog(invalid, CONTENT_ROOT, TEST_PACK).catch((e: unknown) => e);
     expect(error).toBeInstanceOf(PrepworkError);
     expect((error as PrepworkError).code).toBe('CATALOG_INVALID');
     expect((error as PrepworkError).message).toMatch(/skill/);
@@ -87,28 +90,41 @@ describe('loadCatalog on an in-memory catalog', () => {
   it('requires ids to match directory and file names', async () => {
     const fs = createMemoryFileSystem(
       catalogFiles({
-        profiles: [minimalProfile({ meta: { ...minimalProfile().meta, id: 'other' } })],
+        profiles: [
+          minimalProfile({
+            meta: {
+              id: 'other',
+              version: '1.0.0',
+              rule_prefix: 'LAY',
+              summary: 'Layered',
+              when_to_use: ['small team'],
+              when_not_to_use: ['many domains'],
+            },
+          }),
+        ],
       }),
     );
     // Le fichier est écrit sous profiles/other/ mais l'id de test reste cohérent ; on force l'écart.
     await fs.writeText(
-      `${CONTENT_ROOT}/profiles/other/profile.yaml`,
-      (await fs.readText(`${CONTENT_ROOT}/profiles/other/profile.yaml`))?.replace(
+      `${PACK_ROOT}/profiles/other/profile.yaml`,
+      (await fs.readText(`${PACK_ROOT}/profiles/other/profile.yaml`))?.replace(
         'id: other',
         'id: layered',
       ) ?? '',
     );
-    await expect(loadCatalog(fs, CONTENT_ROOT)).rejects.toThrow(
+    await expect(loadCatalog(fs, CONTENT_ROOT, TEST_PACK)).rejects.toThrow(
       /meta.id `layered` différent du répertoire `other`/,
     );
   });
 
   it('fails when the root is missing or core is empty', async () => {
-    await expect(loadCatalog(createMemoryFileSystem(), 'nowhere')).rejects.toThrow(/introuvable/);
+    await expect(loadCatalog(createMemoryFileSystem(), 'nowhere', TEST_PACK)).rejects.toThrow(
+      /introuvable/,
+    );
     const noCore = createMemoryFileSystem({
-      [`${CONTENT_ROOT}/profiles/layered/profile.yaml`]: 'meta: {}',
+      [`${PACK_ROOT}/profiles/layered/profile.yaml`]: 'meta: {}',
     });
-    await expect(loadCatalog(noCore, CONTENT_ROOT)).rejects.toThrow(/aucun ensemble de règles/);
+    await expect(loadCatalog(noCore, CONTENT_ROOT, TEST_PACK)).rejects.toThrow(/core introuvable/);
   });
 });
 
@@ -129,7 +145,7 @@ describe('validateCatalog', () => {
         ],
       }),
     );
-    const diagnostics = validateCatalog(await loadCatalog(fs, CONTENT_ROOT));
+    const diagnostics = validateCatalog(await loadCatalog(fs, CONTENT_ROOT, TEST_PACK), TEST_PACK);
     // core/api.yaml est chargé avant core/workflow.yaml (ordre alphabétique).
     expect(diagnostics.map((d) => d.message)).toEqual([
       'id `LAY-099` : préfixe attendu `CORE-`',
@@ -166,7 +182,7 @@ describe('validateCatalog', () => {
         ],
       }),
     );
-    const diagnostics = validateCatalog(await loadCatalog(fs, CONTENT_ROOT));
+    const diagnostics = validateCatalog(await loadCatalog(fs, CONTENT_ROOT, TEST_PACK), TEST_PACK);
     expect(diagnostics.map((d) => `${d.source} ${d.message}`)).toEqual([
       expect.stringMatching(/options\/docker mentionne le profil `layered`/),
       expect.stringMatching(/profiles\/layered mentionne l'option `docker`/),
@@ -199,7 +215,7 @@ describe('validateCatalog', () => {
         },
       }),
     );
-    const diagnostics = validateCatalog(await loadCatalog(fs, CONTENT_ROOT));
+    const diagnostics = validateCatalog(await loadCatalog(fs, CONTENT_ROOT, TEST_PACK), TEST_PACK);
     const messages = diagnostics.map((d) => d.message);
     expect(messages).toContainEqual(expect.stringMatching(/template `missing.eta` introuvable/));
     expect(messages).toContainEqual(expect.stringMatching(/cible `..\/x` doit être relative/));
@@ -225,7 +241,7 @@ describe('validateCatalog', () => {
         },
       }),
     );
-    const diagnostics = validateCatalog(await loadCatalog(fs, CONTENT_ROOT));
+    const diagnostics = validateCatalog(await loadCatalog(fs, CONTENT_ROOT, TEST_PACK), TEST_PACK);
     expect(diagnostics.map((d) => d.source)).toEqual(['profiles/layered', 'options/docker']);
   });
 
@@ -239,7 +255,10 @@ describe('validateCatalog', () => {
     const noTemplates = createMemoryFileSystem(
       catalogFiles({ profiles: [minimalProfile({ rules: [rule] })] }),
     );
-    const pending = validateCatalog(await loadCatalog(noTemplates, CONTENT_ROOT));
+    const pending = validateCatalog(
+      await loadCatalog(noTemplates, CONTENT_ROOT, TEST_PACK),
+      TEST_PACK,
+    );
     expect(pending).toHaveLength(1);
     expect(pending[0]?.level).toBe('warning');
     expect(pending[0]?.source).toBe('profiles/layered');
@@ -251,7 +270,10 @@ describe('validateCatalog', () => {
         extra: { 'profiles/layered/templates/src/main/java/App.java.eta': 'class App {}' },
       }),
     );
-    const missing = validateCatalog(await loadCatalog(withTemplates, CONTENT_ROOT));
+    const missing = validateCatalog(
+      await loadCatalog(withTemplates, CONTENT_ROOT, TEST_PACK),
+      TEST_PACK,
+    );
     expect(missing[0]?.level).toBe('error');
 
     const withTest = createMemoryFileSystem(
@@ -263,6 +285,8 @@ describe('validateCatalog', () => {
         },
       }),
     );
-    expect(validateCatalog(await loadCatalog(withTest, CONTENT_ROOT))).toEqual([]);
+    expect(
+      validateCatalog(await loadCatalog(withTest, CONTENT_ROOT, TEST_PACK), TEST_PACK),
+    ).toEqual([]);
   });
 });

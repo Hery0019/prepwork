@@ -1,5 +1,5 @@
 {
-  "title": "prepwork scaffold.yaml",
+  "title": "prepwork scaffold.yaml (spring-boot)",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
@@ -33,6 +33,11 @@
     "stack": {
       "type": "object",
       "properties": {
+        "target": {
+          "default": "spring-boot",
+          "type": "string",
+          "const": "spring-boot"
+        },
         "java": {
           "anyOf": [
             {

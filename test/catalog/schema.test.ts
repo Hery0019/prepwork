@@ -1,14 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import {
-  AntiPatternSchema,
-  ColumnSchema,
-  LocalizedTextSchema,
-  ProfileSchema,
-  RuleSchema,
-  TableSchema,
-} from '../../src/catalog/schema.js';
+import { LocalizedTextSchema } from '../../src/catalog/schema.js';
+import { ColumnSchema, TableSchema } from '../../src/packs/spring-boot/catalog.js';
+import { springBootPack } from '../../src/packs/spring-boot/index.js';
 import { pickText } from '../../src/catalog/text.js';
 import { minimalProfile } from '../helpers/fixtures.js';
+
+// Les schémas de règles et de profil sont construits par le pack (ADR 0007).
+const { ProfileSchema, RuleSchema, AntiPatternSchema } = springBootPack.catalogSchemas;
 
 describe('rule format', () => {
   it('accepts an atomic rule with the four fields', () => {
@@ -66,7 +64,7 @@ describe('profile schema', () => {
     const unknown = minimalProfile({
       architecture: {
         base_package: '{{basePackage}}',
-        layers: [{ id: 'web', package: '{{basePackage}}.web', may_depend_on: ['nope'] }],
+        layers: [{ id: 'web', target: '{{basePackage}}.web', may_depend_on: ['nope'] }],
       },
     });
     expect(ProfileSchema.safeParse(unknown).error?.issues[0]?.message).toMatch(/inconnue/);
@@ -75,9 +73,9 @@ describe('profile schema', () => {
       architecture: {
         base_package: '{{basePackage}}',
         layers: [
-          { id: 'a', package: '{{basePackage}}.a', may_depend_on: ['b'] },
-          { id: 'b', package: '{{basePackage}}.b', may_depend_on: ['c'] },
-          { id: 'c', package: '{{basePackage}}.c', may_depend_on: ['a'] },
+          { id: 'a', target: '{{basePackage}}.a', may_depend_on: ['b'] },
+          { id: 'b', target: '{{basePackage}}.b', may_depend_on: ['c'] },
+          { id: 'c', target: '{{basePackage}}.c', may_depend_on: ['a'] },
         ],
       },
     });

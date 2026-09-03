@@ -1,5 +1,5 @@
 {
-  "title": "prepwork option.yaml",
+  "title": "prepwork option.yaml (spring-boot)",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
@@ -285,6 +285,57 @@
         "additionalProperties": false
       }
     },
+    "env": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]*$"
+          },
+          "example": {
+            "type": "string"
+          },
+          "comment": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[^\\n]+$"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "en": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\n]+$"
+                  },
+                  "fr": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\n]+$"
+                  }
+                },
+                "required": [
+                  "en",
+                  "fr"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "example",
+          "comment"
+        ],
+        "additionalProperties": false
+      }
+    },
     "maven": {
       "type": "object",
       "properties": {
@@ -412,57 +463,6 @@
           "type": "string"
         },
         "additionalProperties": {}
-      }
-    },
-    "env": {
-      "default": [],
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "pattern": "^[A-Z][A-Z0-9_]*$"
-          },
-          "example": {
-            "type": "string"
-          },
-          "comment": {
-            "anyOf": [
-              {
-                "type": "string",
-                "minLength": 1,
-                "pattern": "^[^\\n]+$"
-              },
-              {
-                "type": "object",
-                "properties": {
-                  "en": {
-                    "type": "string",
-                    "minLength": 1,
-                    "pattern": "^[^\\n]+$"
-                  },
-                  "fr": {
-                    "type": "string",
-                    "minLength": 1,
-                    "pattern": "^[^\\n]+$"
-                  }
-                },
-                "required": [
-                  "en",
-                  "fr"
-                ],
-                "additionalProperties": false
-              }
-            ]
-          }
-        },
-        "required": [
-          "name",
-          "example",
-          "comment"
-        ],
-        "additionalProperties": false
       }
     }
   },

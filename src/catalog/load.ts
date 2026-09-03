@@ -1,5 +1,7 @@
 // Chargement de `content/` : YAML → objets validés par Zod, templates lus en mémoire.
-// Aucune interprétation ici : la cohérence globale est vérifiée par `validate.ts`.
+// Le catalogue est chargé pour un pack donné (ADR 0007) : les ensembles de règles communs de
+// `content/common/core` sont fusionnés avec ceux du pack. Aucune interprétation ici : la
+// cohérence globale est vérifiée par `validate.ts`.
 import { parse } from 'yaml';
 import type { ZodError, ZodType } from 'zod';
 import { PrepworkError } from '../errors.js';
@@ -7,16 +9,16 @@ import type { FileSystem } from '../fs/types.js';
 import { joinPath } from '../fs/types.js';
 import { walkFiles } from '../fs/walk.js';
 import {
-  CoreRuleSetSchema,
   FilesSchema,
-  OptionSchema,
-  ProfileSchema,
+  type CatalogSchemas,
   type CoreRuleSet,
   type FileEntry,
   type Option,
   type Profile,
 } from './schema.js';
 
+/** Contenu partagé par tous les packs (workflow de l'agent, ADR 0007 §9). */
+export const COMMON_DIR = 'common';
 export const CORE_DIR = 'core';
 export const PROFILES_DIR = 'profiles';
 export const OPTIONS_DIR = 'options';
@@ -24,6 +26,13 @@ export const TEMPLATES_DIR = 'templates';
 export const FILES_FILE = 'files.yaml';
 export const PROFILE_FILE = 'profile.yaml';
 export const OPTION_FILE = 'option.yaml';
+
+/** Ce que le chargeur attend d'un pack : où lire, et avec quels schémas valider. */
+export interface CatalogPack {
+  id: string;
+  contentDir: string;
+  catalogSchemas: CatalogSchemas;
+}
 
 /** Templates d'une source : chemin relatif à `templates/` → contenu. */
 export type TemplateMap = ReadonlyMap<string, string>;
@@ -57,6 +66,8 @@ export type CatalogSource = CoreCatalog | ProfileCatalog | OptionCatalog;
 
 export interface Catalog {
   rootDir: string;
+  /** Identifiant du pack dont ce catalogue est le contenu. */
+  packId: string;
   core: CoreCatalog;
   profiles: ReadonlyMap<string, ProfileCatalog>;
   options: ReadonlyMap<string, OptionCatalog>;
@@ -114,18 +125,26 @@ async function readTemplates(fs: FileSystem, dir: string): Promise<TemplateMap> 
   return templates;
 }
 
-async function loadCore(fs: FileSystem, rootDir: string): Promise<CoreCatalog> {
-  const dir = joinPath(rootDir, CORE_DIR);
+async function loadCoreRuleSets(
+  fs: FileSystem,
+  dir: string,
+  schemas: CatalogSchemas,
+  required: boolean,
+): Promise<CoreRuleSet[]> {
+  if (!(await fs.exists(dir))) {
+    if (required) throw new PrepworkError('CATALOG_NOT_FOUND', `${dir} introuvable`);
+    return [];
+  }
   const entries = await fs.list(dir);
   const ruleSetFiles = entries
     .filter((e) => e.kind === 'file' && e.name.endsWith('.yaml') && e.name !== FILES_FILE)
     .map((e) => e.name);
-  if (ruleSetFiles.length === 0) {
+  if (required && ruleSetFiles.length === 0) {
     throw new PrepworkError('CATALOG_NOT_FOUND', `${dir} : aucun ensemble de règles core/*.yaml`);
   }
   const ruleSets: CoreRuleSet[] = [];
   for (const name of ruleSetFiles) {
-    const ruleSet = await readYaml(fs, joinPath(dir, name), CoreRuleSetSchema);
+    const ruleSet = await readYaml(fs, joinPath(dir, name), schemas.CoreRuleSetSchema);
     const expectedId = name.replace(/\.yaml$/, '');
     if (ruleSet.id !== expectedId) {
       throw new PrepworkError(
@@ -135,13 +154,44 @@ async function loadCore(fs: FileSystem, rootDir: string): Promise<CoreCatalog> {
     }
     ruleSets.push(ruleSet);
   }
+  return ruleSets;
+}
+
+/**
+ * `core/` d'un pack : les ensembles communs (`content/common/core`) puis ceux du pack, triés par
+ * identifiant pour que l'ordre du rendu ne dépende pas du système de fichiers.
+ */
+async function loadCore(
+  fs: FileSystem,
+  contentRoot: string,
+  packRoot: string,
+  schemas: CatalogSchemas,
+): Promise<CoreCatalog> {
+  const commonDir = joinPath(joinPath(contentRoot, COMMON_DIR), CORE_DIR);
+  const packDir = joinPath(packRoot, CORE_DIR);
+  const ruleSets = [
+    ...(await loadCoreRuleSets(fs, commonDir, schemas, false)),
+    ...(await loadCoreRuleSets(fs, packDir, schemas, true)),
+  ].sort((a, b) => a.id.localeCompare(b.id));
+
+  const seen = new Set<string>();
+  for (const set of ruleSets) {
+    if (seen.has(set.id)) {
+      throw new PrepworkError(
+        'CATALOG_INVALID',
+        `ensemble de règles \`${set.id}\` déclaré deux fois (common/ et pack)`,
+      );
+    }
+    seen.add(set.id);
+  }
+
   return {
     kind: 'core',
     id: 'core',
     dir: CORE_DIR,
     ruleSets,
-    files: await readFilesList(fs, dir),
-    templates: await readTemplates(fs, dir),
+    files: await readFilesList(fs, packDir),
+    templates: await readTemplates(fs, packDir),
   };
 }
 
@@ -149,12 +199,16 @@ async function listSubdirectories(fs: FileSystem, dir: string): Promise<string[]
   return (await fs.list(dir)).filter((e) => e.kind === 'directory').map((e) => e.name);
 }
 
-async function loadProfiles(fs: FileSystem, rootDir: string): Promise<Map<string, ProfileCatalog>> {
+async function loadProfiles(
+  fs: FileSystem,
+  packRoot: string,
+  schemas: CatalogSchemas,
+): Promise<Map<string, ProfileCatalog>> {
   const profiles = new Map<string, ProfileCatalog>();
-  const base = joinPath(rootDir, PROFILES_DIR);
+  const base = joinPath(packRoot, PROFILES_DIR);
   for (const name of await listSubdirectories(fs, base)) {
     const dir = joinPath(base, name);
-    const profile = await readYaml(fs, joinPath(dir, PROFILE_FILE), ProfileSchema);
+    const profile = await readYaml(fs, joinPath(dir, PROFILE_FILE), schemas.ProfileSchema);
     if (profile.meta.id !== name) {
       throw new PrepworkError(
         'CATALOG_INVALID',
@@ -176,12 +230,16 @@ async function loadProfiles(fs: FileSystem, rootDir: string): Promise<Map<string
   return profiles;
 }
 
-async function loadOptions(fs: FileSystem, rootDir: string): Promise<Map<string, OptionCatalog>> {
+async function loadOptions(
+  fs: FileSystem,
+  packRoot: string,
+  schemas: CatalogSchemas,
+): Promise<Map<string, OptionCatalog>> {
   const options = new Map<string, OptionCatalog>();
-  const base = joinPath(rootDir, OPTIONS_DIR);
+  const base = joinPath(packRoot, OPTIONS_DIR);
   for (const name of await listSubdirectories(fs, base)) {
     const dir = joinPath(base, name);
-    const option = await readYaml(fs, joinPath(dir, OPTION_FILE), OptionSchema);
+    const option = await readYaml(fs, joinPath(dir, OPTION_FILE), schemas.OptionSchema);
     if (option.meta.id !== name) {
       throw new PrepworkError(
         'CATALOG_INVALID',
@@ -200,15 +258,27 @@ async function loadOptions(fs: FileSystem, rootDir: string): Promise<Map<string,
   return options;
 }
 
-/** Charge et valide structurellement tout le catalogue. Ne vérifie pas la cohérence globale. */
-export async function loadCatalog(fs: FileSystem, rootDir: string): Promise<Catalog> {
-  if (!(await fs.exists(rootDir))) {
-    throw new PrepworkError('CATALOG_NOT_FOUND', `catalogue introuvable : ${rootDir}`);
+/** Charge et valide structurellement le catalogue d'un pack. Ne vérifie pas la cohérence globale. */
+export async function loadCatalog(
+  fs: FileSystem,
+  contentRoot: string,
+  pack: CatalogPack,
+): Promise<Catalog> {
+  if (!(await fs.exists(contentRoot))) {
+    throw new PrepworkError('CATALOG_NOT_FOUND', `catalogue introuvable : ${contentRoot}`);
   }
+  const packRoot = joinPath(contentRoot, pack.contentDir);
+  if (!(await fs.exists(packRoot))) {
+    throw new PrepworkError(
+      'CATALOG_NOT_FOUND',
+      `contenu du pack \`${pack.id}\` introuvable : ${packRoot}`,
+    );
+  }
+  const schemas = pack.catalogSchemas;
   const [core, profiles, options] = await Promise.all([
-    loadCore(fs, rootDir),
-    loadProfiles(fs, rootDir),
-    loadOptions(fs, rootDir),
+    loadCore(fs, contentRoot, packRoot, schemas),
+    loadProfiles(fs, packRoot, schemas),
+    loadOptions(fs, packRoot, schemas),
   ]);
-  return { rootDir, core, profiles, options };
+  return { rootDir: packRoot, packId: pack.id, core, profiles, options };
 }

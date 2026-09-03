@@ -7,9 +7,4 @@ export type {
 } from './prompter.js';
 export { createClackPrompter } from './clack.js';
 export { createScriptedPrompter, type ScriptedPrompter, type ScriptedAnswer } from './scripted.js';
-export {
-  runQuestionnaire,
-  type ProfileChoice,
-  type QuestionnaireInput,
-  type QuestionnaireResult,
-} from './questions.js';
+export type { QuestionnaireResult } from './types.js';

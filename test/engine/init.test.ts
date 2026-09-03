@@ -7,12 +7,12 @@ import { runCheck, runInit, runSync, type EngineDeps } from '../../src/engine/in
 import type { PrepworkError } from '../../src/errors.js';
 import { createMemoryFileSystem, type MemoryFileSystem } from '../../src/fs/memory.js';
 import { createNodeFileSystem } from '../../src/fs/node.js';
-import { SAMPLE_SCAFFOLD } from '../helpers/fixtures.js';
+import { SAMPLE_SCAFFOLD, TEST_PACK } from '../helpers/fixtures.js';
 
 let cached: Catalog | undefined;
 async function deps(fs: MemoryFileSystem): Promise<EngineDeps> {
-  cached ??= await loadCatalog(createNodeFileSystem(), defaultContentRoot());
-  return { fs, catalog: cached, toolVersion: '0.1.0', today: '2026-09-02' };
+  cached ??= await loadCatalog(createNodeFileSystem(), defaultContentRoot(), TEST_PACK);
+  return { fs, catalog: cached, pack: TEST_PACK, toolVersion: '0.1.0', today: '2026-09-02' };
 }
 
 describe('runInit', () => {
@@ -27,7 +27,9 @@ describe('runInit', () => {
     expect(files).toContain(`proj/${MANIFEST_PATH}`);
     expect(files).toContain('proj/pom.xml');
     expect(files).toContain('proj/CLAUDE.md');
-    expect(parseScaffold(fs.snapshot()['proj/scaffold.yaml'] ?? '')).toEqual(SAMPLE_SCAFFOLD);
+    expect(parseScaffold(fs.snapshot()['proj/scaffold.yaml'] ?? '', TEST_PACK)).toEqual(
+      SAMPLE_SCAFFOLD,
+    );
 
     const manifest = await readManifest(fs, 'proj');
     expect(manifest?.profile_version).toBe('1.0.0');

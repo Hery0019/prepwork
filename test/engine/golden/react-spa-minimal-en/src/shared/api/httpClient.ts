@@ -14,10 +14,12 @@ export async function request<T>(path: string, options: RequestOptions<T>): Prom
   const { schema, method = 'GET', body } = options;
 
   const init: RequestInit = { method };
+  const headers: Record<string, string> = {};
   if (body !== undefined) {
-    init.headers = { 'content-type': 'application/json' };
+    headers['content-type'] = 'application/json';
     init.body = JSON.stringify(body);
   }
+  if (Object.keys(headers).length > 0) init.headers = headers;
 
   let response: Response;
   try {

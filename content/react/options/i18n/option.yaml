@@ -43,5 +43,5 @@ npm:
     - name: react-i18next
       version: 15.7.4
       purpose:
-        en: Translation hook and provider for the components.
-        fr: Hook et provider de traduction pour les composants.
+        en: Translation hook and provider, used by the profiles whose rendering supports React context.
+        fr: Hook et provider de traduction, utilisés par les profils dont le rendu supporte le contexte React.

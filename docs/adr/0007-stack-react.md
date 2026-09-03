@@ -242,3 +242,18 @@ remonte dans `content/common/`, consommé par les deux packs.
   tente de la prérendre, appelle l'API absente et échoue — ce que le premier `pnpm build` a montré.
 - **La matrice front gagne l'axe profil**, avec une exclusion : `next-app` ne varie pas selon les
   bibliothèques de données et de formulaires du client, qu'il n'utilise pas.
+
+**2026-09-03, après relecture du profil `next-app` sous authentification.**
+
+- **Un `fetch` serveur ne porte aucune identité.** Le client HTTP posait `credentials: 'include'`
+  pour `next-app` comme il le fait pour la SPA : sans effet côté serveur, où il n'existe pas de
+  bocal à cookies — les appels partaient anonymes. Un module `shared/api/serverAuth.ts` relit les
+  cookies de la requête entrante (`cookies()` de `next/headers`) et les retransmet ; la règle
+  `NEXT-014` dit pourquoi. Hors requête — test, rendu statique — il n'y a rien à transmettre et la
+  fonction rend un en-tête vide.
+- **La configuration i18n remonte dans le socle.** `react-i18next` s'appuie sur `createContext`,
+  absent du rendu serveur : avec `next-app`, importer la configuration depuis un composant serveur
+  faisait échouer `next build`. Le socle porte donc la configuration et choisit la liaison React
+  selon le profil ; l'option garde ses traductions, qui sont des données. Le paquet reste déclaré
+  par l'option : une option ne peut pas conditionner sur le profil, et c'est très bien ainsi — le
+  contrôle d'orthogonalité a refusé la tentative.

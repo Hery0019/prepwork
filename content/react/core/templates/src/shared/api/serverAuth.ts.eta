@@ -1,0 +1,21 @@
+import 'server-only';
+
+<%= it.t("// NEXT-014 : un `fetch` lancé depuis le serveur ne porte aucune session. Le navigateur a un", "// NEXT-014: a `fetch` issued from the server carries no session. The browser has a cookie") %>
+<%= it.t("// bocal à cookies, pas le serveur : il faut relire ceux de la requête entrante et les", "// jar, the server does not: the cookies of the incoming request must be read again and") %>
+<%= it.t("// retransmettre explicitement. `credentials: 'include'` n'a aucun effet ici.", "// forwarded explicitly. `credentials: 'include'` has no effect here.") %>
+import { cookies } from 'next/headers';
+
+export async function authHeaders(): Promise<Record<string, string>> {
+  let jar;
+  try {
+    jar = await cookies();
+  } catch {
+    <%= it.t("// Hors d'une requête — test, tâche planifiée, rendu statique — il n'y a pas de session.", '// Outside a request — test, scheduled job, static rendering — there is no session.') %>
+    return {};
+  }
+  const header = jar
+    .getAll()
+    .map((cookie) => `${cookie.name}=${cookie.value}`)
+    .join('; ');
+  return header.length > 0 ? { cookie: header } : {};
+}

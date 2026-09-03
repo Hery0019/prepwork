@@ -14,12 +14,14 @@ export async function request<T>(path: string, options: RequestOptions<T>): Prom
   const { schema, method = 'GET', body } = options;
 
   const init: RequestInit = { method };
+  const headers: Record<string, string> = {};
   if (body !== undefined) {
-    init.headers = { 'content-type': 'application/json' };
+    headers['content-type'] = 'application/json';
     init.body = JSON.stringify(body);
   }
   // SECS-001 / SECO-001 : le navigateur porte le cookie de session, jamais un jeton.
   init.credentials = 'include';
+  if (Object.keys(headers).length > 0) init.headers = headers;
 
   let response: Response;
   try {

@@ -1,6 +1,8 @@
 // CORE-040 : la seule porte d'entrée du réseau. Les modules `api/` des features passent par ici.
 import type { ZodType } from 'zod';
+import 'server-only';
 import { serverEnv } from '@shared/config/env';
+import { authHeaders } from './serverAuth';
 import { ApiError, errorKindForStatus } from './errors';
 
 export interface RequestOptions<T> {
@@ -14,12 +16,14 @@ export async function request<T>(path: string, options: RequestOptions<T>): Prom
   const { schema, method = 'GET', body } = options;
 
   const init: RequestInit = { method };
+  const headers: Record<string, string> = {};
   if (body !== undefined) {
-    init.headers = { 'content-type': 'application/json' };
+    headers['content-type'] = 'application/json';
     init.body = JSON.stringify(body);
   }
-  // SECS-001 / SECO-001 : le navigateur porte le cookie de session, jamais un jeton.
-  init.credentials = 'include';
+  // NEXT-014 : la session vient de la requête entrante, pas d'un bocal à cookies du serveur.
+  Object.assign(headers, await authHeaders());
+  if (Object.keys(headers).length > 0) init.headers = headers;
 
   let response: Response;
   try {

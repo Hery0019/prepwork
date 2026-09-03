@@ -1,6 +1,6 @@
-# CI de prepwork (CLAUDE.md §8) : vérifications de l'outil sur chaque commit, matrice de
-# génération (chaque profil × chaque option de sécurité × Flyway/Liquibase, plus sans base)
-# avec `mvn verify` sur les projets générés, sur les pull requests uniquement.
+# CI de prepwork (CLAUDE.md §8) : vérifications de l'outil sur chaque commit, puis une matrice de
+# génération par pack sur les pull requests. Chaque projet généré est vérifié par son propre
+# outillage : `mvn verify` côté spring-boot, `lint` + `test` + `build` côté react.
 name: CI
 
 on:
@@ -21,7 +21,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
 
-  matrix:
+  spring-boot-matrix:
     if: github.event_name == 'pull_request'
     needs: check
     runs-on: ubuntu-latest
@@ -31,7 +31,7 @@ jobs:
         profile: [layered, modular]
         security: [none, session, oauth2-resource-server]
         migrations: [flyway, liquibase, none]
-    name: ${{ matrix.profile }} / ${{ matrix.security }} / ${{ matrix.migrations }}
+    name: spring-boot ${{ matrix.profile }} / ${{ matrix.security }} / ${{ matrix.migrations }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -46,9 +46,40 @@ jobs:
           cache: maven
       - run: pnpm install --frozen-lockfile
       - name: Generate
-        run: pnpm matrix out ${{ matrix.profile }} ${{ matrix.security }} ${{ matrix.migrations }} postgresql
+        run: pnpm matrix spring-boot out ${{ matrix.profile }} ${{ matrix.security }} ${{ matrix.migrations }} postgresql
       - name: Verify the generated project
         working-directory: out
         run: |
           chmod +x mvnw
           ./mvnw -B verify
+
+  react-matrix:
+    if: github.event_name == 'pull_request'
+    needs: check
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        data: [tanstack-query, none]
+        forms: [rhf, none]
+        security: [none, oidc-bff, session]
+    name: react ${{ matrix.data }} / ${{ matrix.forms }} / ${{ matrix.security }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Generate
+        run: pnpm matrix react out ${{ matrix.data }} ${{ matrix.forms }} ${{ matrix.security }}
+      - name: Verify the generated project
+        working-directory: out
+        run: |
+          cp .env.example .env
+          pnpm install --no-frozen-lockfile
+          pnpm typecheck
+          pnpm lint
+          pnpm test
+          pnpm build

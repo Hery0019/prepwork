@@ -115,6 +115,40 @@ describe('prepwork CLI', () => {
     expect(dry.lines.some((l) => l.startsWith('I Plan (dry-run)'))).toBe(true);
   });
 
+  it('init --stack react runs the react questionnaire and generates a Vite project', async () => {
+    const answers: ScriptedAnswer[] = [
+      'note-book',
+      'Interface de gestion de notes',
+      'tanstack-query',
+      'rhf',
+      'zustand',
+      'none',
+      false,
+      true,
+      true,
+      'github',
+      'app-sober',
+      true,
+      '',
+      '',
+      true,
+      'fr',
+      'fr',
+      true,
+    ];
+    const h = await harness({}, answers);
+
+    const code = await runCli(h.deps, ['init', 'out', '--stack', 'react', '--no-git']);
+
+    expect(code).toBe(0);
+    const files = Object.keys(h.fs.snapshot());
+    expect(files).toContain('/work/out/package.json');
+    expect(files).toContain('/work/out/src/features/notes/index.ts');
+    expect(files).toContain('/work/out/src/shared/styles/tokens.css');
+    expect(files).not.toContain('/work/out/pom.xml');
+    expect(h.fs.snapshot()['/work/out/scaffold.yaml']).toContain('target: react');
+  });
+
   it('check exits 1 when the project is out of date and 0 when clean; sync repairs', async () => {
     const h = await harness({ '/work/s.yaml': serializeScaffold(SAMPLE_SCAFFOLD) });
     await runCli(h.deps, ['init', 'p', '--scaffold', 's.yaml', '--no-git']);

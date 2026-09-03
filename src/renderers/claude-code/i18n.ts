@@ -17,7 +17,7 @@ export interface Strings {
     permanentRules: string;
     permanentRulesIntro: string;
     skillsSection: string;
-    skillsIntro: string;
+    skillsIntro: (exampleRuleId: string) => string;
     skillColumn: string;
     contentColumn: string;
     fileColumn: string;
@@ -92,8 +92,8 @@ const fr: Strings = {
     permanentRulesIntro:
       "Ces règles s'appliquent à chaque intervention, quel que soit le fichier touché. Le détail et les anti-patterns sont dans le skill `workflow`.",
     skillsSection: 'Skills',
-    skillsIntro:
-      'Un skill par sujet. Chaque règle y porte un identifiant stable (`LAY-002`) à citer dans les plans et les revues.',
+    skillsIntro: (id) =>
+      `Un skill par sujet. Chaque règle y porte un identifiant stable (\`${id}\`) à citer dans les plans et les revues.`,
     skillColumn: 'Skill',
     contentColumn: 'Contenu',
     fileColumn: 'Fichier',
@@ -116,8 +116,7 @@ const fr: Strings = {
     gitTrailer:
       "Chaque commit de l'agent porte le trailer `Co-Authored-By: Claude <noreply@anthropic.com>`.",
     gitNoTrailer: "Les commits de l'agent ne portent pas de trailer de co-auteur.",
-    gitForbidden:
-      "Interdit à l'agent : `git push`, `git reset --hard`, `git clean`, suppression d'une migration.",
+    gitForbidden: "Interdit à l'agent : `git push`, `git reset --hard`, `git clean`.",
   },
   skill: {
     legend:
@@ -176,8 +175,8 @@ const en: Strings = {
     permanentRulesIntro:
       'These rules apply to every intervention, whatever the file. Details and anti-patterns are in the `workflow` skill.',
     skillsSection: 'Skills',
-    skillsIntro:
-      'One skill per topic. Every rule carries a stable identifier (`LAY-002`) to quote in plans and reviews.',
+    skillsIntro: (id) =>
+      `One skill per topic. Every rule carries a stable identifier (\`${id}\`) to quote in plans and reviews.`,
     skillColumn: 'Skill',
     contentColumn: 'Covers',
     fileColumn: 'File',
@@ -200,8 +199,7 @@ const en: Strings = {
     gitTrailer:
       'Every agent commit carries the trailer `Co-Authored-By: Claude <noreply@anthropic.com>`.',
     gitNoTrailer: 'Agent commits carry no co-author trailer.',
-    gitForbidden:
-      'Forbidden to the agent: `git push`, `git reset --hard`, `git clean`, deleting a migration.',
+    gitForbidden: 'Forbidden to the agent: `git push`, `git reset --hard`, `git clean`.',
   },
   skill: {
     legend:

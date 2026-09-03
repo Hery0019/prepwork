@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../../schema/core.schema.json
+# yaml-language-server: $schema=../../../schema/spring-boot/core.schema.json
 # API et erreurs (CLAUDE.md §4).
 id: api
 skill: api

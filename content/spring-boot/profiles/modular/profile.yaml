@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../../../schema/profile.schema.json
+# yaml-language-server: $schema=../../../../schema/spring-boot/profile.schema.json
 # Profil `modular` : monolithe modulaire avec Spring Modulith, un module par domaine métier,
 # communication par événements, `ApplicationModules.verify()` dans les tests.
 meta:

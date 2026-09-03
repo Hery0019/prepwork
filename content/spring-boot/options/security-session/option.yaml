@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../../../schema/option.schema.json
+# yaml-language-server: $schema=../../../../schema/spring-boot/option.schema.json
 # Authentification par session HTTP (Spring Security). Exclusive avec les autres security-*.
 meta:
   id: security-session

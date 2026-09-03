@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../../../schema/react/option.schema.json
+# Aucun cache serveur : le module api expose des fonctions asynchrones simples.
+meta:
+  id: data-none
+  version: 1.0.0
+  rule_prefix: DNONE
+  group: data
+  summary:
+    en: No caching library; the api module exposes plain asynchronous functions.
+    fr: Aucune bibliothèque de cache ; le module api expose des fonctions asynchrones simples.
+skill: data
+rules:
+  - id: DNONE-001
+    statement:
+      en: Each screen holds its own loading and error state explicitly, next to the call it makes.
+      fr: Chaque écran porte explicitement ses états de chargement et d'erreur, à côté de l'appel qu'il fait.
+    rationale:
+      en: Without a library, the three states are the developer's responsibility and must stay visible.
+      fr: Sans bibliothèque, les trois états sont à la charge du développeur et doivent rester visibles.
+    enforced_by: none
+  - id: DNONE-002
+    statement:
+      en: 'No home-made cache: a resource is either requested again or passed down as a prop.'
+      fr: 'Aucun cache maison : une ressource est soit redemandée, soit passée en prop.'
+    rationale:
+      en: A cache written by hand is a library with no tests and no invalidation strategy.
+      fr: Un cache écrit à la main est une bibliothèque sans tests et sans stratégie d'invalidation.
+    enforced_by: none

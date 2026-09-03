@@ -27,7 +27,7 @@ Marqueur après l'identifiant : nom d'outil = contrainte outillée (le build ou 
   Pourquoi : Une mauvaise supposition coûte bien plus à défaire qu'une question à répondre.
 - **CORE-006** · guidance — L'ajout d'une dépendance est un commit séparé qui suit la procédure de dépendances du profil.
   Pourquoi : Une dépendance est un engagement de long terme ; elle mérite sa propre revue.
-- **CORE-007** · guidance — L'agent n'exécute jamais `git push`, `git reset --hard`, `git clean`, et ne supprime jamais une migration de base de données.
+- **CORE-007** · guidance — L'agent n'exécute jamais `git push`, `git reset --hard` ni `git clean`.
   Pourquoi : Ces actions sont irréversibles ou touchent un état partagé ; seul un humain les prend.
 - **CORE-040** · guidance — Les identifiants du code (packages, classes, méthodes, variables, colonnes) sont toujours en anglais.
   Pourquoi : Frameworks, bibliothèques et documentation sont en anglais ; mélanger les langues produit `getUtilisateurById`.

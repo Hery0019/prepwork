@@ -1,0 +1,68 @@
+# yaml-language-server: $schema=../../../schema/react/core.schema.json
+# Données (ADR 0007 §5) : une seule porte d'entrée pour le réseau, validée.
+id: data
+skill: data
+title:
+  en: Data access
+  fr: Accès aux données
+rules:
+  - id: CORE-040
+    statement:
+      en: Every network call goes through the `api/` module of a feature; no component and no hook calls `fetch` directly.
+      fr: Tout appel réseau passe par le module `api/` d'une feature ; aucun composant ni hook n'appelle `fetch` directement.
+    rationale:
+      en: One place holds the base URL, the headers, the error handling and the validation.
+      fr: Un seul endroit porte l'URL de base, les en-têtes, la gestion d'erreur et la validation.
+    enforced_by: eslint-boundaries
+  - id: CORE-041
+    statement:
+      en: A response is validated by a zod schema at the boundary, and the inferred type is the only type used downstream.
+      fr: Une réponse est validée par un schéma zod à la frontière, et le type inféré est le seul type utilisé en aval.
+    rationale:
+      en: Without validation, a silent API change becomes a runtime error three screens later.
+      fr: Sans validation, un changement d'API silencieux devient une erreur d'exécution trois écrans plus loin.
+    enforced_by: typescript
+  - id: CORE-042
+    statement:
+      en: Server data is never duplicated into local state; the module that fetched it stays its single source of truth.
+      fr: Une donnée serveur n'est jamais dupliquée dans un état local ; le module qui l'a chargée en reste la source de vérité unique.
+    rationale:
+      en: Two copies of the same data always end up disagreeing.
+      fr: Deux copies de la même donnée finissent toujours par diverger.
+    enforced_by: none
+  - id: CORE-044
+    statement:
+      en: Loading and error states are handled where the query is called, not by each leaf component.
+      fr: Les états de chargement et d'erreur sont traités là où la requête est appelée, pas par chaque composant terminal.
+    rationale:
+      en: Otherwise every component ends up carrying the same three branches.
+      fr: Sinon chaque composant finit par porter les trois mêmes branches.
+    enforced_by: none
+  - id: CORE-046
+    statement:
+      en: The API base URL and every environment value are read from the typed configuration module, never from a literal in a component.
+      fr: L'URL de base de l'API et toute valeur d'environnement sont lues depuis le module de configuration typé, jamais depuis un littéral dans un composant.
+    rationale:
+      en: A URL scattered across components cannot be changed for a new environment.
+      fr: Une URL éparpillée dans les composants ne peut pas être changée pour un nouvel environnement.
+    enforced_by: eslint
+  - id: CORE-047
+    statement:
+      en: An HTTP failure becomes a typed domain error before it reaches a component; a component never inspects a status code.
+      fr: Un échec HTTP devient une erreur de domaine typée avant d'atteindre un composant ; un composant n'inspecte jamais un code de statut.
+    rationale:
+      en: The transport is a detail; the screen reacts to `NotFound`, not to `404`.
+      fr: Le transport est un détail ; l'écran réagit à `NotFound`, pas à `404`.
+    enforced_by: none
+anti_patterns:
+  - id: CORE-AP-040
+    statement:
+      en: Copying a loaded resource into local state in order to edit it.
+      fr: Copier une ressource chargée dans un état local pour l'éditer.
+    rationale:
+      en: The copy stops being refreshed and the screen shows stale data after any mutation.
+      fr: La copie cesse d'être rafraîchie et l'écran montre une donnée périmée après toute mutation.
+    instead:
+      en: Keep the loaded resource as the source and hold only the form draft in local state.
+      fr: Garder la ressource chargée comme source et ne conserver en local que le brouillon du formulaire.
+    enforced_by: none

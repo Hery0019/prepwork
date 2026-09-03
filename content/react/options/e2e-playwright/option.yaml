@@ -1,0 +1,37 @@
+# yaml-language-server: $schema=../../../../schema/react/option.schema.json
+# Tests de bout en bout avec Playwright.
+meta:
+  id: e2e-playwright
+  version: 1.0.0
+  rule_prefix: PLAY
+  summary:
+    en: The reference journey is played in a real browser against the built application.
+    fr: Le parcours de référence est joué dans un vrai navigateur, sur l'application construite.
+skill: testing
+rules:
+  - id: PLAY-001
+    statement:
+      en: The reference journey is covered by an end-to-end test running against the production build.
+      fr: Le parcours de référence est couvert par un test de bout en bout exécuté sur le build de production.
+    rationale:
+      en: It is the only level that catches a broken route, a missing asset or a build-only failure.
+      fr: C'est le seul niveau qui attrape une route cassée, un asset manquant ou une panne propre au build.
+    enforced_by: playwright
+  - id: PLAY-002
+    statement:
+      en: An end-to-end test drives the application through visible roles and labels, never through internal state.
+      fr: Un test de bout en bout pilote l'application par des rôles et libellés visibles, jamais par un état interne.
+    rationale:
+      en: A test that reaches inside stops testing what the user actually experiences.
+      fr: Un test qui va chercher à l'intérieur cesse de tester ce que vit l'utilisateur.
+    enforced_by: none
+npm:
+  dependencies:
+    - name: '@playwright/test'
+      version: ^1.52.0
+      scope: dev
+      purpose:
+        en: Browser runner for the end-to-end journey.
+        fr: Exécuteur navigateur pour le parcours de bout en bout.
+  scripts:
+    e2e: playwright test

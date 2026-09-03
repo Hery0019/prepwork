@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../../../schema/react/option.schema.json
+# État client : contextes React, un par sujet.
+meta:
+  id: state-context
+  version: 1.0.0
+  rule_prefix: CTX
+  group: state
+  summary:
+    en: Client state is shared through React contexts, one per concern.
+    fr: L'état client est partagé par des contextes React, un par sujet.
+skill: architecture
+rules:
+  - id: CTX-001
+    statement:
+      en: One provider per concern, declared by the feature that owns the state, never a single global provider.
+      fr: Un provider par sujet, déclaré par la feature qui possède l'état, jamais un unique provider global.
+    rationale:
+      en: A global provider re-renders the whole tree and belongs to nobody.
+      fr: Un provider global re-rend tout l'arbre et n'appartient à personne.
+    enforced_by: none
+  - id: CTX-002
+    statement:
+      en: A context carries a value that changes rarely; frequently changing values stay in local state.
+      fr: Un contexte porte une valeur qui change rarement ; les valeurs qui changent souvent restent en état local.
+    rationale:
+      en: Every context update re-renders all its consumers, whatever they use from it.
+      fr: Chaque mise à jour d'un contexte re-rend tous ses consommateurs, quoi qu'ils en utilisent.
+    enforced_by: none

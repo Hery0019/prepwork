@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../../../schema/react/option.schema.json
+# Formulaires : contrôlés à la main, validés par le schéma partagé.
+meta:
+  id: forms-none
+  version: 1.0.0
+  rule_prefix: FNONE
+  group: forms
+  summary:
+    en: No form library; fields are controlled explicitly and validated on submit.
+    fr: Aucune bibliothèque de formulaires ; les champs sont contrôlés explicitement et validés à la soumission.
+skill: data
+rules:
+  - id: FNONE-001
+    statement:
+      en: Each field is controlled explicitly and the whole form is validated by its schema on submit.
+      fr: Chaque champ est contrôlé explicitement et le formulaire entier est validé par son schéma à la soumission.
+    rationale:
+      en: Validating field by field on every keystroke turns a small form into a state machine.
+      fr: Valider champ par champ à chaque frappe transforme un petit formulaire en machine à états.
+    enforced_by: none

@@ -1,0 +1,40 @@
+# yaml-language-server: $schema=../../../schema/react/core.schema.json
+# Langue (CLAUDE.md §4) : identifiants toujours en anglais, commentaires et docs configurables.
+id: language
+skill: workflow
+title:
+  en: Language
+  fr: Langue
+rules:
+  - id: CORE-080
+    statement:
+      en: Code identifiers (files, components, hooks, props, variables) are always in English.
+      fr: Les identifiants du code (fichiers, composants, hooks, props, variables) sont toujours en anglais.
+    rationale:
+      en: Frameworks, libraries and documentation are in English; mixing languages produces `useUtilisateurQuery`.
+      fr: Frameworks, bibliothèques et documentation sont en anglais ; mélanger les langues produit `useUtilisateurQuery`.
+    enforced_by: none
+  - id: CORE-081
+    statement:
+      en: Comments and documentation are written in the project's configured language (see the project settings section).
+      fr: Les commentaires et la documentation sont écrits dans la langue configurée du projet (voir la section réglages du projet).
+    rationale:
+      en: The team reads them; the language is a team choice recorded once in `scaffold.yaml`.
+      fr: C'est l'équipe qui les lit ; la langue est un choix d'équipe enregistré une fois dans `scaffold.yaml`.
+    enforced_by: none
+  - id: CORE-082
+    statement:
+      en: Text displayed to the user is never an identifier; it lives in the component, or in the translation files when i18n is enabled.
+      fr: Un texte affiché à l'utilisateur n'est jamais un identifiant ; il vit dans le composant, ou dans les fichiers de traduction quand l'i18n est activée.
+    rationale:
+      en: The language of the interface is a product decision, unrelated to the language of the code.
+      fr: La langue de l'interface est une décision produit, sans rapport avec la langue du code.
+    enforced_by: none
+  - id: CORE-083
+    statement:
+      en: Business terms are defined in `docs/glossary.md` and reused verbatim in identifiers, in their English form.
+      fr: Les termes métier sont définis dans `docs/glossary.md` et réutilisés tels quels dans les identifiants, sous leur forme anglaise.
+    rationale:
+      en: One concept, one word; synonyms in code are bugs waiting to happen.
+      fr: Un concept, un mot ; les synonymes dans le code sont des bugs en attente.
+    enforced_by: none

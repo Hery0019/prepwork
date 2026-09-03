@@ -27,7 +27,7 @@ Marker after the identifier: a tool name = tooled constraint (the build or the c
   Why: A wrong guess costs far more to undo than a question costs to answer.
 - **CORE-006** · guidance — Adding a dependency is a separate commit that follows the profile's dependency procedure.
   Why: Dependencies are long-term commitments; they deserve their own review.
-- **CORE-007** · guidance — The agent never runs `git push`, `git reset --hard`, `git clean`, and never deletes a database migration.
+- **CORE-007** · guidance — The agent never runs `git push`, `git reset --hard` or `git clean`.
   Why: These actions are irreversible or affect shared state; only a human takes them.
 - **CORE-040** · guidance — Code identifiers (packages, classes, methods, variables, columns) are always in English.
   Why: Frameworks, libraries and documentation are in English; mixing languages produces `getUtilisateurById`.

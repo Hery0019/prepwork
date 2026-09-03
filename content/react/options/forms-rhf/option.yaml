@@ -1,0 +1,40 @@
+# yaml-language-server: $schema=../../../../schema/react/option.schema.json
+# Formulaires : react-hook-form et son résolveur zod.
+meta:
+  id: forms-rhf
+  version: 1.0.0
+  rule_prefix: FRM
+  group: forms
+  summary:
+    en: Forms built with react-hook-form, validated by the shared schema.
+    fr: Formulaires construits avec react-hook-form, validés par le schéma partagé.
+skill: data
+rules:
+  - id: FRM-001
+    statement:
+      en: A form is registered with react-hook-form and validated through its resolver; no hand-written `onChange` per field.
+      fr: Un formulaire est enregistré auprès de react-hook-form et validé par son résolveur ; aucun `onChange` écrit à la main par champ.
+    rationale:
+      en: Hand-written handlers re-render the whole form and always miss a case.
+      fr: Les gestionnaires écrits à la main re-rendent tout le formulaire et oublient toujours un cas.
+    enforced_by: none
+  - id: FRM-002
+    statement:
+      en: The schema is declared once next to the form and drives both the validation and the inferred type.
+      fr: Le schéma est déclaré une fois à côté du formulaire et pilote à la fois la validation et le type inféré.
+    rationale:
+      en: One declaration, one truth; a second one always drifts.
+      fr: Une déclaration, une vérité ; une seconde finit toujours par diverger.
+    enforced_by: typescript
+npm:
+  dependencies:
+    - name: react-hook-form
+      version: ^7.56.0
+      purpose:
+        en: Registration, validation and submission state of the forms.
+        fr: Enregistrement, validation et état de soumission des formulaires.
+    - name: '@hookform/resolvers'
+      version: ^5.0.0
+      purpose:
+        en: Bridge between the form library and the shared validation schema.
+        fr: Pont entre la bibliothèque de formulaires et le schéma de validation partagé.

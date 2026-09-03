@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../../../schema/react/option.schema.json
+# Authentification par cookie de session posé par l'API.
+meta:
+  id: security-session
+  version: 1.0.0
+  rule_prefix: SECS
+  group: security
+  summary:
+    en: Authentication relies on the session cookie set by the API.
+    fr: L'authentification repose sur le cookie de session posé par l'API.
+skill: security
+rules:
+  - id: SECS-001
+    statement:
+      en: Requests are sent with credentials included so the browser carries the session cookie.
+      fr: Les requêtes sont envoyées avec les identifiants inclus pour que le navigateur porte le cookie de session.
+    rationale:
+      en: Without it the API sees an anonymous call and answers 401 on every screen.
+      fr: Sans cela l'API voit un appel anonyme et répond 401 sur chaque écran.
+    enforced_by: none
+  - id: SECS-002
+    statement:
+      en: The client never reads the cookie; it derives the authenticated state from the endpoint that describes the current user.
+      fr: Le client ne lit jamais le cookie ; il déduit l'état authentifié de l'endpoint qui décrit l'utilisateur courant.
+    rationale:
+      en: An http-only cookie is unreadable by design, and that is what makes it safe.
+      fr: Un cookie http-only est illisible par construction, et c'est ce qui le rend sûr.
+    enforced_by: none

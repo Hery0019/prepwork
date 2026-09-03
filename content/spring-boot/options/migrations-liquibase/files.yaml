@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../../../schema/files.schema.json
+# yaml-language-server: $schema=../../../../schema/spring-boot/files.schema.json
 files:
   - source: src/main/resources/db/changelog/db.changelog-master.yaml.eta
     target: src/main/resources/db/changelog/db.changelog-master.yaml

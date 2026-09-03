@@ -2,10 +2,11 @@
 // vaut `spring-boot` (scaffolds écrits avant l'ADR 0007).
 import { DEFAULT_STACK_TARGET } from '../config/schema.js';
 import { PrepworkError } from '../errors.js';
+import { reactPack } from './react/index.js';
 import { springBootPack } from './spring-boot/index.js';
 import type { StackPack } from './types.js';
 
-export const PACKS: readonly StackPack[] = [springBootPack];
+export const PACKS: readonly StackPack[] = [springBootPack, reactPack];
 
 export const PACK_IDS: readonly string[] = PACKS.map((p) => p.id);
 

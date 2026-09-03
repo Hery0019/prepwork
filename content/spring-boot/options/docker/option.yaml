@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../../../schema/option.schema.json
+# yaml-language-server: $schema=../../../../schema/spring-boot/option.schema.json
 # Image Docker multi-étapes et environnement local compose.
 meta:
   id: docker

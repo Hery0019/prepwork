@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../../../schema/option.schema.json
+# yaml-language-server: $schema=../../../../schema/spring-boot/option.schema.json
 # Conventions Git : toujours présente (commits conventionnels, auteur, hooks, .gitignore).
 meta:
   id: git

@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../../schema/files.schema.json
+# yaml-language-server: $schema=../../../schema/spring-boot/files.schema.json
 # Fichiers générés par le socle, quel que soit le profil. `owner: team` = créé une fois.
 files:
   # --- Build ---------------------------------------------------------------------------

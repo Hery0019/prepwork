@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../../../schema/files.schema.json
+# yaml-language-server: $schema=../../../../schema/spring-boot/files.schema.json
 files:
   - source: .github/workflows/ci.yaml.eta
     target: .github/workflows/ci.yaml

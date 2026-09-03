@@ -62,7 +62,7 @@ export function renderClaudeMd(model: RenderModel): RenderedFile {
     s.permanentRulesIntro,
     permanentRules(model),
     `## ${s.skillsSection}`,
-    s.skillsIntro,
+    s.skillsIntro(`${model.input.profile.meta.rule_prefix}-002`),
     skillsTable(model),
     `## ${s.readingRules}`,
     s.readingRulesLegend,

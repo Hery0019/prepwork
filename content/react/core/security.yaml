@@ -1,0 +1,84 @@
+# yaml-language-server: $schema=../../../schema/react/core.schema.json
+# Sécurité de base (ADR 0007 §5), indépendante de l'option d'authentification.
+id: security
+skill: security
+title:
+  en: Baseline security
+  fr: Sécurité de base
+rules:
+  - id: CORE-070
+    statement:
+      en: Everything shipped in the bundle is public; no secret, key or private token is ever read by the browser code.
+      fr: Tout ce qui part dans le bundle est public ; aucun secret, clé ou jeton privé n'est jamais lu par le code du navigateur.
+    rationale:
+      en: A `VITE_` variable is inlined at build time and readable by anyone who opens the sources.
+      fr: Une variable `VITE_` est inlinée à la construction et lisible par quiconque ouvre les sources.
+    enforced_by: gitleaks
+  - id: CORE-071
+    statement:
+      en: '`.env.example` is committed with every expected variable; `.env` is ignored and never committed.'
+      fr: '`.env.example` est commité avec toutes les variables attendues ; `.env` est ignoré et jamais commité.'
+    rationale:
+      en: A new developer must be able to start the project without asking which variables exist.
+      fr: Un nouvel arrivant doit pouvoir démarrer le projet sans demander quelles variables existent.
+    enforced_by: gitleaks
+  - id: CORE-072
+    statement:
+      en: '`dangerouslySetInnerHTML` is used only on content sanitised by the dedicated module of `shared/`.'
+      fr: '`dangerouslySetInnerHTML` n''est utilisé que sur du contenu assaini par le module dédié de `shared/`.'
+    rationale:
+      en: Any other use turns a stored string into script execution.
+      fr: Tout autre usage transforme une chaîne stockée en exécution de script.
+    enforced_by: eslint
+  - id: CORE-073
+    statement:
+      en: A link opened in a new tab carries `rel="noopener noreferrer"`.
+      fr: Un lien ouvert dans un nouvel onglet porte `rel="noopener noreferrer"`.
+    rationale:
+      en: Without it the opened page can drive the tab it came from.
+      fr: Sans cela, la page ouverte peut piloter l'onglet dont elle vient.
+    enforced_by: eslint
+  - id: CORE-074
+    statement:
+      en: An authentication token is never written to `localStorage` or `sessionStorage`.
+      fr: Un jeton d'authentification n'est jamais écrit dans `localStorage` ni `sessionStorage`.
+    rationale:
+      en: Any injected script reads them; a cookie set by the server does not have that weakness.
+      fr: N'importe quel script injecté les lit ; un cookie posé par le serveur n'a pas cette faiblesse.
+    enforced_by: none
+  - id: CORE-075
+    statement:
+      en: A Content-Security-Policy is served in production and the application ships no inline script.
+      fr: Une Content-Security-Policy est servie en production et l'application n'embarque aucun script inline.
+    rationale:
+      en: The policy is the last barrier when an injection gets through.
+      fr: La politique est la dernière barrière quand une injection passe.
+    enforced_by: none
+  - id: CORE-076
+    statement:
+      en: User input interpolated into a URL is encoded, and a URL coming from data is never used as a `src` or `href` without checking its scheme.
+      fr: Une saisie utilisateur interpolée dans une URL est encodée, et une URL venue des données n'est jamais utilisée en `src` ou `href` sans vérifier son schéma.
+    rationale:
+      en: A `javascript:` URL stored in a field is executed on click.
+      fr: Une URL `javascript:` stockée dans un champ s'exécute au clic.
+    enforced_by: none
+  - id: CORE-077
+    statement:
+      en: Dependencies are audited in CI, and adding one is a separate commit stating why it is needed.
+      fr: Les dépendances sont auditées en CI, et en ajouter une fait l'objet d'un commit séparé qui dit pourquoi elle est nécessaire.
+    rationale:
+      en: The front-end dependency tree is the widest attack surface of the project.
+      fr: L'arbre de dépendances du front est la plus large surface d'attaque du projet.
+    enforced_by: none
+anti_patterns:
+  - id: CORE-AP-070
+    statement:
+      en: Putting an API key in a `VITE_` variable and treating it as private.
+      fr: Mettre une clé d'API dans une variable `VITE_` et la considérer comme privée.
+    rationale:
+      en: The value ends up in the JavaScript bundle, in clear text.
+      fr: La valeur se retrouve dans le bundle JavaScript, en clair.
+    instead:
+      en: Keep the key on a server and call it through the project's backend.
+      fr: Garder la clé sur un serveur et l'appeler à travers le backend du projet.
+    enforced_by: gitleaks

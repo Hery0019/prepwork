@@ -1,0 +1,84 @@
+# yaml-language-server: $schema=../../../schema/react/core.schema.json
+# Style et tokens (ADR 0007 §6) : le contrat visuel s'exprime en tokens, jamais en valeurs.
+id: style
+skill: ui
+title:
+  en: Style and tokens
+  fr: Style et tokens
+rules:
+  - id: CORE-020
+    statement:
+      en: Colours, spacing, radii and font sizes come from the project tokens; no raw hex, rgb or px value appears in a component.
+      fr: Couleurs, espacements, rayons et tailles de texte viennent des tokens du projet ; aucune valeur hex, rgb ou px brute n'apparaît dans un composant.
+    rationale:
+      en: A value written by hand escapes the theme, the dark mode and any later change of brand.
+      fr: Une valeur écrite à la main échappe au thème, au mode sombre et à tout changement de marque ultérieur.
+    enforced_by: stylelint
+  - id: CORE-021
+    statement:
+      en: Tailwind arbitrary values (`p-[13px]`, `text-[#3a5bd9]`) are forbidden.
+      fr: Les valeurs arbitraires de Tailwind (`p-[13px]`, `text-[#3a5bd9]`) sont interdites.
+    rationale:
+      en: They are the same hand-written value, hidden inside a class name.
+      fr: C'est la même valeur écrite à la main, cachée dans un nom de classe.
+    enforced_by: eslint
+  - id: CORE-022
+    statement:
+      en: Colours are used through their semantic token (`--color-surface`, `--color-destructive`), never through a palette shade.
+      fr: Les couleurs sont utilisées par leur token sémantique (`--color-surface`, `--color-destructive`), jamais par une nuance de palette.
+    rationale:
+      en: A semantic name survives a palette change; `blue-600` does not.
+      fr: Un nom sémantique survit à un changement de palette ; `blue-600` non.
+    enforced_by: stylelint
+  - id: CORE-023
+    statement:
+      en: The dark theme redefines the same tokens; no component branches on the active theme.
+      fr: Le thème sombre redéfinit les mêmes tokens ; aucun composant ne teste le thème actif.
+    rationale:
+      en: A component that knows about the theme has to be changed twice for every visual change.
+      fr: Un composant qui connaît le thème doit être modifié deux fois à chaque changement visuel.
+    enforced_by: none
+  - id: CORE-024
+    statement:
+      en: Spacing uses the scale built on the base step; no intermediate value is introduced.
+      fr: Les espacements utilisent l'échelle construite sur le pas de base ; aucune valeur intermédiaire n'est introduite.
+    rationale:
+      en: A single rhythm is what makes screens written by different hands look like one product.
+      fr: Un rythme unique est ce qui fait ressembler à un seul produit des écrans écrits par des mains différentes.
+    enforced_by: stylelint
+  - id: CORE-025
+    statement:
+      en: Text sizes come from the modular scale tokens, and only the weights listed in the visual contract are used.
+      fr: Les tailles de texte viennent des tokens de l'échelle modulaire, et seules les graisses listées dans le contrat visuel sont utilisées.
+    rationale:
+      en: Two extra sizes and one extra weight are enough to make a typography look accidental.
+      fr: Deux tailles et une graisse de plus suffisent à rendre une typographie accidentelle.
+    enforced_by: stylelint
+  - id: CORE-026
+    statement:
+      en: '`!important` never appears in the project stylesheets.'
+      fr: '`!important` n''apparaît jamais dans les feuilles de style du projet.'
+    rationale:
+      en: It is the sign of a specificity problem that the next developer will have to solve twice.
+      fr: C'est le signe d'un problème de spécificité que le développeur suivant devra résoudre deux fois.
+    enforced_by: stylelint
+  - id: CORE-027
+    statement:
+      en: A new token is added to the token file and to both themes in the same change, never inline in a component.
+      fr: Un nouveau token est ajouté au fichier de tokens et aux deux thèmes dans le même changement, jamais en ligne dans un composant.
+    rationale:
+      en: The token file is the only readable inventory of the visual language.
+      fr: Le fichier de tokens est le seul inventaire lisible du langage visuel.
+    enforced_by: none
+anti_patterns:
+  - id: CORE-AP-020
+    statement:
+      en: A colour picked from a mockup and pasted into a class for one screen.
+      fr: Une couleur relevée sur une maquette et collée dans une classe pour un seul écran.
+    rationale:
+      en: It works today and breaks the dark theme, the contrast check and the next redesign.
+      fr: Elle marche aujourd'hui et casse le thème sombre, le contrôle de contraste et la refonte suivante.
+    instead:
+      en: Reuse the closest semantic token, or add one to the token file if the meaning is new.
+      fr: Réutiliser le token sémantique le plus proche, ou en ajouter un au fichier de tokens si le sens est nouveau.
+    enforced_by: stylelint

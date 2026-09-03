@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../../../schema/files.schema.json
+# yaml-language-server: $schema=../../../../schema/spring-boot/files.schema.json
 # Squelette du profil modular : modules `note` (émetteur) et `audit` (écouteur), tests Modulith.
 files:
   # --- module note : API publique -------------------------------------------------------

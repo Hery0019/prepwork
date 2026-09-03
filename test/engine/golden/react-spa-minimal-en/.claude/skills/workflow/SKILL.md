@@ -61,13 +61,25 @@ Marker after the identifier: a tool name = tooled constraint (the build or the c
 
 ## Option `git`
 
-Conventional commits, no secret committed, commands forbidden to the agent.
+Conventional commits, declared author, optional agent trailer, hooks for commit messages and secrets.
 
 ### Rules
 
-- **GIT-001** · `commitlint` — A commit message follows the Conventional Commits format; the `commit-msg` hook refuses anything else.
-  Why: A readable history is the cheapest documentation a team ever writes.
-- **GIT-002** · `gitleaks` — The `pre-commit` hook runs gitleaks and refuses the commit when a secret is detected.
+- **GIT-001** · `commitlint` — Commit messages follow Conventional Commits (`type(scope): subject`, subject of at most 72 characters), checked by the `commit-msg` hook.
+  Why: The history becomes a changelog that machines and humans can read.
+- **GIT-002** · guidance — Commits are authored with the identity declared in `scaffold.yaml` (`git.author`), never with a machine default.
+  Why: Authorship is a team decision recorded once, not a local accident.
+- **GIT-003** · guidance — When `git.agent_trailer` is enabled in `scaffold.yaml`, every commit written by the agent ends with the trailer `Co-Authored-By: Claude <noreply@anthropic.com>`.
+  Why: The team can tell agent-written commits apart in the history.
+- **GIT-004** · guidance — The hooks in `.githooks/` are active on every clone (`git config core.hooksPath .githooks`); a commit that bypassed them is rejected in review.
+  Why: Hooks only protect the repository when everyone runs them.
+- **GIT-005** · guidance — Build outputs, IDE files and `.env` are ignored through `.gitignore`; nothing produced by the build is ever committed.
+  Why: The repository contains sources and decisions, nothing that can be regenerated.
+- **GIT-006** · `gitleaks` — The `pre-commit` hook runs gitleaks and refuses the commit when a secret is staged.
   Why: A secret pushed once must be considered compromised, whatever happens next.
-- **GIT-003** · guidance — The agent never runs `git push`, `git reset --hard` or `git clean`.
-  Why: These three commands destroy work that only the team can decide to lose.
+
+### Anti-patterns
+
+- **GIT-AP-001** · guidance — `git commit --no-verify` to get past a failing hook.
+  Why: The hook failed for a reason, a malformed message or a secret in the diff.
+  Instead: Fix the message or remove the secret, then commit again.

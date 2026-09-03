@@ -230,13 +230,14 @@ async function loadProfiles(
   return profiles;
 }
 
-async function loadOptions(
+async function loadOptionsFrom(
   fs: FileSystem,
-  packRoot: string,
+  base: string,
+  dirPrefix: string,
   schemas: CatalogSchemas,
-): Promise<Map<string, OptionCatalog>> {
-  const options = new Map<string, OptionCatalog>();
-  const base = joinPath(packRoot, OPTIONS_DIR);
+  options: Map<string, OptionCatalog>,
+): Promise<void> {
+  if (!(await fs.exists(base))) return;
   for (const name of await listSubdirectories(fs, base)) {
     const dir = joinPath(base, name);
     const option = await readYaml(fs, joinPath(dir, OPTION_FILE), schemas.OptionSchema);
@@ -246,15 +247,42 @@ async function loadOptions(
         `${joinPath(dir, OPTION_FILE)} : meta.id \`${option.meta.id}\` différent du répertoire \`${name}\``,
       );
     }
+    if (options.has(name)) {
+      throw new PrepworkError(
+        'CATALOG_INVALID',
+        `option \`${name}\` déclarée deux fois (common/ et pack)`,
+      );
+    }
     options.set(name, {
       kind: 'option',
       id: name,
-      dir: joinPath(OPTIONS_DIR, name),
+      dir: joinPath(dirPrefix, name),
       option,
       files: await readFilesList(fs, dir),
       templates: await readTemplates(fs, dir),
     });
   }
+}
+
+/**
+ * Options d'un pack : celles de `content/common/options` (valables pour toute stack) puis celles
+ * du pack. Un identifiant déclaré des deux côtés est une erreur, pas une surcharge.
+ */
+async function loadOptions(
+  fs: FileSystem,
+  contentRoot: string,
+  packRoot: string,
+  schemas: CatalogSchemas,
+): Promise<Map<string, OptionCatalog>> {
+  const options = new Map<string, OptionCatalog>();
+  await loadOptionsFrom(
+    fs,
+    joinPath(joinPath(contentRoot, COMMON_DIR), OPTIONS_DIR),
+    joinPath(COMMON_DIR, OPTIONS_DIR),
+    schemas,
+    options,
+  );
+  await loadOptionsFrom(fs, joinPath(packRoot, OPTIONS_DIR), OPTIONS_DIR, schemas, options);
   return options;
 }
 
@@ -278,7 +306,7 @@ export async function loadCatalog(
   const [core, profiles, options] = await Promise.all([
     loadCore(fs, contentRoot, packRoot, schemas),
     loadProfiles(fs, packRoot, schemas),
-    loadOptions(fs, packRoot, schemas),
+    loadOptions(fs, contentRoot, packRoot, schemas),
   ]);
   return { rootDir: packRoot, packId: pack.id, core, profiles, options };
 }

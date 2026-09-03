@@ -11,6 +11,7 @@
 - Docker (<%= it.d('Testcontainers pour les tests slice et d\'intégration', 'Testcontainers for slice and integration tests') %>)
 <% } -%>
 - <%= it.d('Maven est fourni par le wrapper (`./mvnw`, `mvnw.cmd`)', 'Maven ships with the wrapper (`./mvnw`, `mvnw.cmd`)') %>
+- <%= it.d("gitleaks : le hook `pre-commit` refuse tout commit tant qu'il n'est pas installé (https://github.com/gitleaks/gitleaks#installing)", 'gitleaks: the `pre-commit` hook rejects every commit until it is installed (https://github.com/gitleaks/gitleaks#installing)') %>
 
 ## <%= it.d('Démarrer', 'Getting started') %>
 

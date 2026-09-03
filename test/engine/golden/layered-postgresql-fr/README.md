@@ -9,6 +9,7 @@ Projet Spring Boot généré par prepwork 0.1.0. Les conventions destinées à l
 - JDK 21
 - Docker (Testcontainers pour les tests slice et d'intégration)
 - Maven est fourni par le wrapper (`./mvnw`, `mvnw.cmd`)
+- gitleaks : le hook `pre-commit` refuse tout commit tant qu'il n'est pas installé (https://github.com/gitleaks/gitleaks#installing)
 
 ## Démarrer
 

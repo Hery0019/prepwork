@@ -1,0 +1,7 @@
+# yaml-language-server: $schema=../../../../schema/react/files.schema.json
+# Les hooks sont identiques à ceux du pack spring-boot : ils ne parlent que de git.
+files:
+  - source: .githooks/commit-msg.eta
+    target: .githooks/commit-msg
+  - source: .githooks/pre-commit.eta
+    target: .githooks/pre-commit

@@ -1,0 +1,10 @@
+# Environnement local : l'image de production, servie sur le port 8080.
+services:
+  web:
+    build: .
+    image: note-book:local
+    ports:
+      - '8080:8080'
+    environment:
+      # DOCK-003 : la même image change d'API sans être reconstruite.
+      VITE_API_BASE_URL: http://localhost:8081/api/v1

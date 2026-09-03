@@ -1,0 +1,7 @@
+# <%= it.t("Scripts de build autorisés (pnpm refuse les autres par défaut) : esbuild compile son binaire,", "Build scripts allowed (pnpm refuses the others by default): esbuild compiles its binary,") %>
+# <%= it.t("MSW installe son worker de navigateur. Toute autre dépendance qui demande à exécuter du code", "MSW installs its browser worker. Any other dependency asking to run code at install time") %>
+# <%= it.t("à l'installation est refusée tant que l'équipe ne l'a pas ajoutée ici en connaissance de cause.", "is refused until the team knowingly adds it here.") %>
+allowBuilds:
+  esbuild: true
+  msw: true
+  unrs-resolver: true

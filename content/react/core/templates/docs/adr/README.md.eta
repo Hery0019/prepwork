@@ -1,0 +1,5 @@
+# <%= it.d("Décisions d'architecture", 'Architecture decision records') %>
+
+<%= it.d("Un fichier par décision. Les premiers enregistrent les choix faits au questionnaire ; ils appartiennent à l'équipe et prepwork ne les réécrit jamais.", "One file per decision. The first ones record the choices made in the questionnaire; they belong to the team and prepwork never rewrites them.") %>
+
+<%= it.d("Format : contexte, décision, conséquences. Une décision qui change une couche ou une dépendance mérite son fichier.", "Format: context, decision, consequences. A decision that changes a layer or a dependency deserves its own file.") %>

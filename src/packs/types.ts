@@ -96,6 +96,8 @@ export interface StackPack {
   testBackedEnforcers: readonly string[];
   /** Template pouvant porter la preuve d'une règle outillée (test, configuration de lint). */
   carriesRuleEvidence(templatePath: string): boolean;
+  /** Forme sous laquelle l'identifiant d'une règle apparaît dans cette preuve. */
+  ruleEvidenceToken(ruleId: string): string;
   /** Segments d'identifiants d'option trop génériques pour servir de marqueur d'orthogonalité. */
   genericOptionWords: readonly string[];
   /**

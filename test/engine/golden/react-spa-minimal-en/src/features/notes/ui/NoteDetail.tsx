@@ -1,0 +1,30 @@
+// A note's detail: the same three states as the list, the same vocabulary.
+import { useParams } from 'react-router';
+import { t } from '@shared/lib/text';
+import { Alert, Card, Skeleton } from '@shared/ui';
+import { useNote } from '../model/useNotes';
+
+export function NoteDetail() {
+  const { id = '' } = useParams<{ id: string }>();
+  const { data, isPending, error } = useNote(id);
+
+  if (isPending) return <Skeleton className="h-40" />;
+
+  if (error) {
+    return (
+      <Alert tone="error" title={t('notes.detail.error', 'This note cannot be found.')} />
+    );
+  }
+
+  return (
+    <Card className="flex flex-col gap-4">
+      <h2 className="text-2xl font-semibold">{data.title}</h2>
+      <p className="max-w-measure whitespace-pre-line">{data.body}</p>
+      <p className="text-sm text-muted">
+        {new Intl.DateTimeFormat('en', { dateStyle: 'long' }).format(
+          new Date(data.createdAt),
+        )}
+      </p>
+    </Card>
+  );
+}

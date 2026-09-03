@@ -1,0 +1,19 @@
+# ADR 0001 — <%= it.d("Profil d'architecture", "Architecture profile") %>
+
+<%= it.d('Date', 'Date') %> : <%= it.today %> · <%= it.d('Statut', 'Status') %> : <%= it.d('accepté', 'accepted') %>
+
+## <%= it.d('Contexte', 'Context') %>
+
+<%= it.d("Le projet démarre et doit fixer où vit chaque fichier avant que les premières features ne le décident à sa place.", "The project starts and must decide where each file lives before the first features decide it instead.") %>
+
+## <%= it.d('Décision', 'Decision') %>
+
+<%= it.d('Profil', 'Profile') %> `<%= it.profile %>` — <%= it.profileInfo.summary %>
+
+<% it.layers.forEach(function (layer) { -%>
+- `<%= layer.path %>` — <%= layer.mayDependOn.length > 0 ? it.d('peut dépendre de ', 'may depend on ') + layer.mayDependOn.join(', ') : it.d('ne dépend de rien', 'depends on nothing') %>
+<% }) -%>
+
+## <%= it.d('Conséquences', 'Consequences') %>
+
+<%= it.d("Les frontières sont vérifiées par ESLint et dependency-cruiser : une violation échoue au lint, pas en revue. Changer de profil ensuite est une refonte, pas un réglage.", "The boundaries are checked by ESLint and dependency-cruiser: a violation fails the lint, not the review. Changing profile afterwards is a rewrite, not a setting.") %>

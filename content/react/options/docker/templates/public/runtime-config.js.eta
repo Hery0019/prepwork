@@ -1,0 +1,8 @@
+// <%= it.t("Configuration d'exécution servie à côté du bundle (DOCK-003). En développement elle porte", "Runtime configuration served next to the bundle (DOCK-003). In development it carries") %>
+// <%= it.t("les valeurs locales ; dans l'image, l'entrypoint la réécrit au démarrage du conteneur.", "the local values; inside the image, the entrypoint rewrites it when the container starts.") %>
+window.__RUNTIME_CONFIG__ = {
+  VITE_API_BASE_URL: 'http://localhost:8080/api/v1',
+<% it.env.forEach(function (variable) { -%>
+  <%= variable.name %>: '<%= (it.extras.envOverrides || {})[variable.name] || variable.example %>',
+<% }) -%>
+};

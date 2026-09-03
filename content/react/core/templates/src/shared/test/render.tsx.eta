@@ -1,0 +1,35 @@
+<%= it.t("// Rendu de test : les mêmes providers que l'application, pour que les tests exercent le vrai câblage.", "// Test rendering: the same providers as the application, so tests exercise the real wiring.") %>
+import { render, type RenderResult } from '@testing-library/react';
+import type { ReactElement, ReactNode } from 'react';
+import { MemoryRouter } from 'react-router';
+<% if (it.stack.data === 'tanstack-query') { -%>
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+<% } -%>
+
+export interface RenderOptions {
+  <%= it.t('/** Route initiale du routeur mémoire. */', '/** Initial route of the memory router. */') %>
+  route?: string;
+}
+
+function Wrapper({ children, route }: { children: ReactNode; route: string }) {
+<% if (it.stack.data === 'tanstack-query') { -%>
+  // Un client neuf par test : aucun cache ne fuit d'un test à l'autre.
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false, gcTime: 0 } },
+  });
+  return (
+    <QueryClientProvider client={client}>
+      <MemoryRouter initialEntries={[route]}>{children}</MemoryRouter>
+    </QueryClientProvider>
+  );
+<% } else { -%>
+  return <MemoryRouter initialEntries={[route]}>{children}</MemoryRouter>;
+<% } -%>
+}
+
+export function renderWithProviders(ui: ReactElement, options: RenderOptions = {}): RenderResult {
+  const route = options.route ?? '/';
+  return render(ui, {
+    wrapper: ({ children }) => <Wrapper route={route}>{children}</Wrapper>,
+  });
+}

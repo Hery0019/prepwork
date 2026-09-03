@@ -1,0 +1,11 @@
+# ADR 0004 — <%= it.d("Authentification", "Authentication") %>
+
+<%= it.d('Date', 'Date') %> : <%= it.today %> · <%= it.d('Statut', 'Status') %> : <%= it.d('accepté', 'accepted') %>
+
+## <%= it.d('Décision', 'Decision') %>
+
+`<%= it.options.security %>`
+
+## <%= it.d('Conséquences', 'Consequences') %>
+
+<%= it.d("Ce qui part dans le bundle est public : aucun secret n'y entre (CORE-070). Le contrôle d'accès appartient à l'API ; masquer une route dans le client est un confort, pas une protection.", "Everything shipped in the bundle is public: no secret goes into it (CORE-070). Access control belongs to the API; hiding a route in the client is a convenience, not a protection.") %>

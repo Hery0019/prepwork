@@ -20,6 +20,8 @@ export const springBootPack: StackPack = {
   catalogSpecValues: { enforcedBy: CATALOG_SPEC.enforcedBy, skills: CATALOG_SPEC.skills },
   testBackedEnforcers: TEST_BACKED_ENFORCERS,
   carriesRuleEvidence: (path) => path.includes('src/test/'),
+  /** Un test ArchUnit porte l'identifiant en soulignés : `LAY_002_web_does_not_depend`. */
+  ruleEvidenceToken: (id) => id.replace(/-/g, '_'),
   genericOptionWords: ['migrations', 'security', 'ci', 'none', 'git', 'resource', 'server'],
 
   contributionConditions(source) {

@@ -1,0 +1,21 @@
+# <%= it.t("Serveur statique de l'application. Une SPA renvoie index.html pour toute route inconnue.", "Static server for the application. A SPA falls back to index.html for any unknown route.") %>
+server {
+  listen 8080;
+  server_name _;
+  root /usr/share/nginx/html;
+  index index.html;
+
+  # <%= it.t("CORE-075 : une politique de sécurité du contenu est servie en production.", "CORE-075: a content security policy is served in production.") %>
+  add_header Content-Security-Policy "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; connect-src 'self' <%= it.d('API_ORIGIN', 'API_ORIGIN') %>;" always;
+  add_header X-Content-Type-Options "nosniff" always;
+  add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+  location /assets/ {
+    expires 1y;
+    add_header Cache-Control "public, immutable";
+  }
+
+  location / {
+    try_files $uri $uri/ /index.html;
+  }
+}

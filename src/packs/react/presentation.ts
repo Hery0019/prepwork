@@ -252,13 +252,13 @@ export const reactPresentation: PackPresentation = {
 
   projectRows(scaffold, language) {
     const s = strings(language);
-    const { options, design } = asReactScaffold(scaffold);
+    const { stack, options, design } = asReactScaffold(scaffold);
     const yesNo = (value: boolean): string => (value ? s.yes : s.no);
     return {
       beforeProfile: [],
       afterProfile: [
-        { label: s.data, value: labelled(DATA_LABEL, options.data, s.none) },
-        { label: s.forms, value: labelled(FORMS_LABEL, options.forms, s.none) },
+        { label: s.data, value: labelled(DATA_LABEL, stack.data, s.none) },
+        { label: s.forms, value: labelled(FORMS_LABEL, stack.forms, s.none) },
         { label: s.state, value: labelled(STATE_LABEL, options.state, s.none) },
         { label: s.security, value: labelled(SECURITY_LABEL, options.security, s.none) },
         { label: s.i18n, value: yesNo(options.i18n) },

@@ -15,7 +15,7 @@ Marqueur après l'identifiant : nom d'outil = contrainte outillée (le build ou 
 
 ### Règles
 
-- **CORE-040** · `eslint-boundaries` — Tout appel réseau passe par le module `api/` d'une feature ; aucun composant ni hook n'appelle `fetch` directement.
+- **CORE-040** · `eslint` — Tout appel réseau passe par le module `api/` d'une feature ; aucun composant ni hook n'appelle `fetch` directement.
   Pourquoi : Un seul endroit porte l'URL de base, les en-têtes, la gestion d'erreur et la validation.
 - **CORE-041** · `typescript` — Une réponse est validée par un schéma zod à la frontière, et le type inféré est le seul type utilisé en aval.
   Pourquoi : Sans validation, un changement d'API silencieux devient une erreur d'exécution trois écrans plus loin.

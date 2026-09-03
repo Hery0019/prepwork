@@ -1,0 +1,15 @@
+<%
+const deps = Object.fromEntries(it.npm.dependencies.map((d) => [d.name, d.version]));
+const devDeps = Object.fromEntries(it.npm.devDependencies.map((d) => [d.name, d.version]));
+const pkg = {
+  name: it.project.name,
+  private: true,
+  version: '0.1.0',
+  type: 'module',
+  engines: { node: '>=' + it.stack.node },
+  packageManager: 'pnpm@11.25.0',
+  scripts: it.npm.scripts,
+  dependencies: deps,
+  devDependencies: devDeps,
+};
+%><%= JSON.stringify(pkg, null, 2) %>

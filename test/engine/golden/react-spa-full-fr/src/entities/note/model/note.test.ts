@@ -1,0 +1,26 @@
+// Niveau unitaire : logique pure, sans React ni réseau (CORE-060).
+import { describe, expect, it } from 'vitest';
+import { noteExcerpt, type Note } from './note';
+
+const note = (body: string): Note => ({
+  id: 'n-1',
+  title: 'Title',
+  body,
+  createdAt: '2026-01-01T10:00:00.000Z',
+});
+
+describe('noteExcerpt', () => {
+  it('noteExcerpt_shortBody_returnsItUnchanged', () => {
+    expect(noteExcerpt(note('Deux mots'))).toBe('Deux mots');
+  });
+
+  it('noteExcerpt_longBody_cutsOnAWordBoundary', () => {
+    const excerpt = noteExcerpt(note('a'.repeat(30) + ' ' + 'b'.repeat(30) + ' ' + 'c'.repeat(30)));
+    expect(excerpt.endsWith('…')).toBe(true);
+    expect(excerpt).not.toContain('cc');
+  });
+
+  it('noteExcerpt_emptyBody_returnsAnEmptyString', () => {
+    expect(noteExcerpt(note('   '))).toBe('');
+  });
+});

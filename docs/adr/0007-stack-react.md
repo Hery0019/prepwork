@@ -180,3 +180,29 @@ remonte dans `content/common/`, consommé par les deux packs.
   sans quoi le test golden échouait sur un clone neuf, donc en CI.
 - **Le contraste des presets est vérifié par un test**, et non plus seulement annoncé : les huit
   paires de texte de chaque preset, dans les deux thèmes, restent au-dessus de 4,5:1.
+
+**2026-09-03, en écrivant le squelette (étape 4 ci-dessus).**
+
+- **`data` et `forms` quittent les options pour `stack`.** Ces deux choix changent l'écriture de
+  chaque feature — le hook de chargement, le formulaire — donc le profil doit pouvoir conditionner
+  ses fichiers dessus, exactement comme le profil `layered` se conditionne sur `stack.database`.
+  Une option, elle, reste un calque que le profil ignore. Les options du catalogue
+  (`data-tanstack-query`, `forms-rhf`…) ne bougent pas : `resolveOptionIds` les déduit désormais de
+  `stack`, comme `migrations-flyway` est déduit de `stack.migrations`.
+- **Les tokens sont déclarés dans les espaces de noms de Tailwind** (`--color-*`, `--text-*`,
+  `--radius-*`, `--spacing`, `--container-*`). Chaque token devient donc une classe utilitaire
+  (`bg-primary`, `text-lg`, `rounded-md`) et le squelette n'écrit plus une seule valeur entre
+  crochets — ce que la règle CORE-021 interdit précisément. La première version des composants
+  échouait à son propre lint.
+- **Pas d'`AbortSignal` dans l'exemple de référence** : jsdom et le `fetch` de Node n'exposent pas
+  la même classe, et un signal passé à travers casse tout test de composant. Un squelette ne doit
+  pas embarquer un contournement d'environnement ; l'équipe ajoutera l'annulation quand elle en
+  aura besoin.
+- **`eslint-import-resolver-typescript` est indispensable** : sans lui, eslint-plugin-boundaries ne
+  rattache aucun import à une couche et les règles de frontière ne signalent rien tout en paraissant
+  actives. Vérifié par un test négatif — import croisé entre features et import profond, les deux
+  refusés avec l'identifiant de la règle.
+- **La configuration d'exécution est réellement lue** : l'option `docker` sert un
+  `runtime-config.js` à côté du bundle et le socle le fait primer sur les valeurs du build, sinon
+  DOCK-003 était une promesse vide. La CI copie `.env.example` en `.env` : un dépôt fraîchement
+  cloné n'a pas de `.env`, et l'application refuse de démarrer sans configuration valide.

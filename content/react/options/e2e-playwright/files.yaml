@@ -1,0 +1,6 @@
+# yaml-language-server: $schema=../../../../schema/react/files.schema.json
+files:
+  - source: playwright.config.ts.eta
+    target: playwright.config.ts
+  - source: e2e/shell.spec.ts.eta
+    target: e2e/shell.spec.ts

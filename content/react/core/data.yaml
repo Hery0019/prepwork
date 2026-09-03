@@ -13,7 +13,7 @@ rules:
     rationale:
       en: One place holds the base URL, the headers, the error handling and the validation.
       fr: Un seul endroit porte l'URL de base, les en-têtes, la gestion d'erreur et la validation.
-    enforced_by: eslint-boundaries
+    enforced_by: eslint
   - id: CORE-041
     statement:
       en: A response is validated by a zod schema at the boundary, and the inferred type is the only type used downstream.

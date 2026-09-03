@@ -1,0 +1,47 @@
+# <%= it.t("CIGL-001 : type-check, lint, tests et build sur chaque merge request.", "CIGL-001: type check, lint, tests and build on every merge request.") %>
+default:
+  image: node:<%= it.stack.node %>-alpine
+  before_script:
+    - corepack enable pnpm
+    # CIGL-002 : installation figée, store mis en cache entre les exécutions.
+    - pnpm config set store-dir .pnpm-store
+    - pnpm install --frozen-lockfile
+    # Les valeurs réelles viennent du déploiement ; la CI se contente des exemples.
+    - cp .env.example .env
+  cache:
+    key:
+      files:
+        - pnpm-lock.yaml
+    paths:
+      - .pnpm-store
+
+stages:
+  - check
+<% if (it.options.e2e) { -%>
+  - e2e
+<% } -%>
+
+check:
+  stage: check
+  script:
+    - pnpm typecheck
+    - pnpm lint
+    - pnpm test
+    - pnpm build
+  artifacts:
+    paths:
+      - dist
+    expire_in: 1 day
+<% if (it.options.e2e) { -%>
+
+e2e:
+  stage: e2e
+  image: mcr.microsoft.com/playwright:v1.52.0-noble
+  script:
+    - pnpm e2e
+  artifacts:
+    when: on_failure
+    paths:
+      - playwright-report
+    expire_in: 1 week
+<% } -%>

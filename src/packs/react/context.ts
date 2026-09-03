@@ -109,10 +109,8 @@ export function mergeConfig(
 
 /** Clés du contexte propres au pack, ajoutées à la base commune. */
 export interface ReactTemplateContext extends BaseTemplateContext {
-  stack: { target: 'react'; node: string };
+  stack: { target: 'react'; node: string; data: string; forms: string };
   options: {
-    data: string;
-    forms: string;
     state: string;
     security: string;
     i18n: boolean;
@@ -139,7 +137,12 @@ export function buildReactContext(
 
   const conditionContext: Record<string, unknown> = {
     project: { name: scaffold.project.name },
-    stack: { target: scaffold.stack.target, node: PINNED_VERSIONS.node },
+    stack: {
+      target: scaffold.stack.target,
+      node: PINNED_VERSIONS.node,
+      data: scaffold.stack.data,
+      forms: scaffold.stack.forms,
+    },
     profile: profile.id,
     options: scaffold.options,
     optionIds: options.map((o) => o.id),
@@ -168,7 +171,12 @@ export function buildReactContext(
 
   const context: ReactTemplateContext = {
     ...base,
-    stack: { target: 'react', node: PINNED_VERSIONS.node },
+    stack: {
+      target: 'react',
+      node: PINNED_VERSIONS.node,
+      data: scaffold.stack.data,
+      forms: scaffold.stack.forms,
+    },
     options: scaffold.options,
     design: { preset: designPreset(scaffold.design.preset), dark: scaffold.design.dark },
     npm,

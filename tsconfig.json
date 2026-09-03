@@ -25,5 +25,6 @@
     "scripts/**/*.ts",
     "vitest.config.ts",
     "eslint.config.js"
-  ]
+  ],
+  "exclude": ["test/**/golden/**"]
 }

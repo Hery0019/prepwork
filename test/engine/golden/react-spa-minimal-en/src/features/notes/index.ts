@@ -1,0 +1,4 @@
+// SPA-001 and SPA-012: the public surface of the feature. `app/` imports only this.
+export { NoteDetail } from './ui/NoteDetail';
+export { NoteForm } from './ui/NoteForm';
+export { NoteList } from './ui/NoteList';

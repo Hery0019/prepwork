@@ -31,7 +31,8 @@ pnpm dev --help     # runs the CLI from the sources
 
 ```sh
 pnpm dev init <dir>                      # interactive questionnaire, then generation
-pnpm dev init <dir> --stack react        # the questionnaire of another pack
+pnpm dev init <dir> --stack react        # the questionnaire of another pack (react, aspnet)
+pnpm dev init <dir> --renderer agents-md # a single AGENTS.md instead of CLAUDE.md + skills
 pnpm dev init <dir> --scaffold s.yaml    # no questionnaire (CI, tests)
 pnpm dev check <dir>                     # reports the plan, writes nothing; exit code 1 when out of date
 pnpm dev sync <dir>                      # applies the safe operations, reports the rest
@@ -97,6 +98,7 @@ src/
   engine/         composition → plan → execution; manifest
   packs/          one directory per stack: schemas, contributions, context, renderer strings
   renderers/      claude-code: YAML → CLAUDE.md + .claude/skills/
+                  agents-md:   YAML → a single AGENTS.md
 content/          data only: common/, spring-boot/, react/, aspnet/ — never code
 schema/           JSON Schema generated from Zod (IDE completion), never hand-written
 docs/adr/         decisions taken while implementing the tool itself

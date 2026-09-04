@@ -9,6 +9,28 @@ Three stacks are shipped, each as a content pack on a stack-agnostic core (ADR 0
 ESLint boundaries, Testing Library, Playwright) and **ASP.NET Core** (one project per layer, EF Core
 migrations, NetArchTest, Testcontainers).
 
+## At a glance
+
+`init` writes the whole project from the answers collected in `scaffold.yaml`: the skeleton, the
+reference example, the ArchUnit tests, the ADRs and the agent's own specification.
+
+![prepwork init](docs/img/init.svg)
+
+Later, the team edits a generated file and changes one answer — here `security: session` becomes
+`security: none`. `check` says exactly what that implies and writes nothing (exit code 1 when the
+project is out of date):
+
+![prepwork check](docs/img/check.svg)
+
+`sync` applies what is safe. The file the team modified is reported and left untouched — prepwork
+never merges:
+
+![prepwork sync](docs/img/sync.svg)
+
+These three images are produced by `pnpm shots`, which replays the commands for real in a
+throwaway directory and renders their actual output; the CLI speaks French. The interactive
+questionnaire is not pictured: it needs a real terminal, which a script cannot provide.
+
 ## Prerequisites
 
 - Node 22 LTS (or newer) and `pnpm` (via `corepack enable pnpm`)

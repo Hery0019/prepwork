@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1002" height="400" viewBox="0 0 1002 400" role="img" aria-label="$ prepwork init pay-flow --scaffold pay-flow.yaml">
+  <rect width="1002" height="400" rx="8" fill="#11141a" stroke="#272d38"/>
+  <path d="M0 8a8 8 0 0 1 8-8h986a8 8 0 0 1 8 8v20H0z" fill="#1a1f28"/>
+  <circle cx="18" cy="14" r="5" fill="#f7768e"/>
+  <circle cx="34" cy="14" r="5" fill="#e0af68"/>
+  <circle cx="50" cy="14" r="5" fill="#5fbf7f"/>
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" xml:space="preserve">
+    <text x="16" y="44" fill="#7aa2f7">$ <tspan fill="#e6edf3">prepwork init pay-flow --scaffold pay-flow.yaml</tspan></text>
+    <text x="16" y="84" fill="#c3cad6">Généré : 57 à créer, 0 à mettre à jour, 0 à supprimer, 0 inchangé, 0 modifié par l'équipe (ignoré), 0 conflit (ignoré)</text>
+    <text x="16" y="104" fill="#5fbf7f">  ✔ à créer  .claude/skills/api/SKILL.md</text>
+    <text x="16" y="124" fill="#5fbf7f">  ✔ à créer  .claude/skills/architecture/SKILL.md</text>
+    <text x="16" y="144" fill="#5fbf7f">  ✔ à créer  .claude/skills/db/SKILL.md</text>
+    <text x="16" y="164" fill="#5fbf7f">  ✔ à créer  .claude/skills/security/SKILL.md</text>
+    <text x="16" y="184" fill="#5fbf7f">  ✔ à créer  .claude/skills/testing/SKILL.md</text>
+    <text x="16" y="204" fill="#5fbf7f">  ✔ à créer  .claude/skills/workflow/SKILL.md</text>
+    <text x="16" y="224" fill="#5fbf7f">  ✔ à créer  .dockerignore</text>
+    <text x="16" y="244" fill="#5fbf7f">  ✔ à créer  .env.example</text>
+    <text x="16" y="264" fill="#6b7484">  … 48 lignes de plus …</text>
+    <text x="16" y="284" fill="#5fbf7f">  ✔ à créer  src/test/resources/application-test.yaml</text>
+    <text x="16" y="304" fill="#c3cad6">scaffold.yaml et .scaffold/manifest.json écrits dans pay-flow</text>
+    <text x="16" y="324" fill="#c3cad6">git initialisé : auteur et hooks (.githooks) configurés</text>
+    <text x="16" y="344" fill="#c3cad6">Le hook pre-commit exige gitleaks (https://github.com/gitleaks/gitleaks#installing) : sans lui, aucun commit n'est possible.</text>
+    <text x="16" y="364" fill="#c3cad6">Prochaine étape : `./mvnw verify`, puis un premier commit par l'équipe.</text>
+  </g>
+</svg>

@@ -242,6 +242,9 @@ export const aspnetPresentation: PackPresentation = {
   layerTargetColumn: (language) => strings(language).layerTargetColumn,
   initialCommands: () => ['dotnet test'],
 
+  /** Aucun préfixe côté serveur : le nom déclaré par une option est le nom final. */
+  envName: (_scaffold, variable) => variable.name,
+
   substitute(scaffold, value) {
     const rootNamespace = asAspnetScaffold(scaffold).project.root_namespace;
     return value.split(ROOT_NAMESPACE_PLACEHOLDER).join(rootNamespace);

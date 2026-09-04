@@ -100,6 +100,26 @@ function resolveOptions(
   });
 }
 
+/**
+ * Le questionnaire indexe ses exemples par le nom déclaré au catalogue ; le template les cherche
+ * par le nom final. Sans cette réindexation, une valeur saisie serait silencieusement ignorée.
+ */
+function renameOverrides(
+  overrides: Record<string, string> | undefined,
+  options: readonly OptionCatalog[],
+  pack: StackPack,
+  scaffold: BaseScaffold,
+): Record<string, string> | undefined {
+  if (!overrides) return undefined;
+  const declared = new Map(options.flatMap((o) => o.option.env).map((v) => [v.name, v]));
+  return Object.fromEntries(
+    Object.entries(overrides).map(([name, value]) => {
+      const variable = declared.get(name);
+      return [variable ? pack.presentation.envName(scaffold, variable) : name, value];
+    }),
+  );
+}
+
 export function buildContext(
   scaffold: BaseScaffold,
   profile: ProfileCatalog,
@@ -130,12 +150,18 @@ export function buildContext(
     optionIds: options.map((o) => o.id),
     git: { author: scaffold.git.author, agentTrailer: scaffold.git.agent_trailer },
     language: { comments, docs },
+    // Le nom final passe par le pack : une option déclare `AUTH_LOGIN_PATH`, le pack rend
+    // `VITE_AUTH_LOGIN_PATH` ou `NEXT_PUBLIC_AUTH_LOGIN_PATH` selon le profil. Les exemples
+    // saisis au questionnaire sont indexés par le nom déclaré : ils suivent la même règle.
     env: mergeEnv(
       options.map((o): [string, readonly EnvVar[]] => [`options/${o.id}`, o.option.env]),
-    ),
+    ).map((variable) => ({ ...variable, name: pack.presentation.envName(scaffold, variable) })),
     toolVersion,
     today,
-    extras,
+    extras: {
+      ...extras,
+      envOverrides: renameOverrides(extras.envOverrides, options, pack, scaffold),
+    },
     t: (fr, en) => (comments === 'fr' ? fr : en),
     d: (fr, en) => (docs === 'fr' ? fr : en),
     text: (value) => pickText(value, docs),

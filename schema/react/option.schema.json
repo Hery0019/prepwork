@@ -333,6 +333,10 @@
                 "additionalProperties": false
               }
             ]
+          },
+          "public": {
+            "default": false,
+            "type": "boolean"
           }
         },
         "required": [

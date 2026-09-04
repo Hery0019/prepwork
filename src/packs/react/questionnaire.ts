@@ -158,7 +158,8 @@ export async function runQuestionnaire(
       placeholder: '/bff/login',
       validate: validatePath,
     });
-    extras.envOverrides = { VITE_AUTH_LOGIN_PATH: loginPath };
+    // Nom déclaré par l'option, sans préfixe : le contexte du pack le préfixera selon le profil.
+    extras.envOverrides = { AUTH_LOGIN_PATH: loginPath };
   }
 
   // 8-10. Options du projet

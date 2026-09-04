@@ -186,6 +186,23 @@ export function validateCatalog(catalog: Catalog, pack: StackPack): Diagnostic[]
     }
   }
 
+  // --- Variables d'environnement : le préfixe public appartient au pack -------------------
+  // Le préfixe (`VITE_`, `NEXT_PUBLIC_`) dépend de l'outil de build, donc du profil. Une option
+  // qui l'écrit se lie au profil sans le dire, et casse l'autre profil au build.
+  for (const source of catalog.options.values()) {
+    const label = sourceLabel(source);
+    for (const variable of source.option.env) {
+      for (const reserved of pack.reservedEnvPrefixes) {
+        if (variable.name.startsWith(reserved)) {
+          error(
+            label,
+            `variable \`${variable.name}\` : le préfixe \`${reserved}\` appartient au pack — déclarer \`${variable.name.slice(reserved.length)}\` avec \`public: true\``,
+          );
+        }
+      }
+    }
+  }
+
   // --- Listes de fichiers : templates existants, conditions valides, cibles uniques ------
   for (const source of sources) {
     const label = sourceLabel(source);

@@ -116,6 +116,14 @@ export interface ReactTemplateContext extends BaseTemplateContext {
   [key: string]: unknown;
 }
 
+/**
+ * Préfixe des variables d'environnement publiques : il dépend de l'outil de build, donc du
+ * profil, que les options ignorent (ADR 0007). Le pack est le seul endroit qui connaît les deux.
+ */
+export function publicEnvPrefix(profileId: string): string {
+  return profileId === 'next-app' ? 'NEXT_PUBLIC_' : 'VITE_';
+}
+
 export function buildReactContext(
   base: BaseTemplateContext,
   input: PackContextInput,

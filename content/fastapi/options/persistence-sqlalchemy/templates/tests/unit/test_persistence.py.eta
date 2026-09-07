@@ -1,0 +1,19 @@
+"""<%= it.t("Règles de persistance que le contrat de couches ne sait pas dire.", "Persistence rules the layer contract cannot express.") %>"""
+
+from pathlib import Path
+
+import pytest
+
+
+@pytest.mark.unit
+def test_PERS_004_the_schema_is_only_created_by_migrations() -> None:
+    """<%= it.t("Un schéma créé de deux façons fait deux schémas, et les migrations ne", "A schema created two ways is two schemas, and the migrations are") %>
+    <%= it.t("sont alors testées qu'en production.", "then only tested in production.") %>
+    """
+    here = Path(__file__).resolve()
+    offenders = [
+        path
+        for path in [*Path("src").rglob("*.py"), *Path("tests").rglob("*.py")]
+        if path.resolve() != here and "create_all(" in path.read_text(encoding="utf-8")
+    ]
+    assert offenders == [], f"{offenders} <%= it.t("(PERS-004 : alembic upgrade head)", "(PERS-004: alembic upgrade head)") %>"

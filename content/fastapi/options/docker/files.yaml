@@ -1,0 +1,7 @@
+# yaml-language-server: $schema=../../../../schema/fastapi/files.schema.json
+files:
+  - source: Dockerfile.eta
+    target: Dockerfile
+  - source: compose.yaml.eta
+    target: compose.yaml
+    owner: team

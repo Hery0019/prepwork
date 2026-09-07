@@ -1,0 +1,60 @@
+"""<%= it.t("Session par cookie signé, portée par l'API elle-même.", "Cookie session, held by the API itself.") %>
+
+<%= it.t("`configure_security` est le contrat que la racine de composition appelle,", "`configure_security` is the contract the composition root calls,") %>
+<%= it.t("quelle que soit l'option active.", "whatever the active option is.") %>
+"""
+
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, FastAPI, Request, Response, status
+from pydantic import BaseModel
+from starlette.middleware.sessions import SessionMiddleware
+
+from <%= it.moduleFor('kernel').module %>.exceptions import UnauthorizedError
+
+router = APIRouter(prefix="/auth", tags=["auth"])
+
+
+class Credentials(BaseModel):
+    username: str
+    password: str
+
+
+def current_user(request: Request) -> str:
+    """SECS-005 : <%= it.t("une seule dépendance lit la session ; aucune route ne le fait.", "a single dependency reads the session; no route does it itself.") %>"""
+    user = request.session.get("user")
+    if not isinstance(user, str):
+        raise UnauthorizedError("authentication required")
+    return user
+
+
+UserDep = Annotated[str, Depends(current_user)]
+
+
+@router.post("/login", status_code=status.HTTP_204_NO_CONTENT)
+async def login(credentials: Credentials, request: Request) -> Response:
+    """SECS-004 : <%= it.t("la connexion fait tourner l'identifiant de session.", "login rotates the session identifier.") %>"""
+    request.session.clear()
+    request.session["user"] = credentials.username
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+async def logout(request: Request) -> Response:
+    request.session.clear()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+def configure_security(app: FastAPI) -> None:
+    """<%= it.t("Middleware de session, puis le routeur d'authentification.", "Session middleware, then the authentication router.") %>"""
+    settings = app.state.settings
+    app.add_middleware(
+        SessionMiddleware,
+        # SECS-002 : <%= it.t("le secret vient de l'environnement et n'a aucun défaut.", "the secret comes from the environment and has no default.") %>
+        secret_key=settings.session_secret,
+        # SECS-001 : <%= it.t("hors de JavaScript, hors du clair, hors des requêtes intersites.", "out of JavaScript, out of plaintext, out of cross-site requests.") %>
+        session_cookie=settings.session_cookie_name,
+        https_only=True,
+        same_site="lax",
+    )
+    app.include_router(router, prefix="/api/v1")

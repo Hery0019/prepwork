@@ -6,7 +6,13 @@
 // Règle de garde : le cœur ne teste jamais `pack.id`. Une différence de stack qui ne s'exprime
 // pas par un de ces points d'extension est un défaut de découpage.
 import type { ZodError, ZodType } from 'zod';
-import type { CatalogSchemaSpec, CatalogSchemas, Option, Profile } from '../catalog/schema.js';
+import type {
+  CatalogSchemaSpec,
+  CatalogSchemas,
+  EnvVar,
+  Option,
+  Profile,
+} from '../catalog/schema.js';
 import type { OptionCatalog, ProfileCatalog } from '../catalog/load.js';
 import type { BaseScaffold } from '../config/schema.js';
 import type { BaseTemplateContext, TemplateContext } from '../engine/context.js';
@@ -71,6 +77,12 @@ export interface PackPresentation {
   layerTargetColumn(language: string): string;
   /** Remplace les placeholders du catalogue par leur valeur concrète (`{{basePackage}}`…). */
   substitute(scaffold: BaseScaffold, value: string): string;
+  /**
+   * Nom final d'une variable d'environnement. Une option la déclare sans préfixe ; celui des
+   * variables publiques dépend du profil, donc du pack. Templates et renderers passent par ici,
+   * sans quoi la documentation nommerait une variable que le projet ne lit pas.
+   */
+  envName(scaffold: BaseScaffold, variable: EnvVar): string;
   /** Sections propres à la stack dans un skill : tables SQL du `db`, par exemple. */
   skillSections(
     skillId: string,
@@ -102,6 +114,11 @@ export interface StackPack {
   ruleEvidenceToken(ruleId: string): string;
   /** Segments d'identifiants d'option trop génériques pour servir de marqueur d'orthogonalité. */
   genericOptionWords: readonly string[];
+  /**
+   * Préfixes de variables d'environnement que le pack ajoute lui-même, parce qu'ils dépendent
+   * du profil. Une option qui en écrit un est refusée par `check:content`.
+   */
+  reservedEnvPrefixes: readonly string[];
   /**
    * Conditions `when` portées par les contributions d'un profil ou d'une option (dépendances
    * Maven, paquets npm…). `check:content` vérifie qu'elles respectent l'orthogonalité des axes.

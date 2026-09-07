@@ -1,0 +1,47 @@
+<%
+const db = it.stack.database;
+const image = db === 'mysql' ? 'mysql:8.4' : 'postgres:17-alpine';
+const port = db === 'mysql' ? '3306' : '5432';
+-%>
+# <%= it.d("DOCK-004 : développement local seulement. Aucun secret, aucune valeur de production ici.", "DOCK-004: local development only. No secret, no production value here.") %>
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+<% if (db !== 'none') { -%>
+    depends_on:
+      database:
+        condition: service_healthy
+
+  database:
+    image: <%= image %>
+    environment:
+<% if (db === 'mysql') { -%>
+      MYSQL_ROOT_PASSWORD: app
+      MYSQL_DATABASE: app
+      MYSQL_USER: app
+      MYSQL_PASSWORD: app
+<% } else { -%>
+      POSTGRES_DB: app
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+<% } -%>
+    ports:
+      - "<%= port %>:<%= port %>"
+    healthcheck:
+<% if (db === 'mysql') { -%>
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-papp"]
+<% } else { -%>
+      test: ["CMD-SHELL", "pg_isready -U app -d app"]
+<% } -%>
+      interval: 5s
+      retries: 10
+    volumes:
+      - database-data:/var/lib/<%= db === 'mysql' ? 'mysql' : 'postgresql/data' %>
+
+volumes:
+  database-data:
+<% } -%>

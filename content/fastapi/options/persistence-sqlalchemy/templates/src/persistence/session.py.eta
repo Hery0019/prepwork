@@ -1,0 +1,34 @@
+"""<%= it.t("Moteur et sessions SQLAlchemy. Aucun symbole `fastapi` ici : c'est la couche dépôt.", "SQLAlchemy engine and sessions. No `fastapi` symbol here: this is the repository layer.") %>"""
+
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
+
+
+def create_session_factory(database_url: str) -> async_sessionmaker[AsyncSession]:
+    """PERS-005 : <%= it.t("appelé une fois au démarrage ; un moteur par requête épuiserait la base.", "called once at startup; an engine per request would exhaust the database.") %>"""
+    engine: AsyncEngine = create_async_engine(database_url, pool_pre_ping=True)
+    # PERS-007 : <%= it.t("le chargement paresseux lève à l'await sous asyncio ;", "lazy loading raises at await time under asyncio;") %>
+    # <%= it.t("les relations se chargent explicitement.", "relationships load explicitly.") %>
+    return async_sessionmaker(engine, expire_on_commit=False)
+
+
+@asynccontextmanager
+async def session_scope(
+    factory: async_sessionmaker[AsyncSession],
+) -> AsyncIterator[AsyncSession]:
+    """PERS-006 : <%= it.t("une requête est une transaction — commit au succès, rollback sur exception.", "a request is one transaction — commit on success, rollback on exception.") %>"""
+    async with factory() as session:
+        try:
+            yield session
+        except Exception:
+            await session.rollback()
+            raise
+        else:
+            await session.commit()

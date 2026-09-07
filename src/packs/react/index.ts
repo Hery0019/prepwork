@@ -22,6 +22,8 @@ export const reactPack: StackPack = {
   /** Une règle de lint porte l'identifiant tel quel : `SPA-002-no-cross-feature-import`. */
   ruleEvidenceToken: (id) => id,
   genericOptionWords: ['data', 'forms', 'state', 'security', 'ci', 'none', 'git', 'i18n', 'e2e'],
+  // Vite et Next n'exposent au navigateur que ce qui porte leur préfixe : il suit le profil.
+  reservedEnvPrefixes: ['VITE_', 'NEXT_PUBLIC_'],
 
   contributionConditions(source) {
     const dependencies = npmOf(source)?.dependencies ?? [];

@@ -1,0 +1,110 @@
+# yaml-language-server: $schema=../../../schema/fastapi/core.schema.json
+# API et erreurs (CLAUDE.md §4).
+#
+# Contrairement à Spring et à ASP.NET, FastAPI ne fournit aucun type RFC 9457 : ses erreurs de
+# validation sortent en 422 sous une forme qui lui est propre. Le socle livre donc les gestionnaires
+# d'exceptions comme du code du squelette (ADR 0011 §7), et ces règles décrivent ce code.
+id: api
+skill: api
+title:
+  en: API and errors
+  fr: API et erreurs
+rules:
+  - id: CORE-010
+    statement:
+      en: Every error response uses the RFC 9457 format and the `application/problem+json` media type.
+      fr: Toute réponse d'erreur utilise le format RFC 9457 et le type de média `application/problem+json`.
+    rationale:
+      en: Clients parse one error shape; no ad-hoc error bodies to document.
+      fr: Les clients analysent une seule forme d'erreur ; aucun corps d'erreur ad hoc à documenter.
+    enforced_by: none
+  - id: CORE-011
+    statement:
+      en: Exception handlers are registered in exactly one module and translate exceptions to responses (400 validation, 404 not found, 409 conflict, 500 without traceback).
+      fr: Les gestionnaires d'exceptions sont enregistrés dans un seul module et traduisent les exceptions en réponses (400 validation, 404 introuvable, 409 conflit, 500 sans traceback).
+    rationale:
+      en: A single translation point keeps status codes consistent across routers.
+      fr: Un point de traduction unique garde des codes de statut cohérents entre routeurs.
+    enforced_by: pytest
+  - id: CORE-012
+    statement:
+      en: The default `RequestValidationError` handler is replaced so validation errors are RFC 9457 too, with status 400.
+      fr: Le gestionnaire par défaut de `RequestValidationError` est remplacé pour que les erreurs de validation soient elles aussi en RFC 9457, avec le statut 400.
+    rationale:
+      en: FastAPI answers 422 in a shape of its own; leaving it makes the API speak two error dialects.
+      fr: FastAPI répond 422 sous une forme qui lui est propre ; la laisser fait parler deux dialectes d'erreur à l'API.
+    enforced_by: pytest
+  - id: CORE-013
+    statement:
+      en: Routers accept and return Pydantic schemas; an ORM entity never appears in a route signature or in a `response_model`.
+      fr: Les routeurs reçoivent et renvoient des schémas Pydantic ; une entité ORM n'apparaît jamais dans la signature d'une route ni dans un `response_model`.
+    rationale:
+      en: The API contract must not change because a column was added.
+      fr: Le contrat de l'API ne doit pas changer parce qu'une colonne a été ajoutée.
+    enforced_by: pytest
+  - id: CORE-014
+    statement:
+      en: Validation is declared on input schemas through Pydantic fields, not written in services.
+      fr: La validation est déclarée sur les schémas d'entrée par des champs Pydantic, pas écrite dans les services.
+    rationale:
+      en: Validation errors become 400 responses automatically and stay visible in the OpenAPI contract.
+      fr: Les erreurs de validation deviennent automatiquement des réponses 400 et restent visibles dans le contrat OpenAPI.
+    enforced_by: none
+  - id: CORE-015
+    statement:
+      en: List endpoints take `page` and `size` and return `content`, `page`, `size` and `totalElements`.
+      fr: Les endpoints de liste prennent `page` et `size` et renvoient `content`, `page`, `size` et `totalElements`.
+    rationale:
+      en: Unbounded lists do not survive production data volumes.
+      fr: Une liste non bornée ne survit pas aux volumes de production.
+    enforced_by: none
+  - id: CORE-016
+    statement:
+      en: Every router is mounted under `/api/v1/` from day one.
+      fr: Chaque routeur est monté sous `/api/v1/` dès le premier jour.
+    rationale:
+      en: Versioning is cheap on day one and painful once clients exist.
+      fr: Versionner coûte peu le premier jour et beaucoup une fois les clients en place.
+    enforced_by: pytest
+  - id: CORE-017
+    statement:
+      en: Logs are JSON when `APP_ENV` is `production` and human-readable elsewhere, and never contain personal data.
+      fr: Les logs sont en JSON quand `APP_ENV` vaut `production`, lisibles ailleurs, et ne contiennent jamais de donnée personnelle.
+    rationale:
+      en: Machines read production logs; humans read local ones; regulators read both.
+      fr: Les machines lisent les logs de production, les humains les logs locaux, les régulateurs les deux.
+    enforced_by: none
+anti_patterns:
+  - id: CORE-AP-010
+    statement:
+      en: Returning a bare `dict` or a home-made error model from a route.
+      fr: Renvoyer un `dict` nu ou un modèle d'erreur maison depuis une route.
+    rationale:
+      en: Each endpoint invents its own error shape and clients must special-case them.
+      fr: Chaque endpoint invente sa forme d'erreur et les clients doivent les traiter au cas par cas.
+    enforced_by: none
+    instead:
+      en: Raise a domain exception and let the registered handler produce the problem document.
+      fr: Lever une exception du domaine et laisser le gestionnaire enregistré produire le document problème.
+  - id: CORE-AP-011
+    statement:
+      en: Raising `HTTPException` from a service to choose the status code there.
+      fr: Lever `HTTPException` depuis un service pour y choisir le code de statut.
+    rationale:
+      en: The service then depends on the web layer, and the same failure answers differently from another caller.
+      fr: Le service dépend alors de la couche web, et la même erreur répond différemment depuis un autre appelant.
+    instead:
+      en: Raise a domain exception; the handler maps it to a status code.
+      fr: Lever une exception du domaine ; le gestionnaire la traduit en code de statut.
+    enforced_by: none
+  - id: CORE-AP-012
+    statement:
+      en: Building a response schema with `model_config = ConfigDict(from_attributes=True)` on the ORM entity itself.
+      fr: Construire un schéma de réponse avec `model_config = ConfigDict(from_attributes=True)` sur l'entité ORM elle-même.
+    rationale:
+      en: The entity is still the API contract; every new column leaks by default.
+      fr: L'entité reste le contrat de l'API ; chaque nouvelle colonne fuit par défaut.
+    enforced_by: none
+    instead:
+      en: A response schema that lists exactly the exposed fields.
+      fr: Un schéma de réponse qui liste exactement les champs exposés.

@@ -1,0 +1,107 @@
+# yaml-language-server: $schema=../../../../schema/fastapi/option.schema.json
+# Session par cookie signé : l'API porte elle-même l'authentification.
+# Exclusive avec security-none et security-oauth2-resource-server.
+meta:
+  id: security-session
+  version: 1.0.0
+  rule_prefix: SECS
+  group: security
+  summary:
+    en: Cookie session held by the API itself, for a front end served from the same site.
+    fr: Session par cookie portée par l'API elle-même, pour un front servi depuis le même site.
+skill: security
+rules:
+  - id: SECS-001
+    statement:
+      en: The session cookie is `HttpOnly`, `Secure` and `SameSite=Lax`, and its name is not the framework default.
+      fr: Le cookie de session est `HttpOnly`, `Secure` et `SameSite=Lax`, et son nom n'est pas celui par défaut du framework.
+    rationale:
+      en: '`HttpOnly` keeps it out of JavaScript, `Secure` off plaintext, `SameSite` off cross-site requests.'
+      fr: '`HttpOnly` le tient hors de JavaScript, `Secure` hors du clair, `SameSite` hors des requêtes intersites.'
+    enforced_by: pytest
+  - id: SECS-002
+    statement:
+      en: The signing secret comes from the environment and has no default value; the application refuses to start without it.
+      fr: Le secret de signature vient de l'environnement et n'a aucune valeur par défaut ; l'application refuse de démarrer sans lui.
+    rationale:
+      en: A default secret is a public secret, and it signs every session of every deployment that forgot to set it.
+      fr: Un secret par défaut est un secret public, et il signe toutes les sessions de chaque déploiement qui a oublié de le définir.
+    enforced_by: pytest
+  - id: SECS-003
+    statement:
+      en: Passwords are stored hashed with Argon2 through `passlib`; no reversible encryption, no unsalted hash.
+      fr: Les mots de passe sont stockés hachés en Argon2 via `passlib` ; aucun chiffrement réversible, aucun hachage sans sel.
+    rationale:
+      en: A leaked database must not be a leaked password list.
+      fr: Une base fuitée ne doit pas être une liste de mots de passe fuitée.
+    enforced_by: none
+  - id: SECS-004
+    statement:
+      en: Login and logout rotate the session identifier.
+      fr: La connexion et la déconnexion font tourner l'identifiant de session.
+    rationale:
+      en: Without rotation, a session fixed before login stays valid after it.
+      fr: Sans rotation, une session fixée avant la connexion reste valable après.
+    enforced_by: pytest
+  - id: SECS-005
+    statement:
+      en: A route that requires authentication declares it through the shared dependency; no route reads the session itself.
+      fr: Une route qui exige une authentification le déclare par la dépendance partagée ; aucune route ne lit la session elle-même.
+    rationale:
+      en: A per-route check is a per-route bug, and the OpenAPI document stops describing what is protected.
+      fr: Un contrôle par route est un bug par route, et le document OpenAPI cesse de décrire ce qui est protégé.
+    enforced_by: pytest
+anti_patterns:
+  - id: SECS-AP-001
+    statement:
+      en: Storing the user identifier in an unsigned cookie read directly by the routes.
+      fr: Stocker l'identifiant d'utilisateur dans un cookie non signé lu directement par les routes.
+    rationale:
+      en: The client edits the cookie and becomes whoever it wants.
+      fr: Le client modifie le cookie et devient qui il veut.
+    enforced_by: none
+    instead:
+      en: The signed session cookie, whose content the client cannot forge.
+      fr: Le cookie de session signé, dont le client ne peut pas forger le contenu.
+  - id: SECS-AP-002
+    statement:
+      en: Disabling `Secure` on the cookie so that local HTTP development works.
+      fr: Désactiver `Secure` sur le cookie pour que le développement local en HTTP fonctionne.
+    rationale:
+      en: The setting ships to production, where the cookie then travels in plaintext.
+      fr: Le réglage part en production, où le cookie voyage alors en clair.
+    enforced_by: none
+    instead:
+      en: Serve local development over HTTPS, or read the flag from the settings.
+      fr: Servir le développement local en HTTPS, ou lire le drapeau depuis les réglages.
+env:
+  - name: SESSION_SECRET
+    example: ''
+    comment:
+      en: Signing key of the session cookie; generate one per environment and never commit it (SECS-002).
+      fr: Clé de signature du cookie de session ; en générer une par environnement et ne jamais la commiter (SECS-002).
+  - name: SESSION_COOKIE_NAME
+    example: app_session
+    comment:
+      en: Cookie name; a name of its own avoids colliding with another application on the same domain.
+      fr: Nom du cookie ; un nom propre évite la collision avec une autre application du même domaine.
+python:
+  packages:
+    - id: itsdangerous
+      version: '2.2.0'
+      group: main
+      purpose:
+        en: Signs the session cookie; the library Starlette's session middleware relies on.
+        fr: Signe le cookie de session ; la bibliothèque sur laquelle s'appuie le middleware de session de Starlette.
+    - id: passlib
+      version: '1.7.4'
+      group: main
+      purpose:
+        en: Argon2 password hashing (SECS-003).
+        fr: Hachage Argon2 des mots de passe (SECS-003).
+    - id: argon2-cffi
+      version: '25.1.0'
+      group: main
+      purpose:
+        en: The Argon2 backend that passlib uses.
+        fr: L'implémentation Argon2 utilisée par passlib.

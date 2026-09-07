@@ -232,6 +232,9 @@ export const springPresentation: PackPresentation = {
   layerTargetColumn: (language) => strings(language).layerTargetColumn,
   initialCommands: () => ['./mvnw verify'],
 
+  /** Aucun préfixe côté serveur : le nom déclaré par une option est le nom final. */
+  envName: (_scaffold, variable) => variable.name,
+
   substitute(scaffold, value) {
     const basePackage = asSpringScaffold(scaffold).project.base_package;
     const replacement = value.includes('/') ? basePackage.replace(/\./g, '/') : basePackage;

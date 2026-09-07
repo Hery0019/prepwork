@@ -1,0 +1,30 @@
+"""<%= it.t("Fixtures communes aux trois niveaux (CORE-020).", "Fixtures shared by the three levels (CORE-020).") %>"""
+
+from collections.abc import AsyncIterator
+
+import pytest
+from httpx import ASGITransport, AsyncClient
+
+from <%= it.moduleFor('host').module %>.app import create_app
+from <%= it.moduleFor('host').module %>.settings import Settings
+
+
+@pytest.fixture
+def settings() -> Settings:
+    """<%= it.t("Réglages de test : jamais ceux du `.env` du poste.", "Test settings: never the ones from the machine's `.env`.") %>"""
+    return Settings(
+        app_env="local",
+        cors_origins=["http://localhost:5173"],
+<% for (const variable of it.env) { -%>
+        <%= variable.name.toLowerCase() %>="<%= variable.example || 'test' %>",
+<% } -%>
+    )
+
+
+@pytest.fixture
+async def client(settings: Settings) -> AsyncIterator[AsyncClient]:
+    """<%= it.t("Niveau slice : l'application est appelée par `ASGITransport`, sans socket réseau.", "Slice level: the application is called through `ASGITransport`, with no network socket.") %>"""
+    app = create_app(settings)
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://testserver") as http:
+        yield http

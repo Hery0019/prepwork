@@ -30,7 +30,7 @@ Layered monolith — api, service, repository, domain, one sub-package each.
 |---|---|---|
 | `id` | identity | no |
 | `title` | string(200) | no |
-| `body` | text | no |
+| `body` | text | yes |
 | `created_at` | timestamp | no |
 
 ### Adding a migration

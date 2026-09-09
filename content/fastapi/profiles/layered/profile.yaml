@@ -204,6 +204,9 @@ reference_example:
           length: 200
         - name: body
           type: text
+          # L'entité déclare `Mapped[str | None]` : le catalogue doit dire la même chose, sinon la
+          # migration écrite à la main contredit le modèle et `alembic check` le voit.
+          nullable: true
         - name: created_at
           type: timestamp
 

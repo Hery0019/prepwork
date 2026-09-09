@@ -341,8 +341,11 @@ ADR 0010 §Conséquences), which would follow the same sequence as `spa-feature`
 - Before any non-trivial change: short plan (files touched, approach), wait for confirmation. This
   repo applies to itself the workflow it imposes on generated projects.
 - Ambiguity or contradiction with this file → stop and ask. Do not pick "the most likely solution".
-- One commit per coherent change, conventional commits (`feat(engine): …`, `fix(renderer): …`),
-  trailer `Co-Authored-By: Claude <noreply@anthropic.com>`.
+- One commit per coherent change, conventional commits (`feat(engine): …`, `fix(renderer): …`).
+  **No `Co-Authored-By` trailer, and no agent attribution of any kind**: commits are authored in the
+  repository owner's git identity alone. That is a deliberate decision of the owner, not a default —
+  the work is theirs, and the history says so. The `git` option of the generated packs keeps its own
+  `agent_trailer` setting; it describes the project being generated, not this repository.
 - Never `git push`; never a destructive command. The agent commits, the human pushes.
 - A change to `content/`, to a template or to a pack is committed on a branch, not on `main`: the
   generation matrices only run on a pull request or a manual `workflow_dispatch` (§8). A

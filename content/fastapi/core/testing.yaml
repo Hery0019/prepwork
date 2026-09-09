@@ -1,0 +1,94 @@
+# yaml-language-server: $schema=../../../schema/fastapi/core.schema.json
+# Tests (CLAUDE.md §4).
+#
+# Les trois niveaux sont ceux des trois autres packs. Ce qui change est le séparateur : un marqueur
+# pytest plutôt qu'un `[Trait]` .NET ou un suffixe `IT` Maven. `pytest -m "not integration"` est ce
+# qui tourne sans Docker (ADR 0011 §6).
+id: testing
+skill: testing
+title:
+  en: Testing
+  fr: Tests
+rules:
+  - id: CORE-020
+    statement:
+      en: There are exactly three test levels, unit (no application), slice (`httpx.ASGITransport` with the service layer substituted) and integration (`httpx` with Testcontainers).
+      fr: Il existe exactement trois niveaux de test, unitaire (sans application), slice (`httpx.ASGITransport` avec la couche service doublée) et intégration (`httpx` avec Testcontainers).
+    rationale:
+      en: Each level has a cost and a purpose; a fourth category is where confusion starts.
+      fr: Chaque niveau a un coût et un rôle ; une quatrième catégorie est le début de la confusion.
+    enforced_by: none
+  - id: CORE-021
+    statement:
+      en: Persistence is tested against the real database engine through Testcontainers; SQLite is never substituted for it.
+      fr: La persistance est testée sur le vrai moteur de base de données via Testcontainers ; SQLite ne lui est jamais substitué.
+    rationale:
+      en: SQLite knows neither the column types, nor the deferred constraints, nor the SQL that Alembic generates.
+      fr: SQLite ne connaît ni les types de colonnes, ni les contraintes différées, ni le SQL qu'Alembic génère.
+    enforced_by: pytest
+  - id: CORE-022
+    statement:
+      en: Test functions are named `test_<method>_<condition>_<expected_result>`, in snake_case.
+      fr: Les fonctions de test sont nommées `test_<method>_<condition>_<expected_result>`, en snake_case.
+    rationale:
+      en: A failing test name must say what broke without opening the file.
+      fr: Le nom d'un test en échec doit dire ce qui casse sans ouvrir le fichier.
+    enforced_by: none
+  - id: CORE-023
+    statement:
+      en: Every test carries exactly one level marker, `@pytest.mark.unit`, `@pytest.mark.slice` or `@pytest.mark.integration`.
+      fr: Chaque test porte exactement un marqueur de niveau, `@pytest.mark.unit`, `@pytest.mark.slice` ou `@pytest.mark.integration`.
+    rationale:
+      en: '`pytest -m "not integration"` must run the whole suite that needs no Docker.'
+      fr: '`pytest -m "not integration"` doit lancer toute la suite qui n''a pas besoin de Docker.'
+    enforced_by: pytest
+  - id: CORE-024
+    statement:
+      en: No numeric coverage threshold is imposed; a test is judged on what it verifies.
+      fr: Aucun seuil numérique de couverture n'est imposé ; un test est jugé sur ce qu'il vérifie.
+    rationale:
+      en: A percentage target produces assertion-free tests written to satisfy the metric.
+      fr: Un objectif en pourcentage produit des tests sans assertion écrits pour la métrique.
+    enforced_by: none
+  - id: CORE-025
+    statement:
+      en: Every feature ships with at least one unit test, plus the slice test of each endpoint it adds.
+      fr: Toute fonctionnalité est livrée avec au moins un test unitaire, plus le test slice de chaque endpoint qu'elle ajoute.
+    rationale:
+      en: The reference example shows one test per level; new code follows the same shape.
+      fr: L'exemple de référence montre un test par niveau ; le nouveau code suit la même forme.
+    enforced_by: none
+anti_patterns:
+  - id: CORE-AP-020
+    statement:
+      en: Starting the whole application for every test because it "always works".
+      fr: Démarrer l'application complète pour tous les tests parce que « ça marche toujours ».
+    rationale:
+      en: The suite becomes minutes long and nobody runs it before pushing.
+      fr: La suite dure des minutes et plus personne ne la lance avant de pousser.
+    enforced_by: none
+    instead:
+      en: Pick the cheapest level that exercises the behaviour under test.
+      fr: Choisir le niveau le moins coûteux qui exerce le comportement testé.
+  - id: CORE-AP-021
+    statement:
+      en: Pointing the test database URL at `sqlite+aiosqlite:///:memory:` to make the suite faster.
+      fr: Pointer l'URL de base de test sur `sqlite+aiosqlite:///:memory:` pour accélérer la suite.
+    rationale:
+      en: The test validates the fake, not the SQL that will run in production.
+      fr: Le test valide le faux, pas le SQL qui tournera en production.
+    enforced_by: none
+    instead:
+      en: An integration test on the Testcontainers database.
+      fr: Un test d'intégration sur la base Testcontainers.
+  - id: CORE-AP-022
+    statement:
+      en: Test names such as `test_1`, `test_it_works` or `test_create`.
+      fr: Des noms de test tels que `test_1`, `test_it_works` ou `test_create`.
+    rationale:
+      en: The name carries no information when it appears in a failure report.
+      fr: Le nom n'apporte aucune information quand il apparaît dans un rapport d'échec.
+    enforced_by: none
+    instead:
+      en: '`test_create_title_blank_returns_400`: method, condition, expected result.'
+      fr: '`test_create_title_blank_returns_400` : méthode, condition, résultat attendu.'

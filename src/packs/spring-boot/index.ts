@@ -23,6 +23,8 @@ export const springBootPack: StackPack = {
   /** Un test ArchUnit porte l'identifiant en soulignés : `LAY_002_web_does_not_depend`. */
   ruleEvidenceToken: (id) => id.replace(/-/g, '_'),
   genericOptionWords: ['migrations', 'security', 'ci', 'none', 'git', 'resource', 'server'],
+  /** Aucune variable n'est réécrite : côté serveur, un nom d'option est le nom final. */
+  reservedEnvPrefixes: [],
 
   contributionConditions(source) {
     const dependencies = mavenOf(source)?.dependencies ?? [];

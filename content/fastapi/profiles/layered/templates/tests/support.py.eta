@@ -1,0 +1,32 @@
+"""<%= it.t("Doubles partagés par les niveaux unitaire et slice.", "Doubles shared by the unit and slice levels.") %>
+
+<%= it.t("Le dépôt est doublé dans les deux niveaux, quelle que soit la base du projet :", "The repository is doubled at both levels, whatever the project database:") %>
+<%= it.t("c'est ce qui les sépare du niveau intégration (CORE-020).", "that is what separates them from the integration level (CORE-020).") %>
+"""
+
+from datetime import UTC, datetime
+
+from <%= it.moduleFor('kernel').module %>.note import Note
+from <%= it.modules.find((m) => m.id === 'repository').module %>.note_repository import NoteRepository
+
+
+class FakeNoteRepository(NoteRepository):
+    """<%= it.t("Même surface que le vrai dépôt, sans session ni base.", "The same surface as the real repository, with no session and no database.") %>"""
+
+    def __init__(self) -> None:
+        self._notes: list[Note] = []
+        self._next_id = 1
+
+    async def add(self, title: str, body: str | None) -> Note:
+        note = Note(title=title, body=body, created_at=datetime.now(UTC))
+        note.id = self._next_id
+        self._next_id += 1
+        self._notes.append(note)
+        return note
+
+    async def find(self, note_id: int) -> Note | None:
+        return next((note for note in self._notes if note.id == note_id), None)
+
+    async def page(self, page: int, size: int) -> tuple[list[Note], int]:
+        start = page * size
+        return self._notes[start : start + size], len(self._notes)

@@ -1,0 +1,27 @@
+"""Niveau intégration (CORE-020) : l'application sur la vraie base, migrations comprises."""
+
+import pytest
+from httpx import AsyncClient
+
+BASE = "/api/v1/notes"
+
+
+@pytest.mark.integration
+async def test_create_then_get_round_trips_through_the_application(api: AsyncClient) -> None:
+    created = await api.post(BASE, json={"title": "First", "body": "Hello"})
+    assert created.status_code == 201
+
+    fetched = await api.get(f"{BASE}/{created.json()['id']}")
+
+    assert fetched.status_code == 200
+    assert fetched.json()["title"] == "First"
+
+
+@pytest.mark.integration
+async def test_list_after_one_create_returns_a_page_with_a_total(api: AsyncClient) -> None:
+    await api.post(BASE, json={"title": "Only", "body": None})
+
+    body = (await api.get(BASE)).json()
+
+    assert set(body) == {"content", "page", "size", "totalElements"}
+    assert body["totalElements"] >= 1

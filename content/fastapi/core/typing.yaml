@@ -1,0 +1,65 @@
+# yaml-language-server: $schema=../../../schema/fastapi/core.schema.json
+# Typage (ADR 0011 §2). Python n'a pas de compilateur : mypy en tient lieu, et c'est la seule
+# barrière qui refuse du code avant exécution. Ces règles sont celles qui, dans les packs Spring et
+# ASP.NET, sont gratuites parce que le compilateur les impose.
+id: typing
+skill: architecture
+title:
+  en: Typing
+  fr: Typage
+rules:
+  - id: CORE-050
+    statement:
+      en: '`mypy --strict` passes on `src/` and on `tests/`; the pipeline fails otherwise.'
+      fr: '`mypy --strict` passe sur `src/` et sur `tests/` ; le pipeline échoue sinon.'
+    rationale:
+      en: It is the only step that refuses code before it runs; without it nothing replaces the compiler the other packs rely on.
+      fr: C'est la seule étape qui refuse du code avant son exécution ; sans elle rien ne remplace le compilateur sur lequel les autres packs s'appuient.
+    enforced_by: mypy
+  - id: CORE-051
+    statement:
+      en: '`Any` never appears in a signature, and no `# type: ignore` is added without a comment naming the reason.'
+      fr: "`Any` n'apparaît jamais dans une signature, et aucun `# type: ignore` n'est ajouté sans un commentaire qui en nomme la raison."
+    rationale:
+      en: One `Any` in a signature silently disables checking for every caller downstream.
+      fr: Un seul `Any` dans une signature désactive silencieusement la vérification pour tous les appelants en aval.
+    enforced_by: mypy
+  - id: CORE-052
+    statement:
+      en: A repository function names the entity it returns; it never returns `dict`, `tuple` or `Row`.
+      fr: Une fonction de dépôt nomme l'entité qu'elle renvoie ; elle ne renvoie jamais `dict`, `tuple` ni `Row`.
+    rationale:
+      en: An untyped row makes the service the only place that knows the column names, and the boundary stops meaning anything.
+      fr: Une ligne non typée fait du service le seul endroit qui connaît les noms de colonnes, et la frontière ne veut plus rien dire.
+    enforced_by: mypy
+  - id: CORE-053
+    statement:
+      en: '`ruff check` and `ruff format --check` pass; the configuration lives in `pyproject.toml` and is never bypassed with `# noqa` without a rule code.'
+      fr: "`ruff check` et `ruff format --check` passent ; la configuration vit dans `pyproject.toml` et n'est jamais contournée par un `# noqa` sans code de règle."
+    rationale:
+      en: A bare `# noqa` silences every rule on that line, including the one nobody meant to silence.
+      fr: Un `# noqa` nu fait taire toutes les règles de la ligne, y compris celle que personne ne voulait faire taire.
+    enforced_by: ruff
+anti_patterns:
+  - id: CORE-AP-050
+    statement:
+      en: Widening a signature to `Any` or to `object` to make mypy pass.
+      fr: Élargir une signature à `Any` ou à `object` pour faire passer mypy.
+    rationale:
+      en: The error is not fixed, it is moved to runtime and to whoever calls the function next.
+      fr: L'erreur n'est pas corrigée, elle est déplacée à l'exécution et sur le prochain appelant.
+    enforced_by: none
+    instead:
+      en: Name the real type, or a `Protocol` when only a shape matters.
+      fr: Nommer le vrai type, ou un `Protocol` quand seule une forme compte.
+  - id: CORE-AP-051
+    statement:
+      en: Adding a module to the mypy `exclude` list because it is "hard to type".
+      fr: Ajouter un module à la liste `exclude` de mypy parce qu'il est « difficile à typer ».
+    rationale:
+      en: The excluded module is exactly the one where the compiler substitute was needed.
+      fr: Le module exclu est justement celui où le substitut de compilateur était nécessaire.
+    enforced_by: none
+    instead:
+      en: Type it, or isolate the untyped part behind a typed function.
+      fr: Le typer, ou isoler la partie non typée derrière une fonction typée.

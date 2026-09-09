@@ -35,7 +35,10 @@ rules:
       fr: L'interface est téléchargeable et modifiable par n'importe qui.
     enforced_by: none
 env:
-  - name: VITE_AUTH_LOGIN_PATH
+  # Le préfixe public dépend du profil (`VITE_` ou `NEXT_PUBLIC_`) : le pack l'ajoute, l'option
+  # ne le connaît pas.
+  - name: AUTH_LOGIN_PATH
+    public: true
     example: /bff/login
     comment:
       en: Path of the backend-for-frontend endpoint that starts the login flow.

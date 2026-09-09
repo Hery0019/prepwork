@@ -1,0 +1,59 @@
+<% const withDb = it.stack.database !== 'none'; -%>
+"""<%= it.t("Accès aux notes. PY-005 : la seule couche qui construit des instructions SQLAlchemy.", "Access to notes. PY-005: the only layer that builds SQLAlchemy statements.") %>"""
+
+from datetime import UTC, datetime
+<% if (withDb) { -%>
+
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from <%= it.moduleFor('kernel').module %>.note import Note
+
+
+class NoteRepository:
+    """<%= it.t("PY-006 : la session est reçue en paramètre, jamais construite ici.", "PY-006: the session is received as a parameter, never built here.") %>"""
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._session = session
+
+    async def add(self, title: str, body: str | None) -> Note:
+        note = Note(title=title, body=body, created_at=datetime.now(UTC))
+        self._session.add(note)
+        await self._session.flush()
+        return note
+
+    async def find(self, note_id: int) -> Note | None:
+        return await self._session.get(Note, note_id)
+
+    async def page(self, page: int, size: int) -> tuple[list[Note], int]:
+        # CORE-015 : <%= it.t("une liste non bornée ne survit pas aux volumes de production.", "an unbounded list does not survive production data volumes.") %>
+        rows = await self._session.execute(
+            select(Note).order_by(Note.id).offset(page * size).limit(size)
+        )
+        total = await self._session.scalar(select(func.count()).select_from(Note))
+        return list(rows.scalars()), int(total or 0)
+<% } else { -%>
+
+from <%= it.moduleFor('kernel').module %>.note import Note
+
+
+class NoteRepository:
+    """<%= it.t("Sans base, un stockage en mémoire ; même interface qu'avec une base.", "With no database, in-memory storage; the same interface as with one.") %>"""
+
+    def __init__(self) -> None:
+        self._notes: list[Note] = []
+        self._next_id = 1
+
+    async def add(self, title: str, body: str | None) -> Note:
+        note = Note(title=title, body=body, created_at=datetime.now(UTC), id=self._next_id)
+        self._next_id += 1
+        self._notes.append(note)
+        return note
+
+    async def find(self, note_id: int) -> Note | None:
+        return next((note for note in self._notes if note.id == note_id), None)
+
+    async def page(self, page: int, size: int) -> tuple[list[Note], int]:
+        start = page * size
+        return self._notes[start : start + size], len(self._notes)
+<% } -%>

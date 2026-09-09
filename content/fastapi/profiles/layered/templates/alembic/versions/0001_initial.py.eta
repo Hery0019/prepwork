@@ -1,0 +1,60 @@
+<%
+// La migration initiale appartient au profil : elle nomme les tables de l'exemple de référence,
+// qui est une donnée du profil. Écrite à la main, jamais produite par `dotnet ef` ou `alembic` —
+// l'outil écrit des fichiers, il n'exécute rien. `alembic check` en matrice prouve qu'elle
+// décrit exactement le modèle.
+const sqlType = (column) => {
+  switch (column.type) {
+    case 'identity': return 'sa.Integer()';
+    case 'string': return `sa.String(length=${column.length ?? 255})`;
+    case 'text': return 'sa.Text()';
+    case 'timestamp': return 'sa.DateTime(timezone=True)';
+    case 'boolean': return 'sa.Boolean()';
+    case 'integer': return 'sa.Integer()';
+    case 'decimal': return 'sa.Numeric()';
+    default: return 'sa.String()';
+  }
+};
+-%>
+"""<%= it.t("Schéma initial", "Initial schema") %>
+
+Revision ID: 0001
+Revises:
+"""
+
+from collections.abc import Sequence
+
+import sqlalchemy as sa
+from alembic import op
+
+revision: str = "0001"
+down_revision: str | None = None
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
+
+
+def upgrade() -> None:
+<% for (const table of it.tables) { -%>
+    op.create_table(
+        "<%= table.name %>",
+<% for (const column of table.columns) { -%>
+        sa.Column(
+            "<%= column.name %>",
+            <%= sqlType(column) %>,
+<% if (column.type === 'identity') { -%>
+            autoincrement=True,
+            nullable=False,
+<% } else { -%>
+            nullable=<%= column.nullable ? 'True' : 'False' %>,
+<% } -%>
+        ),
+<% } -%>
+        sa.PrimaryKeyConstraint("<%= table.columns.find((c) => c.type === 'identity')?.name ?? 'id' %>"),
+    )
+<% } -%>
+
+
+def downgrade() -> None:
+<% for (const table of [...it.tables].reverse()) { -%>
+    op.drop_table("<%= table.name %>")
+<% } -%>

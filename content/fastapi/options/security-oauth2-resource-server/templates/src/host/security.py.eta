@@ -1,0 +1,63 @@
+"""<%= it.t("Serveur de ressources OAuth2 : l'API valide un jeton, elle n'en émet jamais.", "OAuth2 resource server: the API validates a token, it never issues one.") %>
+
+<%= it.t("`configure_security` est le contrat que la racine de composition appelle,", "`configure_security` is the contract the composition root calls,") %>
+<%= it.t("quelle que soit l'option active.", "whatever the active option is.") %>
+"""
+
+from typing import Annotated, Any
+
+import jwt
+from fastapi import Depends, FastAPI, Request
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+
+from <%= it.moduleFor('kernel').module %>.exceptions import ForbiddenError, UnauthorizedError
+
+_bearer = HTTPBearer(auto_error=False)
+
+
+def _clients(request: Request) -> jwt.PyJWKClient:
+    return request.app.state.jwks_client  # type: ignore[no-any-return]
+
+
+def current_claims(
+    request: Request,
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer)],
+) -> dict[str, Any]:
+    """SECO-004 : <%= it.t("une seule dépendance vérifie le jeton ; aucune route ne le fait.", "a single dependency verifies the token; no route does it itself.") %>"""
+    if credentials is None:
+        raise UnauthorizedError("authentication required")
+    settings = request.app.state.settings
+    key = _clients(request).get_signing_key_from_jwt(credentials.credentials).key
+    # SECO-003 : <%= it.t("émetteur, audience et signature sont tous vérifiés.", "issuer, audience and signature are all verified.") %>
+    claims: dict[str, Any] = jwt.decode(
+        credentials.credentials,
+        key=key,
+        algorithms=["RS256"],
+        issuer=settings.oidc_issuer,
+        audience=settings.oidc_audience or None,
+        options={"verify_signature": True, "verify_aud": bool(settings.oidc_audience)},
+    )
+    return claims
+
+
+ClaimsDep = Annotated[dict[str, Any], Depends(current_claims)]
+
+
+def require_scope(scope: str) -> Any:
+    """<%= it.t("Dépendance de route : un scope manquant est un 403, pas un 401.", "Route dependency: a missing scope is a 403, not a 401.") %>"""
+
+    def _check(claims: ClaimsDep) -> dict[str, Any]:
+        granted = str(claims.get("scope", "")).split()
+        if scope not in granted:
+            raise ForbiddenError(f"scope {scope} required")
+        return claims
+
+    return Depends(_check)
+
+
+def configure_security(app: FastAPI) -> None:
+    """SECO-002 : <%= it.t("les clés viennent du JWKS du fournisseur, jamais du dépôt.", "the keys come from the provider's JWKS, never from the repository.") %>"""
+    settings = app.state.settings
+    app.state.jwks_client = jwt.PyJWKClient(
+        f"{settings.oidc_issuer.rstrip('/')}/.well-known/jwks.json"
+    )

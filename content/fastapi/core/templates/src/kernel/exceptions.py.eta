@@ -1,0 +1,30 @@
+"""<%= it.t("Exceptions du domaine, traduites en réponses par le gestionnaire unique (CORE-011).", "Domain exceptions, translated into responses by the single handler (CORE-011).") %>"""
+
+
+class DomainError(Exception):
+    """<%= it.t("Racine des erreurs métier. Aucune ne connaît de code de statut HTTP (PY-004).", "Root of the business errors. None of them knows an HTTP status code (PY-004).") %>"""
+
+
+class NotFoundError(DomainError):
+    """<%= it.t("Ressource demandée absente : le gestionnaire répond 404.", "Requested resource is missing: the handler answers 404.") %>"""
+
+    def __init__(self, resource: str, identifier: object) -> None:
+        super().__init__(f"{resource} {identifier!r} not found")
+        self.resource = resource
+        self.identifier = identifier
+
+
+class ConflictError(DomainError):
+    """<%= it.t("État incompatible avec l'opération demandée : le gestionnaire répond 409.", "State incompatible with the requested operation: the handler answers 409.") %>"""
+
+
+class UnauthorizedError(DomainError):
+    """<%= it.t("Appelant non authentifié : le gestionnaire répond 401.", "Unauthenticated caller: the handler answers 401.") %>
+
+    <%= it.t("Définie ici, et non dans l'option de sécurité, pour que CORE-011 reste vrai :", "Defined here, not in the security option, so that CORE-011 stays true:") %>
+    <%= it.t("un seul module enregistre les traductions d'exception.", "a single module registers the exception translations.") %>
+    """
+
+
+class ForbiddenError(DomainError):
+    """<%= it.t("Authentifié mais sans le droit demandé : le gestionnaire répond 403.", "Authenticated but lacking the required right: the handler answers 403.") %>"""

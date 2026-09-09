@@ -1,0 +1,15 @@
+# ADR 0006 — <%= it.d('Intégration continue', 'Continuous integration') %>
+
+<%= it.d('Date', 'Date') %> : <%= it.today %> · <%= it.d('Statut', 'Status') %> : <%= it.d('acceptée', 'accepted') %>
+
+## <%= it.d('Contexte', 'Context') %>
+
+<%= it.d("Choix fait au questionnaire prepwork, avant la première ligne de code métier.", 'Choice made in the prepwork questionnaire, before the first line of business code.') %>
+
+## <%= it.d('Décision', 'Decision') %>
+
+**<%= it.options.ci %>**
+
+## <%= it.d('Conséquences', 'Consequences') %>
+
+<%= it.d("Le pipeline exécute exactement ce qu'un développeur peut lancer localement. `lint-imports` y est une étape à part : un échec doit nommer le contrat de couches, pas « lint failed ».", 'The pipeline runs exactly what a developer can run locally. `lint-imports` is a step of its own: a failure must name the layer contract, not a bare lint failure.') %>

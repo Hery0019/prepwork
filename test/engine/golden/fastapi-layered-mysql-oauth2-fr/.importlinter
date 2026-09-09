@@ -1,0 +1,49 @@
+; Généré par prepwork. Python n'a pas de compilateur : ce fichier est la seule chose qui tient les frontières de couches. Une entrée `ignore_imports` ajoutée pour débloquer un build supprime l'architecture en silence (PY-AP-002).
+[importlinter]
+root_package = back_office
+; Obligatoire : PY-003 à PY-005 interdisent des paquets externes (fastapi, sqlalchemy). Sans cette ligne, import-linter refuse de vérifier ces contrats.
+include_external_packages = True
+
+; PY-001 — la règle sur laquelle repose toute l'architecture. Les couches viennent du bloc `architecture.layers` du profil : c'est le seul endroit où leur ordre est écrit une deuxième fois.
+[importlinter:contract:PY_001]
+name = PY_001 layers
+type = layers
+layers =
+    api
+    service
+    repository
+    domain
+containers =
+    back_office
+
+; PY-002 n'est pas ici : la racine de composition doit nommer le dépôt pour câbler la session, donc `api` → `repository` reste autorisé par le contrat de couches. Ce qu'il faut borner — que la racine soit le seul à le faire — est un test, pas un contrat.
+
+[importlinter:contract:PY_003]
+name = PY_003 domain is free of the web framework
+type = forbidden
+source_modules =
+    back_office.domain
+forbidden_modules =
+    fastapi
+    starlette
+
+[importlinter:contract:PY_004]
+name = PY_004 service has no fastapi symbol
+type = forbidden
+source_modules =
+    back_office.service
+forbidden_modules =
+    fastapi
+    starlette
+
+; PY-005 — `sqlalchemy` reste permis à `domain`, qui déclare son mapping (PY-003) ; seule la construction d'instructions est bornée à `repository`.
+[importlinter:contract:PY_005]
+name = PY_005 only repository builds statements
+type = forbidden
+; `api` n'est pas listé : la racine de composition doit nommer le type de session pour câbler la dépendance de requête. Ce qui la borne est le test de PY-002, pas ce contrat.
+source_modules =
+    back_office.service
+forbidden_modules =
+    sqlalchemy
+; Imports directs seulement : PY-003 autorise `domain` à porter son mapping, donc toute couche atteint `sqlalchemy` à travers l'entité. Sans cette ligne le contrat serait rompu par construction, et la seule issue serait d'exclure des imports — ce que PY-AP-002 interdit.
+allow_indirect_imports = True

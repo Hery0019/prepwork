@@ -1,0 +1,66 @@
+# yaml-language-server: $schema=../../../../schema/fastapi/option.schema.json
+# Image de l'application et pile de développement local. Sans groupe : rien à choisir.
+meta:
+  id: docker
+  version: 1.0.0
+  rule_prefix: DOCK
+  summary:
+    en: Multi-stage image of the application and a compose stack with the chosen database.
+    fr: Image multi-étapes de l'application et pile compose avec la base choisie.
+skill: workflow
+rules:
+  - id: DOCK-001
+    statement:
+      en: The image is built in two stages; the final one carries neither `uv`, nor the sources, nor the dev dependencies.
+      fr: L'image est construite en deux étapes ; la finale ne porte ni `uv`, ni les sources, ni les dépendances de développement.
+    rationale:
+      en: What is not in the image cannot be exploited in it, and the pull is faster.
+      fr: Ce qui n'est pas dans l'image ne peut pas y être exploité, et le pull est plus rapide.
+    enforced_by: none
+  - id: DOCK-002
+    statement:
+      en: The application runs as a non-root user declared in the image.
+      fr: L'application tourne sous un utilisateur non root déclaré dans l'image.
+    rationale:
+      en: A container escape starting as root is a host compromise.
+      fr: Une évasion de conteneur qui démarre en root est une compromission de l'hôte.
+    enforced_by: none
+  - id: DOCK-003
+    statement:
+      en: Dependencies are installed from `uv.lock` with `uv sync --frozen --no-dev`, before the sources are copied.
+      fr: Les dépendances sont installées depuis `uv.lock` avec `uv sync --frozen --no-dev`, avant la copie des sources.
+    rationale:
+      en: '`--frozen` builds exactly what is committed, and the layer order keeps the install cached across code changes.'
+      fr: "`--frozen` construit exactement ce qui est commité, et l'ordre des couches garde l'installation en cache d'un changement de code à l'autre."
+    enforced_by: none
+  - id: DOCK-004
+    statement:
+      en: '`compose.yaml` is for local development only; no secret and no production value is written in it.'
+      fr: "`compose.yaml` sert au développement local seulement ; aucun secret ni valeur de production n'y est écrit."
+    rationale:
+      en: A compose file is committed, read by everyone and copied into deployment scripts.
+      fr: Un fichier compose est commité, lu par tout le monde et recopié dans des scripts de déploiement.
+    enforced_by: gitleaks
+anti_patterns:
+  - id: DOCK-AP-001
+    statement:
+      en: A single-stage image built from the full Python image with the sources inside.
+      fr: Une image en une seule étape construite depuis l'image Python complète, sources incluses.
+    rationale:
+      en: The image carries a compiler, the tests and the history, all of it deployed.
+      fr: L'image emporte un compilateur, les tests et l'historique, le tout déployé.
+    enforced_by: none
+    instead:
+      en: The two stages of DOCK-001, the second one carrying only the virtual environment and the package.
+      fr: Les deux étapes de DOCK-001, la seconde ne portant que l'environnement virtuel et le paquet.
+  - id: DOCK-AP-002
+    statement:
+      en: '`uv sync` without `--frozen` in the image, "so it picks up the latest fixes".'
+      fr: "`uv sync` sans `--frozen` dans l'image, « pour prendre les derniers correctifs »."
+    rationale:
+      en: The image stops being reproducible, and a build from the same commit yields two different images.
+      fr: L'image cesse d'être reproductible, et un build du même commit produit deux images différentes.
+    enforced_by: none
+    instead:
+      en: Update the lockfile in a commit of its own, which is reviewable.
+      fr: Mettre à jour le lockfile dans un commit dédié, qui se relit.

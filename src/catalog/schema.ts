@@ -44,9 +44,22 @@ export type PropertyTree = z.infer<typeof PropertyTreeSchema>;
 
 export const EnvVarSchema = z
   .object({
+    /**
+     * Nom sans préfixe de stack : une option ignore le profil, or c'est lui qui décide du
+     * préfixe des variables publiques (`VITE_`, `NEXT_PUBLIC_`). Le pack l'ajoute.
+     */
     name: z.string().regex(ENV_NAME_PATTERN),
     example: z.string(),
     comment: LocalizedTextSchema,
+    /**
+     * Condition d'inclusion (même mini-langage que `files.yaml`). Une option dont la valeur
+     * d'exemple dépend d'un choix de stack — le pilote d'une URL de base, par exemple — déclare
+     * une variable par valeur : sans cela, `.env.example` annoncerait un pilote que le projet
+     * n'installe pas.
+     */
+    when: z.string().min(1).optional(),
+    /** Vraie quand la valeur part dans le bundle navigateur : le pack la préfixe alors. */
+    public: z.boolean().default(false),
   })
   .strict();
 export type EnvVar = z.infer<typeof EnvVarSchema>;

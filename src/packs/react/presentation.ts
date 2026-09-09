@@ -2,6 +2,7 @@
 // Tailwind, Playwright…) et affiche le contrat visuel du projet dans le skill `ui`.
 import { blocks, table } from '../../renderers/markdown.js';
 import type { PackPresentation, SkillPresentation } from '../types.js';
+import { publicEnvPrefix } from './context.js';
 import { designPreset, DESIGN_TOKEN_KEYS } from './design.js';
 import { asReactScaffold } from './scaffold.js';
 
@@ -283,6 +284,10 @@ export const reactPresentation: PackPresentation = {
 
   /** Aucun placeholder dans le catalogue react : les chemins sont littéraux. */
   substitute: (_scaffold, value) => value,
+
+  // Vite lit `VITE_*`, Next lit `NEXT_PUBLIC_*` : le préfixe suit le profil, que l'option ignore.
+  envName: (scaffold, variable) =>
+    variable.public ? `${publicEnvPrefix(scaffold.profile)}${variable.name}` : variable.name,
 
   /** Skill `ui` : le contrat visuel du projet, tokens compris, avant les règles du profil. */
   skillSections(skillId, context) {

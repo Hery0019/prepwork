@@ -1,0 +1,50 @@
+# yaml-language-server: $schema=../../../../schema/fastapi/option.schema.json
+# Aucune authentification. Exclusive avec security-session et security-oauth2-resource-server.
+# Elle fournit quand même `configure_security(app)`, dont la version ne fait rien : le profil
+# l'appelle toujours, et aucun axe ne nomme l'autre (ADR 0011 §8).
+meta:
+  id: security-none
+  version: 1.0.0
+  rule_prefix: SECN
+  group: security
+  summary:
+    en: No authentication; the API is meant for a trusted network only.
+    fr: Aucune authentification ; l'API est réservée à un réseau de confiance.
+skill: security
+rules:
+  - id: SECN-001
+    statement:
+      en: No authentication is configured; the API must only be reachable from a trusted network.
+      fr: Aucune authentification n'est configurée ; l'API ne doit être joignable que depuis un réseau de confiance.
+    rationale:
+      en: Every endpoint, including writes, is open to whoever can reach the port.
+      fr: Chaque endpoint, écritures comprises, est ouvert à quiconque atteint le port.
+    enforced_by: none
+  - id: SECN-002
+    statement:
+      en: Before any public exposure, the security option is switched to `session` or `oauth2-resource-server` in `scaffold.yaml`, then `prepwork sync` is run.
+      fr: Avant toute exposition publique, l'option de sécurité passe à `session` ou `oauth2-resource-server` dans `scaffold.yaml`, puis `prepwork sync` est lancé.
+    rationale:
+      en: The switch generates the configuration and the tests consistently; a hand-made setup drifts from the conventions.
+      fr: Le changement génère configuration et tests de façon cohérente ; un montage manuel dérive des conventions.
+    enforced_by: none
+  - id: SECN-003
+    statement:
+      en: No module imports `fastapi.security`; authentication is added by switching option, never by hand.
+      fr: Aucun module n'importe `fastapi.security` ; l'authentification s'ajoute en changeant d'option, jamais à la main.
+    rationale:
+      en: A partial, hand-written security setup is worse than an explicit absence.
+      fr: Une sécurité partielle écrite à la main est pire qu'une absence explicite.
+    enforced_by: import-linter
+anti_patterns:
+  - id: SECN-AP-001
+    statement:
+      en: Adding an `X-Api-Key` header check in a dependency to "secure it a bit".
+      fr: Ajouter un contrôle d'en-tête `X-Api-Key` dans une dépendance pour « sécuriser un peu ».
+    rationale:
+      en: A shared static key cannot be revoked, rotated or attributed to anyone.
+      fr: Une clé statique partagée ne peut être ni révoquée, ni tournée, ni attribuée à quelqu'un.
+    enforced_by: none
+    instead:
+      en: Switch the security option, which brings a real authentication scheme and its tests.
+      fr: Changer d'option de sécurité, qui apporte un vrai schéma d'authentification et ses tests.

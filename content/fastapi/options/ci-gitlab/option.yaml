@@ -1,0 +1,44 @@
+# yaml-language-server: $schema=../../../../schema/fastapi/option.schema.json
+# Pipeline GitLab CI. Exclusive avec ci-github.
+meta:
+  id: ci-gitlab
+  version: 1.0.0
+  rule_prefix: CIGL
+  group: ci
+  summary:
+    en: GitLab CI pipeline running the checks, the three test levels and the migration check.
+    fr: Pipeline GitLab CI qui exécute les vérifications, les trois niveaux de test et le contrôle des migrations.
+skill: workflow
+rules:
+  - id: CIGL-001
+    statement:
+      en: The pipeline runs `ruff format --check`, `ruff check`, `mypy`, `lint-imports` and `pytest` on every push and merge request.
+      fr: Le pipeline exécute `ruff format --check`, `ruff check`, `mypy`, `lint-imports` et `pytest` à chaque push et merge request.
+    rationale:
+      en: CI must run exactly what a developer can run locally, no more and no less.
+      fr: La CI doit exécuter exactement ce qu'un développeur peut lancer localement, ni plus ni moins.
+    enforced_by: format
+  - id: CIGL-002
+    statement:
+      en: '`lint-imports` is a job of its own, never folded into the lint job.'
+      fr: '`lint-imports` est un job à part entière, jamais fondu dans le job de lint.'
+    rationale:
+      en: It is the only thing holding the architecture; a failure must name the layer contract, not "lint failed".
+      fr: C'est la seule chose qui tient l'architecture ; un échec doit nommer le contrat de couches, pas « lint failed ».
+    enforced_by: import-linter
+  - id: CIGL-003
+    statement:
+      en: The integration level runs through the Docker-in-Docker service; without it the job is red, never silently skipped.
+      fr: Le niveau intégration tourne via le service Docker-in-Docker ; sans lui le job est rouge, jamais silencieusement ignoré.
+    rationale:
+      en: A skipped level looks exactly like a passing one in the pipeline summary.
+      fr: Un niveau ignoré ressemble exactement à un niveau réussi dans le résumé du pipeline.
+    enforced_by: none
+  - id: CIGL-004
+    statement:
+      en: A red pipeline blocks the merge; nothing is merged with a failing job.
+      fr: Un pipeline rouge bloque la fusion ; rien n'est fusionné avec un job en échec.
+    rationale:
+      en: A check that can be ignored stops being a check.
+      fr: Une vérification qu'on peut ignorer cesse d'être une vérification.
+    enforced_by: none

@@ -1,0 +1,101 @@
+# yaml-language-server: $schema=../../../../schema/fastapi/option.schema.json
+# Serveur de ressources OAuth2 : l'API valide un jeton porteur, elle n'en émet jamais.
+# Exclusive avec security-none et security-session.
+meta:
+  id: security-oauth2-resource-server
+  version: 1.0.0
+  rule_prefix: SECO
+  group: security
+  summary:
+    en: The API validates bearer tokens issued by an OIDC provider; it never issues one.
+    fr: L'API valide des jetons porteurs émis par un fournisseur OIDC ; elle n'en émet jamais.
+skill: security
+rules:
+  - id: SECO-001
+    statement:
+      en: 'The API is a resource server: it validates bearer tokens and never issues, refreshes or stores one.'
+      fr: "L'API est un serveur de ressources : elle valide des jetons porteurs et n'en émet, ne rafraîchit ni ne stocke jamais aucun."
+    rationale:
+      en: Issuing tokens is a provider's job, and a home-made issuer is the most expensive mistake in this area.
+      fr: Émettre des jetons est le métier d'un fournisseur, et un émetteur maison est l'erreur la plus coûteuse du domaine.
+    enforced_by: none
+  - id: SECO-002
+    statement:
+      en: Signing keys are fetched from the provider's JWKS endpoint and cached; no public key is written in the repository.
+      fr: Les clés de signature sont récupérées depuis l'endpoint JWKS du fournisseur et mises en cache ; aucune clé publique n'est écrite dans le dépôt.
+    rationale:
+      en: A key pinned in the code survives its own rotation and takes the API down with it.
+      fr: Une clé figée dans le code survit à sa propre rotation et emporte l'API avec elle.
+    enforced_by: none
+  - id: SECO-003
+    statement:
+      en: The issuer, the audience and the signature are all verified; the token is never decoded without verification.
+      fr: L'émetteur, l'audience et la signature sont tous vérifiés ; le jeton n'est jamais décodé sans vérification.
+    rationale:
+      en: '`jwt.decode(token, options={"verify_signature": False})` accepts a token anybody can forge.'
+      fr: '`jwt.decode(token, options={"verify_signature": False})` accepte un jeton que n''importe qui peut forger.'
+    enforced_by: pytest
+  - id: SECO-004
+    statement:
+      en: A route that requires authentication declares it through the shared dependency; no route checks the token itself.
+      fr: Une route qui exige une authentification le déclare par la dépendance partagée ; aucune route ne vérifie le jeton elle-même.
+    rationale:
+      en: A per-route check is a per-route bug, and the OpenAPI document stops describing what is protected.
+      fr: Un contrôle par route est un bug par route, et le document OpenAPI cesse de décrire ce qui est protégé.
+    enforced_by: pytest
+  - id: SECO-005
+    statement:
+      en: An unauthenticated call answers 401 and an authenticated call lacking the scope answers 403.
+      fr: Un appel non authentifié répond 401 et un appel authentifié sans le scope répond 403.
+    rationale:
+      en: Answering 403 to an anonymous caller hides whether authentication would have helped.
+      fr: Répondre 403 à un appelant anonyme cache si l'authentification aurait aidé.
+    enforced_by: pytest
+anti_patterns:
+  - id: SECO-AP-001
+    statement:
+      en: Reading the claims from the token to trust a `roles` field without checking the issuer.
+      fr: Lire les claims du jeton pour se fier à un champ `roles` sans vérifier l'émetteur.
+    rationale:
+      en: Any provider can then mint a token that grants any role in this API.
+      fr: N'importe quel fournisseur peut alors forger un jeton qui accorde n'importe quel rôle dans cette API.
+    enforced_by: none
+    instead:
+      en: Verify the issuer first, then read the claims from the verified token.
+      fr: Vérifier d'abord l'émetteur, puis lire les claims du jeton vérifié.
+  - id: SECO-AP-002
+    statement:
+      en: Adding a "service account" static token accepted alongside the real ones.
+      fr: Ajouter un jeton statique de « compte de service » accepté à côté des vrais.
+    rationale:
+      en: It cannot be revoked, expires never, and ends up in a script committed elsewhere.
+      fr: Il ne peut être révoqué, n'expire jamais, et finit dans un script commité ailleurs.
+    enforced_by: none
+    instead:
+      en: A client-credentials grant from the same provider, which expires and can be revoked.
+      fr: Un flux client-credentials du même fournisseur, qui expire et peut être révoqué.
+env:
+  - name: OIDC_ISSUER
+    example: https://auth.example.com/realms/app
+    comment:
+      en: OIDC provider that issues the tokens; the application refuses to start without it.
+      fr: Fournisseur OIDC qui émet les jetons ; l'application refuse de démarrer sans lui.
+  - name: OIDC_AUDIENCE
+    example: ''
+    comment:
+      en: Expected audience of the tokens; empty disables the audience check (SECO-003).
+      fr: Audience attendue des jetons ; vide désactive le contrôle d'audience (SECO-003).
+python:
+  packages:
+    - id: pyjwt
+      version: '2.12.0'
+      group: main
+      purpose:
+        en: Verifies the token signature against the provider's JWKS.
+        fr: Vérifie la signature du jeton contre le JWKS du fournisseur.
+    - id: httpx
+      version: '0.29.0'
+      group: main
+      purpose:
+        en: Fetches the JWKS document; the same client the tests already use.
+        fr: Récupère le document JWKS ; le même client que celui déjà utilisé par les tests.

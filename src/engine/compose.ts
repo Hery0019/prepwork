@@ -56,10 +56,15 @@ function sourceLabel(source: CatalogSource): string {
 }
 
 /** Variables d'environnement contribuées par les options : additives, exemples identiques. */
-export function mergeEnv(contributions: readonly [string, readonly EnvVar[]][]): EnvVar[] {
+export function mergeEnv(
+  contributions: readonly [string, readonly EnvVar[]][],
+  conditionContext: Record<string, unknown> = {},
+): EnvVar[] {
   const vars = new Map<string, [string, EnvVar]>();
   for (const [label, list] of contributions) {
     for (const variable of list) {
+      if (variable.when !== undefined && !evaluateCondition(variable.when, conditionContext))
+        continue;
       const previous = vars.get(variable.name);
       if (previous && previous[1].example !== variable.example) {
         throw conflict(
@@ -132,6 +137,14 @@ export function buildContext(
     language: { comments, docs },
     env: mergeEnv(
       options.map((o): [string, readonly EnvVar[]] => [`options/${o.id}`, o.option.env]),
+      // Le contexte complet n'existe pas encore — il contient `env`. Une condition de variable
+      // ne porte donc que sur ce que `scaffold.yaml` dit déjà, ce qui suffit à son usage.
+      {
+        project: scaffold.project,
+        stack: scaffold.stack,
+        profile: scaffold.profile,
+        optionIds: options.map((o) => o.id),
+      },
     ),
     toolVersion,
     today,

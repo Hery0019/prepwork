@@ -9,7 +9,7 @@ MAX_PAGE_SIZE = 100
 
 
 class NoteService:
-    """<%= it.t("Le dépôt est reçu en paramètre : le service se teste sans base ni application.", "The repository is received as a parameter: the service tests without a database or an application.") %>"""
+    """<%= it.t("Le dépôt est reçu en paramètre : le service se teste sans base.", "The repository is a parameter: the service tests without a database.") %>"""
 
     def __init__(self, repository: NoteRepository) -> None:
         self._repository = repository

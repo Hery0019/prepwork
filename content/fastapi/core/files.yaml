@@ -52,3 +52,29 @@ files:
     target: tests/conftest.py
   - source: tests/unit/test_core_conventions.py.eta
     target: tests/unit/test_core_conventions.py
+
+  # --- Documentation et fichiers d'équipe ----------------------------------------------
+  - source: docs/glossary.md.eta
+    target: docs/glossary.md
+    owner: team
+  - source: docs/adr/README.md.eta
+    target: docs/adr/README.md
+    owner: team
+  - source: docs/adr/0001-architecture-profile.md.eta
+    target: docs/adr/0001-architecture-profile.md
+    owner: team
+  - source: docs/adr/0002-python-and-tooling.md.eta
+    target: docs/adr/0002-python-and-tooling.md
+    owner: team
+  - source: docs/adr/0003-database.md.eta
+    target: docs/adr/0003-database.md
+    owner: team
+  - source: docs/adr/0004-security.md.eta
+    target: docs/adr/0004-security.md
+    owner: team
+  - source: docs/adr/0005-docker.md.eta
+    target: docs/adr/0005-docker.md
+    owner: team
+  - source: docs/adr/0006-continuous-integration.md.eta
+    target: docs/adr/0006-continuous-integration.md
+    owner: team

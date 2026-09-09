@@ -1,0 +1,15 @@
+# ADR 0005 — <%= it.d('Docker', 'Docker') %>
+
+<%= it.d('Date', 'Date') %> : <%= it.today %> · <%= it.d('Statut', 'Status') %> : <%= it.d('acceptée', 'accepted') %>
+
+## <%= it.d('Contexte', 'Context') %>
+
+<%= it.d("Choix fait au questionnaire prepwork, avant la première ligne de code métier.", 'Choice made in the prepwork questionnaire, before the first line of business code.') %>
+
+## <%= it.d('Décision', 'Decision') %>
+
+**<%= it.options.docker ? it.d('oui', 'yes') : it.d('non', 'no') %>**
+
+## <%= it.d('Conséquences', 'Consequences') %>
+
+<%= it.d("L'image finale ne porte ni uv, ni les sources, ni les dépendances de développement, et ne tourne pas en root. `compose.yaml` sert au développement local seulement.", "The final image carries neither uv, nor the sources, nor the dev dependencies, and does not run as root. `compose.yaml` is for local development only.") %>

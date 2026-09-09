@@ -1,0 +1,44 @@
+# yaml-language-server: $schema=../../../../schema/fastapi/files.schema.json
+# Fichiers du profil `layered` : le contrat de couches, les quatre sous-paquets et l'exemple
+# de référence `notes`. Le contrat vit ici, et non dans `pyproject.toml` du socle, parce que
+# l'ordre des couches est une donnée du profil — comme les tests ArchUnit côté Spring.
+files:
+  # --- Le contrat qui tient l'architecture ---------------------------------------------
+  - source: .importlinter.eta
+    target: .importlinter
+
+  # --- Sous-paquets ---------------------------------------------------------------------
+  - source: src/__init__.py.eta
+    target: src/<%= it.project.packageName %>/domain/__init__.py
+  - source: src/__init__.py.eta
+    target: src/<%= it.project.packageName %>/repository/__init__.py
+  - source: src/__init__.py.eta
+    target: src/<%= it.project.packageName %>/service/__init__.py
+  - source: src/__init__.py.eta
+    target: src/<%= it.project.packageName %>/api/__init__.py
+  - source: src/__init__.py.eta
+    target: src/<%= it.project.packageName %>/api/schemas/__init__.py
+
+  # --- Exemple de référence : notes ------------------------------------------------------
+  - source: src/domain/note.py.eta
+    target: src/<%= it.project.packageName %>/domain/note.py
+  - source: src/repository/note_repository.py.eta
+    target: src/<%= it.project.packageName %>/repository/note_repository.py
+  - source: src/service/note_service.py.eta
+    target: src/<%= it.project.packageName %>/service/note_service.py
+  - source: src/api/routes.py.eta
+    target: src/<%= it.project.packageName %>/api/routes.py
+  - source: src/api/dependencies.py.eta
+    target: src/<%= it.project.packageName %>/api/dependencies.py
+  - source: src/api/notes.py.eta
+    target: src/<%= it.project.packageName %>/api/notes.py
+  - source: src/api/schemas/note.py.eta
+    target: src/<%= it.project.packageName %>/api/schemas/note.py
+
+  # --- Tests -----------------------------------------------------------------------------
+  - source: tests/unit/test_layered_conventions.py.eta
+    target: tests/unit/test_layered_conventions.py
+  - source: tests/unit/test_note_service.py.eta
+    target: tests/unit/test_note_service.py
+  - source: tests/slice/test_notes_router.py.eta
+    target: tests/slice/test_notes_router.py

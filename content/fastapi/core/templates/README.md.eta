@@ -1,0 +1,31 @@
+# <%= it.project.name %>
+
+<%= it.project.description %>
+
+## <%= it.d("Démarrer", "Getting started") %>
+
+```bash
+cp .env.example .env
+uv sync
+uv run uvicorn <%= it.moduleFor('host').module %>.app:create_app --factory --reload
+```
+
+<%= it.d("L'API écoute sur http://localhost:8000 et sa documentation est sur /docs (absente en production, CORE-036).", "The API listens on http://localhost:8000 and its documentation is at /docs (absent in production, CORE-036).") %>
+
+## <%= it.d("Vérifier", "Checking") %>
+
+| <%= it.d("Commande", "Command") %> | <%= it.d("Rôle", "Purpose") %> |
+| --- | --- |
+| `uv run pytest` | <%= it.d("les trois niveaux de test", "the three test levels") %> |
+| `uv run pytest -m "not integration"` | <%= it.d("les mêmes, sans Docker", "the same ones, without Docker") %> |
+| `uv run lint-imports` | <%= it.d("vérifie le contrat de couches", "checks the layer contract") %> |
+| `uv run mypy src tests` | <%= it.d("le typage strict, qui tient ici le rôle du compilateur", "strict typing, which plays the compiler role here") %> |
+| `uv run ruff format && uv run ruff check --fix` | <%= it.d("formate et corrige, avant chaque commit", "format and fix, before every commit") %> |
+
+<%= it.d("Le niveau `integration` a besoin de Docker : `uv run pytest -m \"not integration\"` est ce qui tourne sans lui.", "The `integration` level needs Docker: `uv run pytest -m \"not integration\"` is what runs without it.") %>
+
+## <%= it.d("Conventions", "Conventions") %>
+
+<%= it.d("Les conventions du projet sont dans `CLAUDE.md` et `.claude/skills/`, générés depuis `scaffold.yaml`. Ne pas les éditer à la main : modifier `scaffold.yaml`, puis relancer `prepwork sync`.", "The project conventions live in `CLAUDE.md` and `.claude/skills/`, generated from `scaffold.yaml`. Do not edit them by hand: change `scaffold.yaml`, then run `prepwork sync`.") %>
+
+<%= it.d("Les frontières de couches sont tenues par `.importlinter`, et par rien d'autre : Python n'a pas de compilateur. Y ajouter une exception supprime l'architecture en silence.", "The layer boundaries are held by `.importlinter`, and by nothing else: Python has no compiler. Adding an exception to it deletes the architecture quietly.") %>

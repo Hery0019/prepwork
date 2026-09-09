@@ -35,7 +35,7 @@ rules:
     rationale:
       en: A partial, hand-written security setup is worse than an explicit absence.
       fr: Une sécurité partielle écrite à la main est pire qu'une absence explicite.
-    enforced_by: import-linter
+    enforced_by: pytest
 anti_patterns:
   - id: SECN-AP-001
     statement:

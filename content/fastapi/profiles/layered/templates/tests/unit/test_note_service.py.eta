@@ -1,0 +1,43 @@
+"""<%= it.t("Niveau unitaire (CORE-020) : ni application, ni base de données.", "Unit level (CORE-020): no application, no database.") %>"""
+
+import pytest
+
+from <%= it.moduleFor('kernel').module %>.exceptions import NotFoundError
+from <%= it.modules.find((m) => m.id === 'repository').module %>.note_repository import NoteRepository
+from <%= it.modules.find((m) => m.id === 'service').module %>.note_service import NoteService
+<% if (it.stack.database !== 'none') { -%>
+
+pytestmark = pytest.mark.skip(
+    reason="<%= it.t("Le dépôt exige une session : ce niveau utilise un double, à écrire avec la première vraie fonctionnalité.", "The repository requires a session: this level uses a double, to be written with the first real feature.") %>"
+)
+<% } -%>
+
+
+def _service() -> NoteService:
+    return NoteService(NoteRepository())
+
+
+@pytest.mark.unit
+async def test_create_valid_title_returns_the_stored_note() -> None:
+    note = await _service().create("First", "Hello")
+
+    assert note.title == "First"
+    assert note.id is not None
+
+
+@pytest.mark.unit
+async def test_get_unknown_id_raises_not_found() -> None:
+    with pytest.raises(NotFoundError):
+        await _service().get(404)
+
+
+@pytest.mark.unit
+async def test_list_page_of_two_returns_requested_page_and_total() -> None:
+    service = _service()
+    for title in ("One", "Two", "Three"):
+        await service.create(title, None)
+
+    page = await service.list(page=1, size=2)
+
+    assert [note.title for note in page.content] == ["Three"]
+    assert page.total_elements == 3

@@ -1,0 +1,25 @@
+<% const withDb = it.stack.database !== 'none'; -%>
+"""<%= it.t("Montage des routeurs du profil, appelé par la racine de composition (PY-007).", "Mounting of the profile's routers, called by the composition root (PY-007).") %>"""
+
+from fastapi import FastAPI
+
+<% if (withDb) { -%>
+from <%= it.moduleFor('host').module %>.notes import router as notes_router
+from <%= it.modules.find((m) => m.id === 'repository').module %>.session import (
+    create_session_factory,
+)
+<% } else { -%>
+from <%= it.moduleFor('host').module %>.dependencies import build_note_repository
+from <%= it.moduleFor('host').module %>.notes import router as notes_router
+<% } -%>
+
+
+def register_routes(app: FastAPI, prefix: str) -> None:
+    """<%= it.t("Un seul endroit monte les routeurs : une fonctionnalité, une ligne.", "A single place mounts the routers: one feature, one line.") %>"""
+<% if (withDb) { -%>
+    # PERS-005 : <%= it.t("moteur et fabrique de sessions créés une fois, au démarrage.", "engine and session factory created once, at startup.") %>
+    app.state.session_factory = create_session_factory(app.state.settings.database_url)
+<% } else { -%>
+    app.state.note_repository = build_note_repository()
+<% } -%>
+    app.include_router(notes_router, prefix=prefix)

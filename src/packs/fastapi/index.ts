@@ -4,6 +4,7 @@ import type { StackPack } from '../types.js';
 import { CATALOG_SPEC, pythonOf, TEST_BACKED_ENFORCERS } from './catalog.js';
 import { buildFastapiContext } from './context.js';
 import { fastapiPresentation } from './presentation.js';
+import { runQuestionnaire } from './questionnaire.js';
 import { resolveOptionIds, ScaffoldSchema, STACK_TARGET } from './scaffold.js';
 
 const schemas = createCatalogSchemas(CATALOG_SPEC);
@@ -62,6 +63,7 @@ export const fastapiPack: StackPack = {
   postProcess: (_path, content) => content,
 
   presentation: fastapiPresentation,
+  runQuestionnaire,
 
   jsonSchemas: () => ({
     scaffold: { schema: ScaffoldSchema, title: 'prepwork scaffold.yaml (fastapi)' },

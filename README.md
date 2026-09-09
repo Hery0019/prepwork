@@ -43,7 +43,7 @@ pnpm dev --help     # runs the CLI from the sources
 
 ```sh
 pnpm dev init <dir>                      # interactive questionnaire, then generation
-pnpm dev init <dir> --stack react        # the questionnaire of another pack (react, aspnet)
+pnpm dev init <dir> --stack react        # the questionnaire of another pack (react, aspnet, fastapi)
 pnpm dev init <dir> --renderer agents-md # a single AGENTS.md instead of CLAUDE.md + skills
 pnpm dev init <dir> --scaffold s.yaml    # no questionnaire (CI, tests)
 pnpm dev check <dir>                     # reports the plan, writes nothing; exit code 1 when out of date
@@ -92,14 +92,24 @@ Once built (`pnpm build`), the executable is `node dist/cli/index.js` (or `prepw
 | Security      | `security-none` (default), `security-cookie`, `security-jwt-bearer`              |
 | Other options | `persistence-ef` (with a database), `docker`, `ci-github` / `ci-gitlab`, `git`   |
 
+**`fastapi` pack**
+
+| Axis          | v1 values                                                                              |
+| ------------- | -------------------------------------------------------------------------------------- |
+| Profile       | `layered` — one sub-package per layer, boundaries held by an `import-linter` contract  |
+| Stack         | database: `postgresql` (default) / `mysql` / `none` — migrations are Alembic           |
+| Security      | `security-none` (default), `security-session`, `security-oauth2-resource-server`       |
+| Other options | `persistence-sqlalchemy` (with a database), `docker`, `ci-github` / `ci-gitlab`, `git` |
+
 Versions are pinned by the tool, never asked: Spring Boot 4.1.1 (`src/packs/spring-boot/context.ts`),
 React 19 with Vite and Tailwind 4 (`src/packs/react/context.ts`), .NET 10 LTS
-(`src/packs/aspnet/context.ts`). On pull requests — and on demand, through the `workflow_dispatch`
+(`src/packs/aspnet/context.ts`) and Python 3.13 with uv (`src/packs/fastapi/context.ts`). On pull requests — and on demand, through the `workflow_dispatch`
 trigger — the CI of this repository generates every combination of each pack and runs the generated
 project's own toolchain: `mvn verify` for Spring Boot, `typecheck` + `lint` + `test` + `build` for
-React, and `format` + `build` + `test` plus `dotnet ef migrations has-pending-model-changes` for
-ASP.NET Core. A push straight to `main` runs `pnpm check` only: the matrices, hence every
-Testcontainers level, need a pull request or a manual run.
+React, `format` + `build` + `test` plus `dotnet ef migrations has-pending-model-changes` for
+ASP.NET Core, and `ruff` + `mypy` + `lint-imports` + `pytest` for FastAPI. A push straight to `main`
+runs `pnpm check` only: the matrices, hence every Testcontainers level, need a pull request or a
+manual run.
 
 ## Layout
 
@@ -113,7 +123,7 @@ src/
   packs/          one directory per stack: schemas, contributions, context, renderer strings
   renderers/      claude-code: YAML → CLAUDE.md + .claude/skills/
                   agents-md:   YAML → a single AGENTS.md
-content/          data only: common/, spring-boot/, react/, aspnet/ — never code
+content/          data only: common/, spring-boot/, react/, aspnet/, fastapi/ — never code
 schema/           JSON Schema generated from Zod (IDE completion), never hand-written
 docs/adr/         decisions taken while implementing the tool itself
 ```

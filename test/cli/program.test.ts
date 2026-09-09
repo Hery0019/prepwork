@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import type { CommandRunner } from '../../src/cli/git.js';
 import { runCli, type CliDeps } from '../../src/cli/program.js';
 import type { Reporter } from '../../src/cli/report.js';
@@ -66,6 +66,12 @@ async function harness(
 }
 
 describe('prepwork CLI', () => {
+  // Lire tout `content/` est du montage, pas du test : sans cette ligne la facture tombe sur le
+  // premier cas, qui frôle alors le délai d'attente dès qu'un pack gagne des templates.
+  beforeAll(async () => {
+    await shippedContent();
+  });
+
   it('init --scaffold generates the project, then configures git', async () => {
     const h = await harness({ '/work/s.yaml': serializeScaffold(SAMPLE_SCAFFOLD) });
     const code = await runCli(h.deps, ['init', 'pay-flow', '--scaffold', 's.yaml']);

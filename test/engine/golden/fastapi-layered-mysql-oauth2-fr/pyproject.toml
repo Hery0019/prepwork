@@ -7,6 +7,7 @@ requires-python = "==3.13.*"
 dependencies = [
     "alembic==1.19.2",
     "asyncmy==0.2.14",
+    "cryptography==50.0.1",
     "fastapi==0.141.1",
     "httpx==0.28.1",
     "pydantic-settings==2.15.0",

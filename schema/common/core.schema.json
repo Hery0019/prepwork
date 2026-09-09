@@ -144,7 +144,13 @@
               "analyzer",
               "format",
               "ef-migrations",
-              "nuget-audit"
+              "nuget-audit",
+              "import-linter",
+              "mypy",
+              "ruff",
+              "alembic",
+              "pip-audit",
+              "pytest"
             ]
           }
         },
@@ -251,7 +257,13 @@
               "analyzer",
               "format",
               "ef-migrations",
-              "nuget-audit"
+              "nuget-audit",
+              "import-linter",
+              "mypy",
+              "ruff",
+              "alembic",
+              "pip-audit",
+              "pytest"
             ]
           },
           "instead": {

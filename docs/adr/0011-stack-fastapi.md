@@ -205,3 +205,52 @@ language: { comments: fr, docs: fr }
 ## Amendements
 
 _(à remplir en écrivant le pack, comme pour 0007 et 0010)_
+
+**2026-09-09, en écrivant le pack et en le vérifiant sur un vrai Python.**
+
+- **Le contrat de couches appartient au profil, dans un `.importlinter` dédié — pas au
+  `pyproject.toml` du socle.** La preuve d'une règle est cherchée dans les templates de la source
+  qui porte la règle : un contrat écrit par le socle ne prouverait aucune règle de profil. C'est
+  d'ailleurs plus juste, puisque l'ordre des couches est une donnée du profil, exactement comme les
+  tests ArchUnit côté Spring. Conséquence : une option ne peut pas contribuer de contrat, il n'y a
+  qu'un fichier ; `SECN-003` devient un test et les deux règles `CI*-002` deviennent `none`, ce
+  qu'elles étaient réellement.
+
+- **L'identifiant apparaît souligné, `PY_001`, jamais avec un tiret.** Un nom de fonction Python
+  n'accepte pas le tiret ; les noms de contrats suivent la même forme pour qu'il n'y ait qu'une
+  convention. Même choix que NetArchTest côté `aspnet`.
+
+- **PY-002 est un test, pas un contrat, et pour la raison d'ADR 0010 §2.** La racine de composition
+  doit nommer le dépôt pour câbler la session : lui interdire l'import rendrait le câblage
+  impossible. Ce qui se borne, c'est _qui_ le fait — ici trois modules, `app.py`, `routes.py` et
+  `dependencies.py`, le pendant de `Program` et des méthodes `Add*`.
+
+- **PY-005 était rompu par construction, et l'ADR ne pouvait pas le prévoir.** `import-linter`
+  compte les imports indirects ; or PY-003 autorise `domain` à porter son mapping, donc toute couche
+  atteint `sqlalchemy` à travers l'entité. Le contrat passe en `allow_indirect_imports` et perd
+  `api`. La règle est réécrite pour dire ce que l'outil tient réellement — sans quoi la seule issue
+  aurait été d'exclure des imports, ce que PY-AP-002 interdit.
+
+- **`include_external_packages = True` est obligatoire.** Sans cette ligne, import-linter _refuse_
+  de vérifier tout contrat interdisant un paquet externe. Trois contrats existaient et ne prouvaient
+  rien. Aucune relecture ne l'aurait vu : seul un vrai run le dit.
+
+- **`enforced_by: mypy` a tenu sa promesse, à un prix.** Ruff refuse les majuscules dans un nom de
+  fonction (`N802`), ce qui condamne la convention « l'identifiant est dans le nom du test » : un
+  `per-file-ignores` limité à `tests/` tranche. Et mypy strict signale un `type: ignore` devenu
+  inutile, donc le même template doit le poser ou non selon la configuration.
+
+- **Un point d'extension ouvert dans le cœur : `when` sur une variable d'environnement.** Le pilote
+  fait partie de l'URL SQLAlchemy, donc `DATABASE_URL` n'a pas le même exemple selon la base. Sans
+  condition, un projet MySQL recevait un `.env.example` annonçant `postgresql+asyncpg`. La condition
+  ne porte que sur ce que `scaffold.yaml` dit déjà : le contexte complet n'existe pas encore, il
+  contient `env`.
+
+- **`UnauthorizedError` et `ForbiddenError` appartiennent au noyau.** Si chaque option de sécurité
+  enregistrait ses propres gestionnaires, CORE-011 — « un seul module traduit les exceptions » —
+  deviendrait faux. Le socle répond 401 et 403 ; les options se contentent de lever.
+
+- **Deux pièges d'outillage, écrits là où ils ont mordu.** Eta suit les guillemets à l'intérieur d'un
+  bloc de code : une apostrophe isolée dans un commentaire JS ouvre une chaîne qui ne se ferme
+  jamais, et le rendu échoue bien plus loin. Et deux `conftest.py` hors paquet portent le même nom
+  de module, ce qui fait refuser l'analyse à mypy : chaque niveau de test est un paquet.

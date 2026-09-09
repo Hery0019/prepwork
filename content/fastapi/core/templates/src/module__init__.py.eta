@@ -1,0 +1,4 @@
+<%
+// Un `__init__.py` par module du profil : le socle les écrit sans connaître les couches, en
+// bouclant sur `it.modules`. Le contenu est vide — les imports publics sont explicites.
+-%>

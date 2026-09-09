@@ -16,6 +16,7 @@ import { createNodeFileSystem } from '../src/fs/node.js';
 import { joinPath } from '../src/fs/types.js';
 import { getPack } from '../src/packs/index.js';
 import { ScaffoldSchema as AspnetScaffoldSchema } from '../src/packs/aspnet/scaffold.js';
+import { ScaffoldSchema as FastapiScaffoldSchema } from '../src/packs/fastapi/scaffold.js';
 import { ScaffoldSchema as ReactScaffoldSchema } from '../src/packs/react/scaffold.js';
 import { ScaffoldSchema as SpringScaffoldSchema } from '../src/packs/spring-boot/scaffold.js';
 import { claudeCodeRenderer } from '../src/renderers/index.js';
@@ -25,6 +26,7 @@ const USAGE = [
   '  pnpm matrix spring-boot <outDir> <profile> <security> <migrations|none> [database]',
   '  pnpm matrix react       <outDir> <profile> <data> <forms> <security> [preset]',
   '  pnpm matrix aspnet      <outDir> <profile> <security> [database]',
+  '  pnpm matrix fastapi     <outDir> <profile> <security> [database]',
 ].join('\n');
 
 function springScaffold(args: readonly string[]): BaseScaffold {
@@ -82,6 +84,25 @@ function aspnetScaffold(args: readonly string[]): BaseScaffold {
   });
 }
 
+function fastapiScaffold(args: readonly string[]): BaseScaffold {
+  const [profile, security, database = 'postgresql'] = args;
+  if (!profile || !security) throw new PrepworkError('SCAFFOLD_INVALID', USAGE);
+  return FastapiScaffoldSchema.parse({
+    scaffold_version: '1.2.0',
+    project: {
+      name: `matrix-${profile}`,
+      package_name: 'matrix_generated',
+      description: `Generation matrix: ${profile} / ${security} / ${database}`,
+    },
+    stack: { target: 'fastapi', database },
+    profile,
+    renderer: 'claude-code',
+    options: { security, docker: true, ci: 'github' },
+    git: { author: { name: 'prepwork-ci', email: 'ci@example.com' }, agent_trailer: true },
+    language: { comments: 'fr', docs: 'fr' },
+  });
+}
+
 const [stack, outDir, ...rest] = process.argv.slice(2);
 if (!stack || !outDir) {
   console.error(USAGE);
@@ -95,7 +116,9 @@ try {
       ? reactScaffold(rest)
       : stack === 'aspnet'
         ? aspnetScaffold(rest)
-        : springScaffold(rest);
+        : stack === 'fastapi'
+          ? fastapiScaffold(rest)
+          : springScaffold(rest);
   const fs = createNodeFileSystem();
   const catalog = await loadCatalog(fs, defaultContentRoot(), pack);
   const files = renderProject(

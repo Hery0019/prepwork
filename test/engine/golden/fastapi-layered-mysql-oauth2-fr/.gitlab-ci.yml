@@ -1,0 +1,47 @@
+# CIGL-001 : la CI exécute exactement ce qu'un développeur peut lancer localement.
+image: ghcr.io/astral-sh/uv:0.9.9-python3.13-bookworm-slim
+
+variables:
+  UV_CACHE_DIR: .uv-cache
+
+cache:
+  key:
+    files:
+      - uv.lock
+  paths:
+    - .uv-cache
+
+default:
+  before_script:
+    - uv sync --frozen
+
+stages:
+  - check
+  - test
+
+lint:
+  stage: check
+  script:
+    - uv run ruff format --check .
+    - uv run ruff check .
+    - uv run mypy
+    - uv run pip-audit
+
+# CIGL-002 : job à part entière — un échec doit nommer le contrat de couches.
+layer-contract:
+  stage: check
+  script:
+    - uv run lint-imports
+
+test:
+  stage: test
+  # CIGL-003 : sans ce service le niveau intégration serait rouge, jamais silencieusement ignoré.
+  services:
+    - name: docker:27-dind
+      alias: docker
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+    TESTCONTAINERS_RYUK_DISABLED: "true"
+  script:
+    - uv run pytest

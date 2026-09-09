@@ -1,0 +1,56 @@
+<%
+const image = it.stack.database === 'mysql' ? 'mysql:8.4' : 'postgres:17-alpine';
+const container = it.stack.database === 'mysql' ? 'MySqlContainer' : 'PostgresContainer';
+const module = it.stack.database === 'mysql' ? 'testcontainers.mysql' : 'testcontainers.postgres';
+const driver = it.stack.database === 'mysql' ? 'asyncmy' : 'asyncpg';
+-%>
+"""<%= it.t("Niveau intégration : le vrai moteur de base, jamais SQLite (CORE-021).", "Integration level: the real database engine, never SQLite (CORE-021).") %>
+
+<%= it.t("Le schéma est monté par `alembic upgrade head`, jamais par `create_all` (PERS-004) :", "The schema is built by `alembic upgrade head`, never by `create_all` (PERS-004):") %>
+<%= it.t("les migrations sont ainsi testées à chaque exécution de la suite.", "the migrations are therefore tested on every run of the suite.") %>
+"""
+
+import os
+from collections.abc import AsyncIterator, Iterator
+
+import pytest
+from alembic import command
+from alembic.config import Config
+from httpx import ASGITransport, AsyncClient
+from <%= module %> import <%= container %>
+
+from <%= it.moduleFor('host').module %>.app import create_app
+from <%= it.moduleFor('host').module %>.settings import Settings
+
+
+@pytest.fixture(scope="session")
+def database_url() -> Iterator[str]:
+    """<%= it.t("Un conteneur pour toute la session : le démarrage coûte plus cher que les tests.", "One container for the whole session: starting it costs more than the tests.") %>"""
+    with <%= container %>("<%= image %>") as container:
+        url = container.get_connection_url().replace(
+            container.get_connection_url().split("://")[0], "<%= it.stack.database === 'mysql' ? 'mysql+asyncmy' : 'postgresql+asyncpg' %>", 1
+        )
+        os.environ["DATABASE_URL"] = url
+        config = Config("alembic.ini")
+        command.upgrade(config, "head")
+        yield url
+
+
+@pytest.fixture
+async def api(database_url: str) -> AsyncIterator[AsyncClient]:
+    # <%= it.t("`it.env` porte les variables de toutes les options : ce fichier n'en nomme aucune.", "`it.env` carries every option's variables: this file names none of them.") %>
+    app = create_app(
+        Settings(
+            app_env="local",
+<% for (const variable of it.env) { -%>
+<% if (variable.name === 'DATABASE_URL') { -%>
+            database_url=database_url,
+<% } else { -%>
+            <%= variable.name.toLowerCase() %>="<%= variable.example || 'test' %>",
+<% } -%>
+<% } -%>
+        )
+    )
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://testserver") as http:
+        yield http

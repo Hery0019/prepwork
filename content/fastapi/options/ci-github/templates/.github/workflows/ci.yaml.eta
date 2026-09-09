@@ -1,0 +1,36 @@
+# <%= it.d("CIGH-001 : la CI exécute exactement ce qu'un développeur peut lancer localement.", "CIGH-001: CI runs exactly what a developer can run locally.") %>
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # <%= it.d("CIGH-003 : la version vient de `.python-version` et les dépendances de `uv.lock`.", "CIGH-003: the version comes from `.python-version` and the dependencies from `uv.lock`.") %>
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --frozen
+      - run: uv run ruff format --check .
+      - run: uv run ruff check .
+      - run: uv run mypy
+      # <%= it.d("CIGH-002 : étape à part entière — un échec doit nommer le contrat de couches.", "CIGH-002: a step of its own — a failure must name the layer contract.") %>
+      - name: Layer contract
+        run: uv run lint-imports
+      - run: uv run pip-audit
+<% if (it.stack.database === 'none') { -%>
+      - run: uv run pytest
+<% } else { -%>
+      # <%= it.d("Les niveaux slice et unitaire ne demandent pas Docker ; le niveau intégration si.", "The slice and unit levels need no Docker; the integration level does.") %>
+      - run: uv run pytest
+      # <%= it.d("PERS-001 : la migration livrée doit décrire exactement le modèle.", "PERS-001: the shipped migration must describe the model exactly.") %>
+      - name: Migration matches the model
+        run: uv run alembic check
+        env:
+          DATABASE_URL: <%= it.stack.database === 'mysql' ? 'mysql+asyncmy' : 'postgresql+asyncpg' %>://app:app@localhost/app
+<% } -%>

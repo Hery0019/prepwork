@@ -1,0 +1,11 @@
+"""<%= it.t("Base déclarative du modèle.", "Declarative base of the model.") %>
+
+<%= it.t("Contrat de nom entre le profil et l'option de persistance : celle-ci importe", "Naming contract between the profile and the persistence option: the latter") %>
+<%= it.t("`Base` depuis le module du rôle `kernel`, sans jamais nommer une couche.", "imports `Base` from the `kernel` role module, never naming a layer.") %>
+"""
+
+from sqlalchemy.orm import DeclarativeBase
+
+
+class Base(DeclarativeBase):
+    """<%= it.t("Alembic lit ses métadonnées pour comparer le modèle au schéma (PERS-001).", "Alembic reads its metadata to compare the model against the schema (PERS-001).") %>"""

@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../../../schema/fastapi/files.schema.json
+# Persistance et migrations. L'option vise des rôles (`persistence`, `kernel`) : elle ne nomme
+# aucune couche du profil. La migration initiale, elle, appartient au profil — elle cite l'entité
+# de l'exemple de référence (ADR 0011 §5).
+files:
+  - source: src/persistence/session.py.eta
+    target: src/<%= it.moduleFor('persistence').dir %>/session.py
+  - source: alembic.ini.eta
+    target: alembic.ini
+  - source: alembic/env.py.eta
+    target: alembic/env.py
+  - source: alembic/script.py.mako.eta
+    target: alembic/script.py.mako
+  - source: tests/unit/test_persistence.py.eta
+    target: tests/unit/test_persistence.py
+  - source: tests/integration/__init__.py.eta
+    target: tests/integration/__init__.py
+  - source: tests/integration/conftest.py.eta
+    target: tests/integration/conftest.py
+  - source: tests/integration/test_migrations.py.eta
+    target: tests/integration/test_migrations.py

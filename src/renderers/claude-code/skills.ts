@@ -140,7 +140,14 @@ function workflowExtra(model: RenderModel): Extra {
 /** Skill `security` : variables d'environnement contribuées par les options, après les règles de base. */
 function securityExtra(model: RenderModel): Extra {
   const s = model.strings.skill;
-  const env = model.input.options.flatMap((o) => o.env);
+  // Le nom passe par le pack : documenter le nom déclaré nommerait une variable que le projet
+  // ne lit pas (le préfixe public dépend du profil).
+  const env = model.input.options.flatMap((o) =>
+    o.env.map((v) => ({
+      ...v,
+      name: model.input.pack.presentation.envName(model.input.scaffold, v),
+    })),
+  );
   if (env.length === 0) return {};
   return {
     after: blocks(

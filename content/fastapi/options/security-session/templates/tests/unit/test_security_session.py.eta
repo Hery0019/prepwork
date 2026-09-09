@@ -1,0 +1,49 @@
+"""<%= it.t("Règles de l'option `security-session`.", "Rules of the `security-session` option.") %>"""
+
+import inspect
+from pathlib import Path
+
+import pytest
+from starlette.middleware.sessions import SessionMiddleware
+
+from <%= it.moduleFor('host').module %> import security
+from <%= it.moduleFor('host').module %>.settings import Settings
+
+PACKAGE = Path("src") / "<%= it.project.packageName %>"
+
+
+@pytest.mark.unit
+def test_SECS_001_the_cookie_is_httponly_secure_and_samesite() -> None:
+    """<%= it.t("Starlette pose `HttpOnly` d'office ; les deux autres sont des choix.", "Starlette sets `HttpOnly` on its own; the other two are choices.") %>"""
+    source = inspect.getsource(security.configure_security)
+    assert "https_only=True" in source
+    assert 'same_site="lax"' in source
+    assert "session_cookie=settings.session_cookie_name" in source
+
+
+@pytest.mark.unit
+def test_SECS_002_the_signing_secret_has_no_default() -> None:
+    """<%= it.t("Un secret par défaut est un secret public, et il signe toutes les sessions.", "A default secret is a public secret, and it signs every session.") %>"""
+    assert Settings.model_fields["session_secret"].is_required()
+
+
+@pytest.mark.unit
+def test_SECS_004_login_rotates_the_session_identifier() -> None:
+    source = inspect.getsource(security.login)
+    assert "request.session.clear()" in source
+
+
+@pytest.mark.unit
+def test_SECS_005_only_the_shared_dependency_reads_the_session() -> None:
+    """<%= it.t("Un contrôle par route est un bug par route.", "A per-route check is a per-route bug.") %>"""
+    offenders = [
+        path
+        for path in PACKAGE.rglob("*.py")
+        if path.name != "security.py" and "request.session" in path.read_text(encoding="utf-8")
+    ]
+    assert offenders == [], f"{offenders} (SECS-005)"
+
+
+@pytest.mark.unit
+def test_the_session_middleware_is_the_starlette_one() -> None:
+    assert SessionMiddleware is not None

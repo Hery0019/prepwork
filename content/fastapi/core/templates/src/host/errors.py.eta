@@ -12,7 +12,12 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-from <%= it.moduleFor('kernel').module %>.exceptions import ConflictError, NotFoundError
+from <%= it.moduleFor('kernel').module %>.exceptions import (
+    ConflictError,
+    ForbiddenError,
+    NotFoundError,
+    UnauthorizedError,
+)
 
 PROBLEM_MEDIA_TYPE = "application/problem+json"
 
@@ -54,6 +59,14 @@ def register_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(ConflictError)
     async def _conflict(_request: Request, error: ConflictError) -> JSONResponse:
         return _problem(409, "Conflict", str(error))
+
+    @app.exception_handler(UnauthorizedError)
+    async def _unauthorized(_request: Request, error: UnauthorizedError) -> JSONResponse:
+        return _problem(401, "Unauthorized", str(error))
+
+    @app.exception_handler(ForbiddenError)
+    async def _forbidden(_request: Request, error: ForbiddenError) -> JSONResponse:
+        return _problem(403, "Forbidden", str(error))
 
     @app.exception_handler(Exception)
     async def _unexpected(_request: Request, error: Exception) -> JSONResponse:

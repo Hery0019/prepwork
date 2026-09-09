@@ -21,8 +21,8 @@ from <%= it.moduleFor('kernel').module %>.exceptions import ConflictError, NotFo
 def _settings(app_env: str = "local") -> Settings:
     return Settings(
         app_env=app_env,  # type: ignore[arg-type]
-<% if (it.stack.database !== 'none') { -%>
-        database_url="<%= it.stack.database === 'mysql' ? 'mysql+asyncmy' : 'postgresql+asyncpg' %>://test:test@localhost/test",
+<% for (const variable of it.env) { -%>
+        <%= variable.name.toLowerCase() %>="<%= variable.example || 'test' %>",
 <% } -%>
     )
 

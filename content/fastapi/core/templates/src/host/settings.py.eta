@@ -1,6 +1,14 @@
+<%
+// Chaque variable déclarée par une option devient un champ requis : une valeur absente échoue
+// au démarrage, pas à la première requête (CORE-030). Le socle ignore la source de chacune.
+// Attention : Eta suit les guillemets dans un bloc de code, donc une apostrophe isolée dans un
+// commentaire ouvre une chaîne qui ne se ferme jamais.
+const field = (name) => name.toLowerCase();
+-%>
 """<%= it.t("Réglages typés lus depuis l'environnement (CORE-030).", "Typed settings read from the environment (CORE-030).") %>
 
-<%= it.t("Une valeur absente échoue au démarrage, pas à la première requête.", "A missing value fails at startup, not at the first request.") %>
+<%= it.t("Un champ sans défaut fait échouer le démarrage quand la variable manque,", "A field with no default fails startup when the variable is missing,") %>
+<%= it.t("plutôt que la première requête qui en a besoin.", "rather than the first request that needs it.") %>
 """
 
 from functools import lru_cache
@@ -18,9 +26,7 @@ class Settings(BaseSettings):
     # CORE-033 : <%= it.t("liste explicite, jamais `*` hors développement local.", "an explicit list, never `*` outside local development.") %>
     cors_origins: list[str] = []
 <% for (const variable of it.env) { -%>
-<% if (variable.name === 'DATABASE_URL') { -%>
-    database_url: str
-<% } -%>
+    <%= field(variable.name) %>: str
 <% } -%>
 
     @property
@@ -32,7 +38,7 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     """<%= it.t("Une seule instance par processus ; les tests passent la leur à `create_app`.", "One instance per process; tests pass their own to `create_app`.") %>"""
-<% if (it.stack.database !== 'none') { -%>
+<% if (it.env.length > 0) { -%>
     # <%= it.t("Les valeurs viennent de l'environnement : mypy ne le sait pas, pydantic-settings si.", "The values come from the environment: mypy does not know that, pydantic-settings does.") %>
     return Settings()  # type: ignore[call-arg]
 <% } else { -%>

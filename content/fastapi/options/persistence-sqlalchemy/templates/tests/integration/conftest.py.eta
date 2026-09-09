@@ -38,7 +38,19 @@ def database_url() -> Iterator[str]:
 
 @pytest.fixture
 async def api(database_url: str) -> AsyncIterator[AsyncClient]:
-    app = create_app(Settings(app_env="local", database_url=database_url))
+    # <%= it.t("`it.env` porte les variables de toutes les options : ce fichier n'en nomme aucune.", "`it.env` carries every option's variables: this file names none of them.") %>
+    app = create_app(
+        Settings(
+            app_env="local",
+<% for (const variable of it.env) { -%>
+<% if (variable.name === 'DATABASE_URL') { -%>
+            database_url=database_url,
+<% } else { -%>
+            <%= variable.name.toLowerCase() %>="<%= variable.example || 'test' %>",
+<% } -%>
+<% } -%>
+        )
+    )
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://testserver") as http:
         yield http

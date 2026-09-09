@@ -48,6 +48,8 @@ export const fastapiPack: StackPack = {
     'persistence',
     'sqlalchemy',
   ],
+  /** Aucune variable n'est réécrite : côté serveur, un nom d'option est le nom final. */
+  reservedEnvPrefixes: [],
 
   contributionConditions(source) {
     const packages = pythonOf(source)?.packages ?? [];

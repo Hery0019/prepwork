@@ -42,7 +42,7 @@ Marqueur après l'identifiant : nom d'outil = contrainte outillée (le build ou 
 
 | Variable | Exemple | Rôle |
 |---|---|---|
-| `VITE_AUTH_LOGIN_PATH` | `/bff/login` | Chemin de l'endpoint du backend-for-frontend qui démarre la connexion. |
+| `NEXT_PUBLIC_AUTH_LOGIN_PATH` | `/bff/login` | Chemin de l'endpoint du backend-for-frontend qui démarre la connexion. |
 
 ## Profil `next-app`
 

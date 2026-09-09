@@ -44,6 +44,10 @@ export type PropertyTree = z.infer<typeof PropertyTreeSchema>;
 
 export const EnvVarSchema = z
   .object({
+    /**
+     * Nom sans préfixe de stack : une option ignore le profil, or c'est lui qui décide du
+     * préfixe des variables publiques (`VITE_`, `NEXT_PUBLIC_`). Le pack l'ajoute.
+     */
     name: z.string().regex(ENV_NAME_PATTERN),
     example: z.string(),
     comment: LocalizedTextSchema,
@@ -54,6 +58,8 @@ export const EnvVarSchema = z
      * n'installe pas.
      */
     when: z.string().min(1).optional(),
+    /** Vraie quand la valeur part dans le bundle navigateur : le pack la préfixe alors. */
+    public: z.boolean().default(false),
   })
   .strict();
 export type EnvVar = z.infer<typeof EnvVarSchema>;

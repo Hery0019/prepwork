@@ -88,7 +88,8 @@ describe('react questionnaire', () => {
     const result = await runQuestionnaire(prompter, { profiles: PROFILES });
 
     expect(result.scaffold.options.security).toBe('oidc-bff');
-    expect(result.extras.envOverrides).toEqual({ VITE_AUTH_LOGIN_PATH: '/auth/login' });
+    // Nom déclaré par l'option, sans préfixe : c'est le pack qui préfixe selon le profil.
+    expect(result.extras.envOverrides).toEqual({ AUTH_LOGIN_PATH: '/auth/login' });
     expect(JSON.stringify(result.scaffold)).not.toContain('/auth/login');
   });
 

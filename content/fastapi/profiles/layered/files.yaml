@@ -8,7 +8,7 @@ files:
     target: .importlinter
 
   # --- Sous-paquets ---------------------------------------------------------------------
-  - source: src/__init__.py.eta
+  - source: src/domain/__init__.py.eta
     target: src/<%= it.project.packageName %>/domain/__init__.py
   - source: src/__init__.py.eta
     target: src/<%= it.project.packageName %>/repository/__init__.py
@@ -20,6 +20,9 @@ files:
     target: src/<%= it.project.packageName %>/api/schemas/__init__.py
 
   # --- Exemple de référence : notes ------------------------------------------------------
+  - source: src/domain/base.py.eta
+    target: src/<%= it.project.packageName %>/domain/base.py
+    when: stack.database != 'none'
   - source: src/domain/note.py.eta
     target: src/<%= it.project.packageName %>/domain/note.py
   - source: src/repository/note_repository.py.eta
@@ -40,5 +43,15 @@ files:
     target: tests/unit/test_layered_conventions.py
   - source: tests/unit/test_note_service.py.eta
     target: tests/unit/test_note_service.py
+  - source: src/__init__.py.eta
+    target: tests/slice/__init__.py
   - source: tests/slice/test_notes_router.py.eta
     target: tests/slice/test_notes_router.py
+  - source: tests/integration/test_notes_api.py.eta
+    target: tests/integration/test_notes_api.py
+    when: stack.database != 'none'
+
+  # --- Migration initiale, écrite à la main : l'outil n'exécute jamais `alembic` ----------
+  - source: alembic/versions/0001_initial.py.eta
+    target: alembic/versions/0001_initial.py
+    when: stack.database != 'none'

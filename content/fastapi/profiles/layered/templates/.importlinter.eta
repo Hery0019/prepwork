@@ -45,8 +45,10 @@ forbidden_modules =
 [importlinter:contract:PY_005]
 name = PY_005 only repository builds statements
 type = forbidden
+; <%= it.d("`api` n'est pas listé : la racine de composition doit nommer le type de session pour câbler la dépendance de requête. Ce qui la borne est le test de PY-002, pas ce contrat.", "`api` is not listed: the composition root must name the session type to wire the request dependency. What bounds it is the PY-002 test, not this contract.") %>
 source_modules =
     <%= pkg %>.service
-    <%= pkg %>.api
 forbidden_modules =
     sqlalchemy
+; <%= it.d("Imports directs seulement : PY-003 autorise `domain` à porter son mapping, donc toute couche atteint `sqlalchemy` à travers l'entité. Sans cette ligne le contrat serait rompu par construction, et la seule issue serait d'exclure des imports — ce que PY-AP-002 interdit.", "Direct imports only: PY-003 lets `domain` carry its mapping, so every layer reaches `sqlalchemy` through the entity. Without this line the contract would be broken by construction, and the only way out would be ignoring imports — which PY-AP-002 forbids.") %>
+allow_indirect_imports = True

@@ -31,5 +31,10 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
-    """<%= it.t("Une seule instance par processus ; les tests la remplacent par surcharge de dépendance.", "One instance per process; tests replace it through a dependency override.") %>"""
+    """<%= it.t("Une seule instance par processus ; les tests passent la leur à `create_app`.", "One instance per process; tests pass their own to `create_app`.") %>"""
+<% if (it.stack.database !== 'none') { -%>
+    # <%= it.t("Les valeurs viennent de l'environnement : mypy ne le sait pas, pydantic-settings si.", "The values come from the environment: mypy does not know that, pydantic-settings does.") %>
+    return Settings()  # type: ignore[call-arg]
+<% } else { -%>
     return Settings()
+<% } -%>

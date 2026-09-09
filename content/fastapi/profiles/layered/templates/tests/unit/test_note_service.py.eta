@@ -1,20 +1,43 @@
-"""<%= it.t("Niveau unitaire (CORE-020) : ni application, ni base de données.", "Unit level (CORE-020): no application, no database.") %>"""
+"""<%= it.t("Niveau unitaire (CORE-020) : ni application, ni base de données.", "Unit level (CORE-020): no application, no database.") %>
+
+<%= it.t("Le dépôt est doublé ici, même quand le projet a une base : c'est ce qui", "The repository is doubled here even when the project has a database:") %>
+<%= it.t("distingue ce niveau du niveau intégration.", "that is what separates this level from the integration one.") %>
+"""
+
+from datetime import UTC, datetime
 
 import pytest
 
 from <%= it.moduleFor('kernel').module %>.exceptions import NotFoundError
+from <%= it.moduleFor('kernel').module %>.note import Note
 from <%= it.modules.find((m) => m.id === 'repository').module %>.note_repository import NoteRepository
 from <%= it.modules.find((m) => m.id === 'service').module %>.note_service import NoteService
-<% if (it.stack.database !== 'none') { -%>
 
-pytestmark = pytest.mark.skip(
-    reason="<%= it.t("Le dépôt exige une session : ce niveau utilise un double, à écrire avec la première vraie fonctionnalité.", "The repository requires a session: this level uses a double, to be written with the first real feature.") %>"
-)
-<% } -%>
+
+class _FakeRepository(NoteRepository):
+    """<%= it.t("Même surface que le vrai dépôt, sans session ni base.", "The same surface as the real repository, with no session and no database.") %>"""
+
+    def __init__(self) -> None:
+        self._notes: list[Note] = []
+        self._next_id = 1
+
+    async def add(self, title: str, body: str | None) -> Note:
+        note = Note(title=title, body=body, created_at=datetime.now(UTC))
+        note.id = self._next_id
+        self._next_id += 1
+        self._notes.append(note)
+        return note
+
+    async def find(self, note_id: int) -> Note | None:
+        return next((note for note in self._notes if note.id == note_id), None)
+
+    async def page(self, page: int, size: int) -> tuple[list[Note], int]:
+        start = page * size
+        return self._notes[start : start + size], len(self._notes)
 
 
 def _service() -> NoteService:
-    return NoteService(NoteRepository())
+    return NoteService(_FakeRepository())
 
 
 @pytest.mark.unit

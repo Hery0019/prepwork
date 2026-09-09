@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1002" height="340" viewBox="0 0 1002 340" role="img" aria-label="$ prepwork check pay-flow">
+  <rect width="1002" height="340" rx="8" fill="#11141a" stroke="#272d38"/>
+  <path d="M0 8a8 8 0 0 1 8-8h986a8 8 0 0 1 8 8v20H0z" fill="#1a1f28"/>
+  <circle cx="18" cy="14" r="5" fill="#f7768e"/>
+  <circle cx="34" cy="14" r="5" fill="#e0af68"/>
+  <circle cx="50" cy="14" r="5" fill="#5fbf7f"/>
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" xml:space="preserve">
+    <text x="16" y="44" fill="#7aa2f7">$ <tspan fill="#e6edf3">prepwork check pay-flow</tspan></text>
+    <text x="16" y="84" fill="#c3cad6">Plan : 1 à créer, 5 à mettre à jour, 3 à supprimer, 48 inchangé, 1 modifié par l'équipe (ignoré), 0 conflit (ignoré)</text>
+    <text x="16" y="104" fill="#7aa2f7">  • à créer  src/test/java/mg/solumada/payflow/architecture/SecurityNoneArchitectureTest.java</text>
+    <text x="16" y="124" fill="#7aa2f7">  • à mettre à jour  .claude/skills/security/SKILL.md</text>
+    <text x="16" y="144" fill="#7aa2f7">  • à mettre à jour  CLAUDE.md</text>
+    <text x="16" y="164" fill="#7aa2f7">  • à mettre à jour  pom.xml</text>
+    <text x="16" y="184" fill="#7aa2f7">  • à mettre à jour  src/main/resources/application.yaml</text>
+    <text x="16" y="204" fill="#7aa2f7">  • à mettre à jour  src/test/resources/application-test.yaml</text>
+    <text x="16" y="224" fill="#7aa2f7">  • à supprimer  src/main/java/mg/solumada/payflow/common/SecurityConfig.java  (no longer generated)</text>
+    <text x="16" y="244" fill="#7aa2f7">  • à supprimer  src/main/java/mg/solumada/payflow/common/SecurityProperties.java  (no longer generated)</text>
+    <text x="16" y="264" fill="#7aa2f7">  • à supprimer  src/test/java/mg/solumada/payflow/common/SecurityConfigTest.java  (no longer generated)</text>
+    <text x="16" y="284" fill="#e0af68">  • modifié par l'équipe (ignoré)  src/main/java/mg/solumada/payflow/service/NoteService.java  (modified by team)</text>
+    <text x="16" y="304" fill="#e0af68">Fichiers modifiés par l'équipe : prepwork ne les touche jamais. Pour reprendre la version générée, supprimer le fichier pui…</text>
+  </g>
+</svg>

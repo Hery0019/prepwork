@@ -10,6 +10,28 @@ ESLint boundaries, Testing Library, Playwright), **ASP.NET Core** (one project p
 migrations, NetArchTest, Testcontainers) and **FastAPI** (uv, SQLAlchemy and Alembic, strict mypy,
 import-linter contracts, Testcontainers).
 
+## At a glance
+
+`init` writes the whole project from the answers collected in `scaffold.yaml`: the skeleton, the
+reference example, the ArchUnit tests, the ADRs and the agent's own specification.
+
+![prepwork init](docs/img/init.svg)
+
+Later, the team edits a generated file and changes one answer — here `security: session` becomes
+`security: none`. `check` says exactly what that implies and writes nothing (exit code 1 when the
+project is out of date):
+
+![prepwork check](docs/img/check.svg)
+
+`sync` applies what is safe. The file the team modified is reported and left untouched — prepwork
+never merges:
+
+![prepwork sync](docs/img/sync.svg)
+
+These three images are produced by `pnpm shots`, which replays the commands for real in a
+throwaway directory and renders their actual output; the CLI speaks French. The interactive
+questionnaire is not pictured: it needs a real terminal, which a script cannot provide.
+
 ## Prerequisites
 
 - Node 22 LTS (or newer) and `pnpm` (via `corepack enable pnpm`)
@@ -32,6 +54,7 @@ uv run pytest -m "not integration"                                              
 
 Beware of `-Dtest` on the Spring side: it overrides the surefire includes, so `NoteIT` has to be
 named in the exclusion too, otherwise surefire picks it up instead of failsafe.
+[CONTRIBUTING.md](CONTRIBUTING.md) collects these traps and the rest of the local procedure.
 
 ## Development
 
@@ -40,8 +63,14 @@ pnpm install
 pnpm check          # typecheck + lint + content/ consistency check + tests
 pnpm check:content  # content/ consistency only (ids, prefixes, orthogonality, ArchUnit tests)
 pnpm schemas        # regenerates schema/*.schema.json from the Zod schemas
+pnpm shots          # regenerates the README pictures from real command runs
 pnpm dev --help     # runs the CLI from the sources
 ```
+
+**Changing the engine, a renderer or a pack? Read [CONTRIBUTING.md](CONTRIBUTING.md) first.** It
+describes how to verify a generated project with its own toolchain, the round trip that proves
+`check` and `sync` still protect the team's files, what a workstation cannot check at all, and why
+a change to `content/` goes through a pull request rather than straight to `main`.
 
 ## CLI commands
 

@@ -43,8 +43,12 @@ files:
     target: tests/unit/test_layered_conventions.py
   - source: tests/unit/test_note_service.py.eta
     target: tests/unit/test_note_service.py
+  - source: tests/support.py.eta
+    target: tests/support.py
   - source: src/__init__.py.eta
     target: tests/slice/__init__.py
+  - source: tests/slice/conftest.py.eta
+    target: tests/slice/conftest.py
   - source: tests/slice/test_notes_router.py.eta
     target: tests/slice/test_notes_router.py
   - source: tests/integration/test_notes_api.py.eta
